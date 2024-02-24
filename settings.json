@@ -1,0 +1,126 @@
+{
+  "keybinds": {
+    "115.true.false.false": {
+      "fn": "shortcutsPickupAll",
+      "arg": null
+    },
+    "113.false.false.false": {
+      "fn": "menuZoneRefreshHandler",
+      "arg": null
+    },
+    "114.false.false.false": {
+      "fn": "specExplorerMenuHandler",
+      "arg": null
+    },
+    "115.false.false.false": {
+      "fn": "specGeologistMenuHandler",
+      "arg": null
+    },
+    "121.false.false.false": {
+      "fn": "battleMenuHandler",
+      "arg": null
+    },
+    "116.false.false.false": {
+      "fn": "menuBuffsHandler",
+      "arg": null
+    },
+    "118.false.false.false": {
+      "fn": "menuBuildingHandler",
+      "arg": null
+    },
+    "119.false.false.false": {
+      "fn": "TimedMenuHandler",
+      "arg": null
+    },
+    "117.false.false.false": {
+      "fn": "menuAuctionHandler",
+      "arg": null
+    },
+    "81.true.false.false": {
+      "fn": "jzv2_SelfDriveMenuHandler",
+      "arg": null
+    },
+    "82.true.false.false": {
+      "fn": "ReloadScriptsMenuHandler",
+      "arg": null
+    },
+    "32.false.false.false": {
+      "fn": "openStarMenuHandler",
+      "arg": null
+    },
+    "81.false.false.true": {
+      "fn": "FunctionsMenuHandler",
+      "arg": null
+    }
+  },
+  "global": {
+    "menuStyle": "grouped",
+    "geoDefTask": 0,
+    "geoDefTaskByType": {},
+    "explDefTask": 0,
+    "explDefTaskByType": {},
+    "specDefTimeType": false,
+    "defFilter": "unset",
+    "persistFilter": false,
+    "dtfFormat": "MM-dd HH:mm",
+    "forcegc": true,
+    "sortOrder": 6,
+    "statusColorOk": "#CEFF9B",
+    "statusColorFail": "#FFC1BF",
+    "statusColorSameGrid": "#668cff",
+    "buiFastAccessType": 0,
+    "buffOnlyActive": false,
+    "changeTemplateFolder": true,
+    "lruCacheSize": 3,
+    "highlight": true,
+    "highlightSize": 45,
+    "highlightColor": "#ff0000",
+    "highlightGlowColor": "#ffffff",
+    "chatFontSize": 12,
+    "chatPanelWidth": 350,
+    "starColsCount": 13,
+    "starRowsCount": 6,
+    "experimental": true,
+    "armylastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\Home",
+    "battlelastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\Home",
+    "bufflastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates",
+    "lastRecordedCasualties": {
+      "Knight": 169,
+      "Recruit": 155,
+      "Swordsman": 110,
+      "MountedSwordsman": 24
+    },
+    "rebuildLosses.targetCounts": {
+      "Recruit": 1,
+      "Militia": 2,
+      "Soldier": 3,
+      "EliteSoldier": 4,
+      "Cavalry": 5,
+      "Bowman": 6,
+      "Longbowman": 7,
+      "Crossbowman": 8,
+      "Cannoneer": 9,
+      "Swordsman": 10,
+      "MountedSwordsman": 11,
+      "Knight": 12,
+      "Marksman": 13,
+      "ArmoredMarksman": 14,
+      "MountedMarksman": 15,
+      "Besieger": 16
+    },
+    "expllastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Explorers"
+  },
+  "UpgradeBuilding": {
+    "maxUpgradeLevelSetting": "4"
+  },
+  "usMKF_Generals": {
+    "_exudGeneralsSortType": 1,
+    "_exudGeneralsHideUnselected": false,
+    "_exudGeneralsHideGuest": false,
+    "_exudGeneralsSelectedFirst": false,
+    "_exudGeneralsExcludeStarMenu": false,
+    "_exudGeneralsArmySorted": false,
+    "_exudGeneralsShortcuts": false,
+    "_exudGeneralsShortcutsRoot": ""
+  }
+}
