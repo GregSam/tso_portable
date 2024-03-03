@@ -138,38 +138,40 @@ function GetPopUlation(){
 }
 
 function GetMilitaryUnits(){
-	var freeArmy = TA_getFreeArmyInfo();
-	var out = utils.createTableRow([
-		[2, "Unit"],
-		[1, "un assigned"],
-		[1, "assigned"],
-		[1, "all"],
-		[1, "target"],
-		[2, "to target"],
-		[1, "in production"],
-		[3, "buttons"]], true)
-	freeArmy.forEach(function(item){
-		var assigned = assignedUnits[item.name_string] || 0;
-		var targetAmount = targets[item.name_string] || 0;
-		var inProductionAmount = inProduction[item.name_string] || 0;
-		var displayToTarget_str = displayToTarget(targetAmount, item.amount, assigned, item.name_string);
-		var isDisabled = displayToTarget_str.indexOf('<span style="color: red;') != 0 || allDisabled ? ' disabled ' : '';
-		var allDisabledAttr = allDisabled ? ' disabled ' : '';
-		var queueBuildbtn = '<button type="button" class="btn btn-sm queueBuild" '+isDisabled+'data-unit='+item.name_string+'>Queue production</button>';
-		var plus500btn = ' <button type="button" class="btn btn-sm plus500"'+'plus500=true data-unit='+item.name_string+allDisabledAttr+'>+500</button>';
-		out += utils.createTableRow([
-			[2, item.name_string],
-			[1, item.amount],
-			[1, assigned],
-			[1, item.amount + assigned],
-			[1, targets[item.name_string] || 0],
-			[2, displayToTarget_str],
-			[1, inProductionAmount],
-			[3, queueBuildbtn + plus500btn]]);
+    var freeArmy = TA_getFreeArmyInfo();
+    var out = utils.createTableRow([
+        [2, "Unit"],
+        [1, "un assigned"],
+        [1, "assigned"],
+        [1, "all"],
+        [1, "target"],
+        [2, "to target"],
+        [1, "in production"],
+        [3, "buttons"]], true);
 
-		productionDetails[item.name_string] = {"toTarget": targetAmount - item.amount - assigned - inProductionAmount};
-	});
-	return out;
+    Object.keys(targets).forEach(function (name) {
+        var assigned = assignedUnits[name] || 0;
+        var targetAmount = targets[name] || 0;
+        var inProductionAmount = inProduction[name] || 0;
+        var unassigned = (freeArmy.filter(function (i) { return i.name_string === name })[0] || {}).amount || 0;
+        var displayToTarget_str = displayToTarget(targetAmount, unassigned, assigned, name);
+        var isDisabled = displayToTarget_str.indexOf('<span style="color: red;') != 0 || allDisabled ? ' disabled ' : '';
+        var allDisabledAttr = allDisabled ? ' disabled ' : '';
+        var queueBuildbtn = '<button type="button" class="btn btn-sm queueBuild" '+isDisabled+'data-unit='+name+'>Queue production</button>';
+        var plus500btn = ' <button type="button" class="btn btn-sm plus500"' + 'plus500=true data-unit=' + name +allDisabledAttr+'>+500</button>';
+        out += utils.createTableRow([
+            [2, name],
+            [1, unassigned],
+            [1, assigned],
+            [1, unassigned + assigned],
+            [1, targets[name] || 0],
+            [2, displayToTarget_str],
+            [1, inProductionAmount],
+            [3, queueBuildbtn + plus500btn]]);
+
+        productionDetails[name] = { "toTarget": targetAmount - unassigned - assigned - inProductionAmount };
+    });
+    return out;
 }
 
 function displayToTarget(targetAmount, unAssigned, assigned, name){
