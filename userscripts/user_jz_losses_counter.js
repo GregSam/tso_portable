@@ -29,7 +29,20 @@ function luc_MenuHandler(event)
 	});
 	$('#lucModalData').html(luc_MakeModal());
 	$('#lucModal:not(:visible)').modal({backdrop: "static"});
-	$('#lucModalData .savecaualtiesbtn').click(luc_SaveData);
+
+	// Add footer buttons once
+	if($('#lucModal .lucLoadEmails').length === 0 && $('#lucModal .lucReloadModal').length === 0){
+		$("#lucModal .modal-footer").prepend([
+			$('<button>').attr({ "class": "btn btn-primary lucLoadEmails" }).text('Load battle mails'),
+			$('<button>').attr({ "class": "btn btn-default lucReloadModal" }).text('Reload counter')
+		]);
+		$('#lucModal .lucLoadEmails').click(function(){
+			try { getEmailsFromServer(); } catch(e) { debug('luc load emails error', e); }
+		});
+		$('#lucModal .lucReloadModal').click(function(){
+			luc_ReloadModal();
+		});
+	}
 }
 
 function luc_MakeModal()
@@ -46,10 +59,10 @@ function luc_MakeModal()
 
 function luc_GetCurrentArmyTable(){
 	battlesFromMail = processBattleReports();
-    //battlesFromMail = putBattleMailsInCache();
+    //battlesFromMail = getEmailsFromServer();
 	var html = '<div>';
 
-    html += luc_getSaveButton();
+    // Save button removed
 
     var battleId = 1;
     battlesFromMail.perBattleCasualties.reverse().forEach(function (battleCasualties) {
@@ -91,6 +104,15 @@ function luc_GetCurrentArmyTable(){
 	html += ulc_createRowsWithMaxUnits('Lost units', lostUnitsInfo);
 
 	return html + '<div>';
+}
+
+function luc_ReloadModal(){
+    try{
+        $('#lucModalData').html(luc_MakeModal());
+        // Save button removed; no click binding
+    } catch(e){
+        debug('luc_ReloadModal error', e);
+    }
 }
 
 function ulc_createRowsWithMaxUnits(rowName, data){
@@ -142,24 +164,27 @@ function insertSorted(arr, item) {
         i--;
     }
     arr.splice(i + 1, 0, item);
-}   
+}
 
-function putBattleMailsInCache(){
+var vdef = swmmo.getDefinitionByName("Communication.VO::dIntegerVO");
+function getEmailsFromServer(){
+    alert("Fetching emails from server...");
     battleReports = [];
-    var vdef = swmmo.getDefinitionByName("Communication.VO::dIntegerVO");
     try {
         var currentMails = globalFlash.gui.mMailWindow.mailTypeHeader.owner.dataProvider;
+        air.Introspector.Console.log("currentMails: ", currentMails);
         for(var i = 0; i < currentMails.length; i++){
             var mail = currentMails[i];
             // BATTLE_REPORT_INTERCEPTED = 29;
             // BATTLE_REPORT = 8;
             if (mail.type == 8 || mail.type == 29) {
+                alert("Fetching email "+i);
                 var v = new vdef(mail.id);
                 game.gi.mClientMessages.SendMessagetoServer(1177,game.gi.mCurrentViewedZoneID,v, getBattleBodyResponder);
             }
         };
     } catch (error) {
-        debug("Error in putBattleMailsInCache: ", error);
+        debug("Error in getEmailsFromServer: ", error);
     }
 }
 
@@ -295,15 +320,3 @@ function elementToJSON(element) {
     }
     return obj;
   }
-
-function luc_getSaveButton(){
-    return '<button class="btn btn-success savecaualtiesbtn"">Save</button>';
-}
-
-function luc_SaveData(){
-    air.Introspector.Console.log("luc_SaveData");
-    var data = {};
-	data['lastRecordedCasualties'] = battlesFromMail.allCasualties;
-	settings.store(data);
-    alert('Data saved');
-}
