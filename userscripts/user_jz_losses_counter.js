@@ -9,10 +9,6 @@ var battlesFromMail = {};
 addToolsMenuItem("JZ Lost units counter", luc_GetData);
 
 function luc_GetData(){
-	// air.Introspector.Console.log("luc_GetData");
-	// getBattleReportsBodies();
-	// setTimeout(function() { luc_MenuHandler(); }, 5000);
-
 	luc_MenuHandler();
 }
 
@@ -37,7 +33,7 @@ function luc_MenuHandler(event)
 			$('<button>').attr({ "class": "btn btn-default lucReloadModal" }).text('Reload counter')
 		]);
 		$('#lucModal .lucLoadEmails').click(function(){
-			try { getEmailsFromServer(); } catch(e) { debug('luc load emails error', e); }
+			try { getEmailsFromServer(); } catch(e) { }
 		});
 		$('#lucModal .lucReloadModal').click(function(){
 			luc_ReloadModal();
@@ -111,7 +107,7 @@ function luc_ReloadModal(){
         $('#lucModalData').html(luc_MakeModal());
         // Save button removed; no click binding
     } catch(e){
-        debug('luc_ReloadModal error', e);
+        // debug('luc_ReloadModal error', e);
     }
 }
 
@@ -139,22 +135,22 @@ function getBattleBodyResponderHandler(event, data)
 {
 	try
 	{
-        // air.Introspector.Console.log("getBattleBodyResponderHandler data: ", data);
+        // debug("getBattleBodyResponderHandler data: ", data);
         var battleData = parseBattleScript(data.data.attachments.battleScript, data.data.timestamp);
         // battleReports.push(battleData);
-        air.Introspector.Console.log("getBattleBodyResponderHandler battleData: ", battleData);
+        // debug("getBattleBodyResponderHandler battleData: ", battleData);
         insertSorted(battleReports, battleData);
 	}
 	catch (e)
 	{
-		air.Introspector.Console.log("getBattleBodyResponderHandler -> " + e);
+		// debug("getBattleBodyResponderHandler -> " + e);
 	}
 }
 
 function getBattleBodyResponderHandlerFault(event, data)
 {
-    air.Introspector.Console.log("getBattleBodyResponderHandlerFault data: ", data);
-    air.Introspector.Console.log("getBattleBodyResponderHandlerFault event: ", event);
+    // debug("getBattleBodyResponderHandlerFault data: ", data);
+    // debug("getBattleBodyResponderHandlerFault event: ", event);
 }
 
 // Insert while keeping array sorted
@@ -168,23 +164,24 @@ function insertSorted(arr, item) {
 
 var vdef = swmmo.getDefinitionByName("Communication.VO::dIntegerVO");
 function getEmailsFromServer(){
-    alert("Fetching emails from server...");
     battleReports = [];
+    // globalFlash.gui.mMailWindow.Show();
+    // globalFlash.gui.mMailWindow.Hide();
     try {
         var currentMails = globalFlash.gui.mMailWindow.mailTypeHeader.owner.dataProvider;
-        air.Introspector.Console.log("currentMails: ", currentMails);
+        // debug("currentMails: ", currentMails);
         for(var i = 0; i < currentMails.length; i++){
             var mail = currentMails[i];
             // BATTLE_REPORT_INTERCEPTED = 29;
             // BATTLE_REPORT = 8;
             if (mail.type == 8 || mail.type == 29) {
-                alert("Fetching email "+i);
+                // alert("Fetching email "+i);
                 var v = new vdef(mail.id);
                 game.gi.mClientMessages.SendMessagetoServer(1177,game.gi.mCurrentViewedZoneID,v, getBattleBodyResponder);
             }
         };
     } catch (error) {
-        debug("Error in getEmailsFromServer: ", error);
+        // debug("Error in getEmailsFromServer: ", error);
     }
 }
 
@@ -211,7 +208,7 @@ function processBattleReports(event){
         battleReports.forEach(function (battleScript) {
             var battleCasualties = {};
             // var xmlDoc = parser.parseFromString(battleScript,"text/xml");
-            // // air.Introspector.Console.log("battleScript xmlDoc", xmlDoc);
+            // // debug("battleScript xmlDoc", xmlDoc);
             // var jsonResult = elementToJSON(xmlDoc);
 
             // jsonResult = jsonResult.Battle[0];
@@ -275,7 +272,7 @@ function processBattleReports(event){
             });
 
             perBattleCasualties.push(battleCasualties);
-            // air.Introspector.Console.log("jsonResult.Skills", jsonResult.Skills);
+            // debug("jsonResult.Skills", jsonResult.Skills);
             battleDetails.usedSkills = battleScript.Skills;
 
             battleId++;
