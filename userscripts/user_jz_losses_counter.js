@@ -6,6 +6,7 @@
 var dIntegerVODef = swmmo.getDefinitionByName("Communication.VO::dIntegerVO");
 
 var battlesFromMail = {};
+var LUC_ICON_SIZE = '24px';
 addToolsMenuItem("JZ Lost units counter", luc_GetData);
 
 function luc_GetData(){
@@ -68,24 +69,26 @@ function luc_GetCurrentArmyTable(){
         [1, '<strong>Battle</strong>'],
         [3, '<strong>Attackers</strong>'],
         [3, '<strong>Defenders</strong>'],
-        [5, '<strong>Casualties</strong>']
+        [2, '<strong>Casualties</strong>'],
+        [3, '<strong>Def. Casualties</strong>']
     ]);
     var perBattleDefenders = (battlesFromMail.perBattleDefenders || []).slice().reverse();
+    var perBattleCasualtiesDef = (battlesFromMail.perBattleCasualtiesDef || []).slice().reverse();
     for (var i = 0; i < perBattleCasualties.length; i++) {
         var battleCasualties = perBattleCasualties[i];
         var attackersHtml = perBattleAttackers[i] || '';
         var defendersHtml = perBattleDefenders[i] || '';
         var battleCasualtiesInfo = [];
-
-        if(battleCasualties.length == 0){
-            battleId++;
-            continue;
-        }
+        var battleDefCasualtiesInfo = [];
 
         for(var unitType in battleCasualties){
-            battleCasualtiesInfo.push(utils.getImageTag(unitType) + ' ' + battleCasualties[unitType] + '&nbsp;');
+            battleCasualtiesInfo.push(utils.getImageTag(unitType, LUC_ICON_SIZE) + ' ' + battleCasualties[unitType] + '&nbsp;');
         }
-        html += ulc_createBattleRow('Battle ' + battleId, attackersHtml, defendersHtml, battleCasualtiesInfo);
+        var defCas = perBattleCasualtiesDef[i] || {};
+        for(var unitType in defCas){
+            battleDefCasualtiesInfo.push(utils.getImageTag(unitType, LUC_ICON_SIZE) + ' ' + defCas[unitType] + '&nbsp;');
+        }
+        html += ulc_createBattleRow('Battle ' + battleId, attackersHtml, defendersHtml, battleCasualtiesInfo, battleDefCasualtiesInfo);
         battleId++;
     }
 
@@ -145,24 +148,33 @@ function ulc_createRowsWithMaxUnits(rowName, data){
 }
 
 // Create rows for a battle with 3 columns: Battle id, attackers images, casualties
-function ulc_createBattleRow(rowName, attackersHtml, defendersHtml, data){
-    var temp = JSON.parse(JSON.stringify(data));
-    var firstN = temp.splice(0, 5);
-    firstN = firstN.map(function(item){ return item; }).join('');
+function ulc_createBattleRow(rowName, attackersHtml, defendersHtml, atkData, defData){
+    var tempA = JSON.parse(JSON.stringify(atkData || []));
+    var tempD = JSON.parse(JSON.stringify(defData || []));
+
+    var firstA = tempA.splice(0, 3).map(function(item){ return item; }).join('');
+    var firstD = tempD.splice(0, 3).map(function(item){ return item; }).join('');
+
+    // Placeholders for empty columns
+    if (firstA === '' && (atkData || []).length === 0) firstA = '<span>No Losses</span>';
+    if (firstD === '' && (defData || []).length === 0) firstD = '<span>No Losses</span>';
+
     var html = utils.createTableRow([
         [1, rowName],
         [3, attackersHtml],
         [3, defendersHtml],
-        [5, firstN]
+        [2, firstA],
+        [3, firstD]
     ]);
-    while(temp.length > 0){
-        var nextN = temp.splice(0, 5);
-        nextN = nextN.map(function(item){ return item; }).join('');
+    while(tempA.length > 0 || tempD.length > 0){
+        var nextA = tempA.splice(0, 3).map(function(item){ return item; }).join('');
+        var nextD = tempD.splice(0, 3).map(function(item){ return item; }).join('');
         html += utils.createTableRow([
             [1, ''],
             [3, ''],
             [3, ''],
-            [5, nextN]
+            [2, nextA],
+            [3, nextD]
         ]);
     }
     return html;
@@ -265,8 +277,8 @@ function parseBattleScript(battleScript, timestamp) {
                 }
             });
         }
-        jsonResult.perBattleAttackers = Object.keys(attackersCount).map(function(u){ return utils.getImageTag(u) + ' ' + attackersCount[u]; }).join('&nbsp;');
-        jsonResult.perBattleDefenders = Object.keys(defendersCount).map(function(u){ return utils.getImageTag(u) + ' ' + defendersCount[u]; }).join('&nbsp;');
+        jsonResult.perBattleAttackers = Object.keys(attackersCount).map(function(u){ return utils.getImageTag(u, LUC_ICON_SIZE) + ' ' + attackersCount[u]; }).join('&nbsp;');
+        jsonResult.perBattleDefenders = Object.keys(defendersCount).map(function(u){ return utils.getImageTag(u, LUC_ICON_SIZE) + ' ' + defendersCount[u]; }).join('&nbsp;');
     } catch(e) {
         jsonResult.perBattleAttackers = '';
         jsonResult.perBattleDefenders = '';
@@ -281,9 +293,11 @@ function processBattleReports(event){
 		var lostGenerals = {};
         var battleId = 1;
         var perBattleCasualties = [];
+        var perBattleCasualtiesDef = [];
         var battleDetails = {};
         battleReports.forEach(function (battleScript) {
             var battleCasualties = {};
+            var battleCasualtiesDef = {};
             // var xmlDoc = parser.parseFromString(battleScript,"text/xml");
             // // debug("battleScript xmlDoc", xmlDoc);
             // var jsonResult = elementToJSON(xmlDoc);
@@ -342,6 +356,18 @@ function processBattleReports(event){
                                         }
                                     }
                                 });
+                            } else if (casualty.group == "Defenders") {
+                                casualty.Casualty.forEach(function(unitCasualty){
+                                    var deadUnits = parseInt(unitCasualty.dead,10);
+                                    if(!isNaN(deadUnits)){
+                                        var unitType = unitCasualty.unitType;
+                                        if(battleCasualtiesDef[unitType]){
+                                            battleCasualtiesDef[unitType] = parseInt(battleCasualtiesDef[unitType],10) + deadUnits;
+                                        } else {
+                                            battleCasualtiesDef[unitType] = deadUnits;
+                                        }
+                                    }
+                                });
                             }
                         });
                     }
@@ -349,6 +375,7 @@ function processBattleReports(event){
             });
 
             perBattleCasualties.push(battleCasualties);
+            perBattleCasualtiesDef.push(battleCasualtiesDef);
             // debug("jsonResult.Skills", jsonResult.Skills);
             battleDetails.usedSkills = battleScript.Skills;
 
@@ -363,6 +390,7 @@ function processBattleReports(event){
 		lostGenerals: lostGenerals,
         battleReports: battleReports,
         perBattleCasualties: perBattleCasualties,
+        perBattleCasualtiesDef: perBattleCasualtiesDef,
         perBattleAttackers: battleReports.map(function(b){ return (b && b.perBattleAttackers) ? b.perBattleAttackers : ''; }),
         perBattleDefenders: battleReports.map(function(b){ return (b && b.perBattleDefenders) ? b.perBattleDefenders : ''; }),
         battleDetails: battleDetails
