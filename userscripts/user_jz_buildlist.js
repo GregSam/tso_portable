@@ -499,7 +499,7 @@ function _exudUserBuildingToggleMonitor(e)
 	var btn = e.target;
 	var gid = btn.id.replace("_exudBL_","");
 	gid = parseInt(gid.replace("_exudBM_",""));
-	
+
 	_exudUserBuildingToggleMonitorGid(gid, btn.checked);
 	}
 	catch (e)

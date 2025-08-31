@@ -1,4 +1,4 @@
-addToolsMenuItem("Hide Shop Items", hideShopItemsHandler);
+addToolsMenuItem("05 Hide Shop Items", hideShopItemsHandler);
 
 const cShopItemGroup = swmmo.getDefinitionByName("ShopSystem::cShopItemGroup");
 var cantBuySwitch = false;

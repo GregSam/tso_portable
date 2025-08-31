@@ -1,12 +1,11 @@
 /********************************************
- * JZ Rebuild Losses v0.9.10
+ * JZ Rebuild Losses v0.13b
  * Update targets variable to fit your needs.
  * setRefresTimeout at #319 is optional, comment out if you dont need it.
  * target colours are:
  * 	red: below target
  * 	orange: below target but in production
  * 	green: on or over target
- *  *SUGGESIONS WELCOME*
  ********************************************/
 
 var populationNow;
@@ -14,23 +13,24 @@ var populationMax;
 var populationToMax;
 var assignedUnits;
 var targets = {
-	"Recruit": 3000,
+	"Recruit": 5000,
 	"Militia": 1000,
-	"Soldier": 1000,
-	"EliteSoldier": 2000,
-	"Cavalry": 1000,
+	"Soldier": 4000,
+	"EliteSoldier": 4000,
+	"Cavalry": 1500,
 	"Bowman": 1000,
 	"Longbowman": 1000,
-	"Crossbowman": 1500,
+	"Crossbowman": 2200,
 	"Cannoneer": 1000,
-	"Swordsman": 3000,
-	"MountedSwordsman": 2000,
-	"Knight": 2000,
+	"Swordsman": 5000,
+	"MountedSwordsman": 2500,
+	"Knight": 4000,
 	"Marksman": 50,
-	"ArmoredMarksman": 600,
-	"MountedMarksman": 1000,
-	"Besieger": 600
+	"ArmoredMarksman": 800,
+	"MountedMarksman": 2000,
+	"Besieger": 800
   };
+
 var breadPeople = 0;
 var breadPeopleBuffId;
 var inProduction = {};
@@ -75,24 +75,49 @@ function RebuildLosses(event)
 		"padding-bottom": 0
 	});
 	$('#rebuildLossesModalData').html(RebuildLossesModal());
-	$('#rebuildLossesModalData .showlevelbtn').click(ex_get_level);
 	$('#rebuildLossesModal:not(:visible)').modal({backdrop: "static"});
 	$('button.topupPopBtn').click(function(event) {topUpPopulation();});
 	$('#rebuildLossesModal .queueBuild').click(jz_QueueBarracks);
 	$('#rebuildLossesModal .plus500').click(jz_QueueBarracks);
+	$('#rebuildLossesModal .plus250').click(jz_QueueBarracks);
+	$('#rebuildLossesModal .plus50').click(jz_QueueBarracks);
     // $("#rebuildLossesModal").css("opacity", 0.8);
 	if($('#rebuildLossesModal .modal-footer .refreshunitsprodbtn').length == 0)
 	{
 		$("#rebuildLossesModal .modal-footer").prepend([
 			$('<button>').attr({ "id": "refreshunitsprodbtn", "class": "btn btn-sm d-block refreshunitsprodbtn" })
-				.text('Refresh')
+				.text(getText("Refresh", 'RebuildLosses_translations'))
 				.click(function(event) {jz_QUP_refresh();}),
+		]);
+		// queue all button
+		$("#rebuildLossesModal .modal-footer").prepend([
+			$('<button>').attr({ "id": "queueallunitsprodbtn", "class": "btn btn-sm d-block queueallunitsprodbtn" })
+				.text(getText("Queue all", 'RebuildLosses_translations'))
+				.click(function(event) {jz_QueueAll();}),
 		]);
 	};
 }
 
 function jz_QUP_refresh(){
 	RebuildLosses();
+}
+
+function jz_QueueAll(){
+	var queueBuildButtons = $('#rebuildLossesModal .queueBuild:not(.disabled)');
+	// game.showAlert("Found "+queueBuildButtons.length+" units to queue.");
+	if(queueBuildButtons.length == 0){
+		game.showAlert(getText('No more units to queue.', 'RebuildLosses_translations'));
+		return;
+	}
+	$.each(queueBuildButtons, function(i, item){
+		// showAlert("Queueing "+item.getAttribute("data-unit"));
+		item.click();
+	});
+	// queueBuildButtons[0].click();
+	setTimeout(function(){
+		RebuildLosses();
+		jz_QueueAll();
+	}, 6000);
 }
 
 function RebuildLossesModal()
@@ -108,13 +133,13 @@ function RebuildLossesModal()
 		// leaving room for settlers production buildings (50)
 		var isTopUpDisabled = breadPeople <= 50 || populationToMax <= 50 ? ' disabled' : '';
 		var out = '<div class="container-fluid">';
-		out += '<div>Population: '+populationNow+' / '+populationMax+' to max: '+populationToMax+' bread people available: '+breadPeople+' <button type="button" style="margin-left=1rem;" class="btn btn-sm topupPopBtn'+isTopUpDisabled+'">Topup max-50</button></div>';
+		out += '<div>'+getText("free settlers", 'RebuildLosses_translations')+':'+freeSettlers+' | '+getText("to max", 'RebuildLosses_translations')+': '+populationToMax+' | '+getText("bread people available", 'RebuildLosses_translations')+': '+breadPeople+' <button type="button" style="margin-left=1rem;" class="btn btn-sm topupPopBtn'+isTopUpDisabled+'">'+getText("Topup max-50", 'RebuildLosses_translations')+'</button></div>';
 		out += freeArmy;
-		out += '<div>In production: '+totalRequiredProduction+' all to target: '+newRequiredProduction+' free settlers:'+freeSettlers+'</div>';
+		//out += '<div>'+getText("in production", 'RebuildLosses_translations')+': '+totalRequiredProduction+' '+getText("all to target", 'RebuildLosses_translations')+': '+newRequiredProduction+' '+getText("free settlers", 'RebuildLosses_translations')+':'+freeSettlers+'</div>';
 		return out + '</div>';
 	}
 	catch(e){
-		return '<div class="container-fluid"><H3>Error in script</H3><div>'+e+'</div></div>';
+		return '<div class="container-fluid"><H3>'+getText("Error in script", 'RebuildLosses_translations')+'</H3><div>'+e+'</div></div>';
 	}
 }
 
@@ -140,51 +165,72 @@ function GetPopUlation(){
 function GetMilitaryUnits(){
     var freeArmy = TA_getFreeArmyInfo();
     var out = utils.createTableRow([
-        [2, "Unit"],
-        [1, "un assigned"],
-        [1, "assigned"],
-        [1, "all"],
-        [1, "target"],
-        [2, "to target"],
-        [1, "in production"],
-        [3, "buttons"]], true);
+        [2, getText("Unit", 'RebuildLosses_translations')],
+        // [1, getText("un assigned", 'RebuildLosses_translations')],
+        // [1, getText("assigned", 'RebuildLosses_translations')],
+        [1, getText("all", 'RebuildLosses_translations')],
+        [1, getText("target", 'RebuildLosses_translations')],
+        [2, getText("to target", 'RebuildLosses_translations')],
+        [1, getText("in production", 'RebuildLosses_translations')],
+        [5, getText("buttons", 'RebuildLosses_translations')]], true);
 
+	var allCounts = [0,0,0,0];
     Object.keys(targets).forEach(function (name) {
         var assigned = assignedUnits[name] || 0;
         var targetAmount = targets[name] || 0;
         var inProductionAmount = inProduction[name] || 0;
+		allCounts[2] += inProductionAmount;
         var unassigned = (freeArmy.filter(function (i) { return i.name_string === name })[0] || {}).amount || 0;
-        var displayToTarget_str = displayToTarget(targetAmount, unassigned, assigned, name);
+		allCounts[0] += unassigned+assigned;
+
+		var toTargetCalc = toTarget(targetAmount, unassigned, assigned, name);
+        var displayToTarget_str = toTargetCalc[0];
+		var totalNeeded = toTargetCalc[1] - inProductionAmount;
+		allCounts[1] += toTargetCalc[1];
         var isDisabled = displayToTarget_str.indexOf('<span style="color: red;') != 0 || allDisabled ? ' disabled ' : '';
         var allDisabledAttr = allDisabled ? ' disabled ' : '';
-        var queueBuildbtn = '<button type="button" class="btn btn-sm queueBuild" '+isDisabled+'data-unit='+name+'>Queue production</button>';
+        var queueBuildbtn = '<button type="button" style="width:60px;"class="btn btn-sm queueBuild'+isDisabled+'" '+isDisabled+'data-unit='+name+'>+'+totalNeeded+'</button>';
+		var plus50btn = ' <button type="button" class="btn btn-sm plus50"' + 'plus50=true data-unit=' + name +allDisabledAttr+'>+50</button>';
+		var plus250btn = ' <button type="button" class="btn btn-sm plus250"' + 'plus250=true data-unit=' + name +allDisabledAttr+'>+250</button>';
         var plus500btn = ' <button type="button" class="btn btn-sm plus500"' + 'plus500=true data-unit=' + name +allDisabledAttr+'>+500</button>';
         out += utils.createTableRow([
-            [2, name],
-            [1, unassigned],
-            [1, assigned],
+            [2, getText(name, 'RebuildLosses_translations')],
+            // [1, unassigned],
+            // [1, assigned],
             [1, unassigned + assigned],
             [1, targets[name] || 0],
             [2, displayToTarget_str],
             [1, inProductionAmount],
-            [3, queueBuildbtn + plus500btn]]);
-
+            [5, queueBuildbtn + plus50btn + plus250btn + plus500btn]]);
         productionDetails[name] = { "toTarget": targetAmount - unassigned - assigned - inProductionAmount };
     });
+	// summary
+	var neededSettlers = allCounts[1] - allCounts[2];
+	var needsSettlersTxt = neededSettlers;
+	if(neededSettlers > freeSettlers){
+		needsSettlersTxt = '<span style="color: red;font-size: 16px;">'+neededSettlers+'</span>';
+	}
+	out += utils.createTableRow([
+		[2, ''],
+		[1, allCounts[0]],
+		[1, ''],
+		[2, allCounts[1]],
+		[1, allCounts[2]],
+		[5, needsSettlersTxt]]);
     return out;
 }
 
-function displayToTarget(targetAmount, unAssigned, assigned, name){
+function toTarget(targetAmount, unAssigned, assigned, name){
 	var toTarget = targetAmount - unAssigned - assigned;
 	if(toTarget <= 0){
-		return '<span style="color: green;font-weight:900;">Over target</span>';
+		return ['<span style="color: green;font-weight:900;">On/Over target</span>', 0];
 	} else if(toTarget <= inProduction[name]){
 		totalRequiredProduction += toTarget;
-		return '<span style="color: orange;font-weight:900;">'+toTarget+'</span>';
+		return ['<span style="color: orange;font-weight:900;">'+toTarget+'</span>',toTarget];
 	}
 	else{
 		newRequiredProduction += toTarget;
-		return '<span style="color: red; font-weight:900;">'+toTarget+'</span>';
+		return ['<span style="color: red; font-weight:900;">'+toTarget+'</span>',toTarget];
 	}
 }
 
@@ -236,8 +282,8 @@ function TriggerProduction(unitName, amount, stacks, isElite){
 	var timedProductionVO = new dTimedProductionVO();
 
 	var buildingGrid = game.zone.mStreetDataMap.getBuildingByName(barracks_name).GetGrid();
-	game.zone.mStreetDataMap.getBuildingByName(barracks_name).GetGrid();
 	timedProductionVO.productionType = MILITARY_UNIT;
+	// game.zone.mStreetDataMap.getBuildingByName(barracks_name).GetGrid();
 	if(isElite){
 		buildingGrid = game.zone.mStreetDataMap.getBuildingByName(elitteBarracks_name).GetGrid();
 		timedProductionVO.productionType = ELITE_UNITS;
@@ -249,6 +295,7 @@ function TriggerProduction(unitName, amount, stacks, isElite){
 	timedProductionVO.buildingGrid = buildingGrid;
 	var START_TIMED_PRODUCTION = 91;
 	game.gi.mClientMessages.SendMessagetoServer(START_TIMED_PRODUCTION, game.gi.mCurrentViewedZoneID, timedProductionVO);
+	showAlert(getText("Queued", 'RebuildLosses_translations')+" "+amount*stacks+" "+getText(unitName, 'RebuildLosses_translations'));
 }
 
 function getBarracksProductionQueue(){
@@ -288,15 +335,28 @@ function getElitteBarracksProductionQueue(){
 
 function jz_QueueBarracks(){
 	var unitName = this.getAttribute("data-unit");
+	var isplus50 = this.getAttribute('plus50');
+	var isplus250 = this.getAttribute('plus250');
 	var isplus500 = this.getAttribute('plus500');
+
 
 	var amount = 1;
 	var stacks = 1;
 	var lessThan25 = 0;
+
+	if(isplus50){
+		amount = 25;
+		stacks = 2;
+	}
+	if(isplus250){
+		amount = 25;
+		stacks = 10;
+	}
 	if(isplus500){
 		amount = 25;
 		stacks = 20;
-	} else {
+	}
+	if(!isplus50 && !isplus250 && !isplus500){
 		var totalProduction = productionDetails[unitName].toTarget;
 		if(isNaN(totalProduction) || totalProduction <= 0){return;}
 		allDisabled = true;
@@ -354,7 +414,7 @@ function enoughResources(unitName, amount){
 	}
 	for(var i in totalCost){
 		if(totalCost[i] > resourceAmounts[i]){
-			alert("Not enough "+resourceNames[i]+": "+resourceAmounts[i]+" / "+totalCost[i]+" required");
+			alert(getText("Not enough", 'RebuildLosses_translations')+" "+getText(resourceNames[i], 'RebuildLosses_translations')+": "+resourceAmounts[i]+" / "+totalCost[i]+" "+getText("required", 'RebuildLosses_translations'));
 			return false;
 		}
 	}
@@ -401,3 +461,103 @@ function GetAsignedUnits(){
 	});
 	return assignedUnits;
 }
+
+const RebuildLosses_translations = {
+	"en-uk": {
+		'buttons': 'buttons',
+		'Recruit': 'Recruit',
+		'Militia': 'Militia',
+		'Soldier': 'Soldier',
+		'EliteSoldier': 'EliteSoldier',
+		'Cavalry': 'Cavalry',
+		'Bowman': 'Bowman',
+		'Longbowman': 'Longbowman',
+		'Crossbowman': 'Crossbowman',
+		'Cannoneer': 'Cannoneer',
+		'Swordsman': 'Swordsman',
+		'MountedSwordsman': 'MountedSwordsman',
+		'Knight': 'Knight',
+		'Marksman': 'Marksman',
+		'ArmoredMarksman': 'ArmoredMarksman',
+		'MountedMarksman': 'MountedMarksman',
+		'Besieger': 'Besieger',
+		'Queue troops production': 'Queue troops production',
+		'Topup max-50': 'Topup max-50',
+		'Queue production': 'Queue production',
+		'Queue all': 'Queue all',
+		'Refresh': 'Refresh',
+		'Error in script': 'Error in script',
+		'Unit': 'Unit',
+		'un assigned': 'un assigned',
+		'assigned': 'assigned',
+		'all': 'all',
+		'target': 'target',
+		'to target': 'to target',
+		'all to target': 'all to target',
+		'in production': 'in production',
+		'Over target': 'Over target',
+		'Not enough': 'Not enough',
+		'Population': 'Population',
+		'Beer': 'Beer',
+		'BronzeSword': 'BronzeSword',
+		'IronSword': 'IronSword',
+		'SteelSword': 'SteelSword',
+		'PlatinumSword': 'PlatinumSword',
+		'BattleHorse': 'BattleHorse',
+		'Archebuse': 'Archebuse',
+		'Mortar': 'Mortar',
+		'Queued': 'Queued',
+		'to max': 'to max',
+		'bread people available': 'bread people available',
+		'free settlers': 'free settlers',
+		'No more units to queue.': 'No more units to queue.'
+	},
+	"de-de": {
+		'buttons': 'Schaltflächen',
+		'Recruit': 'Rekrut',
+		'Militia': 'Miliz',
+		'Soldier': 'Soldat',
+		'EliteSoldier': 'Elitesoldat',
+		'Cavalry': 'Kavallerie',
+		'Bowman': 'Bogenschütze',
+		'Longbowman': 'Langbogenschütze',
+		'Crossbowman': 'Armbrustschütze',
+		'Cannoneer': 'Kanonier',
+		'Swordsman': 'Schwertkämpfer',
+		'MountedSwordsman': 'Berittener Schwertkämpfer',
+		'Knight': 'Ritter',
+		'Marksman': 'Schütze',
+		'ArmoredMarksman': 'Gepanzerter Schütze',
+		'MountedMarksman': 'Berittener Schütze',
+		'Besieger': 'Belagerer',
+		'Queue troops production': 'Truppenproduktion in die Warteschlange stellen',
+		'Topup max-50': 'Max-50 auffüllen',
+		'Queue production': 'Produktion erstellen',
+		'Queue all': 'Alle in die Warteschlange stellen',
+		'Refresh': 'Aktualisieren',
+		'Error in script': 'Fehler im Skript',
+		'Unit': 'Einheit',
+		'un assigned': 'nicht zugewiesen',
+		'assigned': 'zugewiesen',
+		'all': 'alle',
+		'target': 'Ziel',
+		'to target': 'bis zum Ziel',
+		'in production': 'in Produktion',
+		'Over target': 'Über Ziel',
+		'Not enough': 'Nicht genug',
+		'Population': 'Bevölkerung',
+		'Beer': 'Bier',
+		'BronzeSword': 'Bronzeschwert',
+		'IronSword': 'Eisenschwert',
+		'SteelSword': 'Stahlschwert',
+		'PlatinumSword': 'Platinschwert',
+		'BattleHorse': 'Kampfross',
+		'Archebuse': 'Arkebuse',
+		'Mortar': 'Mörser',
+		'Queued': 'In der Warteschlange',
+		'to max': 'bis zum Maximum',
+		'bread people available': 'Siedler backen verfügbar',
+		'free settlers': 'freie Siedler'
+	}
+}
+extendBaseLang(RebuildLosses_translations, 'RebuildLosses_translations');

@@ -1,4 +1,4 @@
-addToolsMenuItem("JZ Update LastDir", jz_updateLastDir, 115, true);
+addToolsMenuItem("JZ Update LastDir", jz_updateLastDir);
 
 function jz_updateLastDir(event) {
     var adventureName = swmmo.application.mGameInterface.getAdventureName();

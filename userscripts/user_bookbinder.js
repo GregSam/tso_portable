@@ -37,12 +37,17 @@ function BookbinderGrid()
 	}
 }
 
-function BookbinderHandle()
+function BookbinderHandleJZ()
 {
+	if(game.gi.isOnHomzone() == false) {
+		game.showAlert(getText('not_home'));
+		return;
+	}
 	BookbinderGrid();
 	try{
 		if(game.gi.isOnHomzone() == true && BookbinderGridInt)
 		{
+			// game.gi.mCurrentPlayerZone.GetProductionQueue(2);
 			var prodQueue2 = swmmo.application.mGameInterface.mCurrentPlayerZone.GetProductionQueue(2);
 
 			var item = prodQueue2.mTimedProductions_vector[0];
@@ -81,7 +86,7 @@ function BookbinderHandle()
 	catch(e)
 	{
 		game.showAlert("Bookbinder book production - error!");
-		air.Introspector.Console.log(e);
+		// air.Introspector.Console.log(e);
 	}
 }
 
@@ -115,6 +120,48 @@ function startBookbinderProduction(){
 		game.gi.mClientMessages.SendMessagetoServer(91, game.gi.mCurrentViewedZoneID, timedProductionVO);
 	}
 }
+
+function springParkScienceBuff(){
+	if(game.gi.isOnHomzone() == false) {
+		game.showAlert(getText('not_home'));
+		return;
+	}
+	var dTimedProductionVO = swmmo.getDefinitionByName("Communication.VO::dTimedProductionVO");
+	var timedProductionVO = new dTimedProductionVO();
+	timedProductionVO.productionType = 17;
+	timedProductionVO.type_string = "ProductivityBuffZoneScienceLvl2";
+	timedProductionVO.amount = 1;
+	timedProductionVO.stacks = 1;
+	timedProductionVO.buildingGrid = 7870;
+	game.gi.mClientMessages.SendMessagetoServer(91, game.gi.mCurrentViewedZoneID, timedProductionVO);
+	showAlert("Science buff activated!");
+}
+
+function soccerOreBuff(){
+	if(game.gi.isOnHomzone() == false) {
+		game.showAlert(getText('not_home'));
+		return;
+	}
+	var dTimedProductionVO = swmmo.getDefinitionByName("Communication.VO::dTimedProductionVO");
+	var timedProductionVO = new dTimedProductionVO();
+	timedProductionVO.productionType = 12;
+	timedProductionVO.type_string = "ProductivityBuffZoneOreLvl2";
+	timedProductionVO.amount = 1;
+	timedProductionVO.stacks = 1;
+	timedProductionVO.buildingGrid = 9234;
+	game.gi.mClientMessages.SendMessagetoServer(91, game.gi.mCurrentViewedZoneID, timedProductionVO);
+	showAlert("Science buff activated!");
+}
+
+
+// _loc2_ = new dTimedProductionVO();
+// _loc2_.productionType = this.mBuilding.productionQueue.mProductionType;
+// _loc2_.type_string = this.mSelectedOrderType.GetType();
+// _loc2_.amount = 1;
+// _loc2_.stacks = 1;
+// _loc2_.buildingGrid = this.mBuilding.GetGrid();
+// this.mPanel.btnOK.enabled = false;
+// this.mGI.mClientMessages.SendMessagetoServer(COMMAND.START_TIMED_PRODUCTION,this.mGI.mCurrentViewedZoneID,_loc2_);
 
 function getBookForProduction(){
 	var baseManuscripts = 6

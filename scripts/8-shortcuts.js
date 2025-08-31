@@ -137,33 +137,14 @@ function shortcutsMenuSelectedHandler(event)
 	}
 	shortcutsLRUItem = event.target;
 	shortcutsLRUItem.label = "->{0}".format(shortcutsLRUItem.label);
-	shortcutsMenuSelectedRetryHandler(event.target.name, 0);
+	shortcutsMenuSelectedRetryHandler(event.target.name);
 }
 
-function shortcutsMenuSelectedRetryHandler(file_path, count)
+function shortcutsMenuSelectedRetryHandler(file_path)
 {
-	try {
-		var filetype = shortcutsStripType(file_path);
-		var file = new air.File(filetype[0]);
-		if(!file.exists) {
-			alert(getText("bad_template") + '(not exists)');
-			return;
-		}
-		var fileStream = new air.FileStream();
-		fileStream.open(file, air.FileMode.READ);
-		var data = fileStream.readUTFBytes(file.size);
-		fileStream.close();
-		if (data == "") { return; }
-		shortcutsProceedFile(JSON.parse(data), filetype[1], file.name, filetype[0]);
-	} catch(e) {
-		debug(e);
-		if(count > 3) {
-			alert(getText("bad_template") + '(retry)');
-		} else {
-			
-			shortcutsMenuSelectedRetryHandler(file_path, ++count);
-		}
-	}
+	var filetype = shortcutsStripType(file_path);
+	var data = loadFileWithRetry(filetype[0], 0);
+	shortcutsProceedFile(JSON.parse(data.data), filetype[1], data.name, filetype[0]);
 }
 
 function shortcutsProceedFile(data, type, name, fullPath)
@@ -227,7 +208,7 @@ function shortcutsReturnAll(event)
 		shortcutsLRUItem.label = "->{0}".format(shortcutsLRUItem.label);
 	}
 	var queue = new TimedQueue(1000);
-	swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
+	game.gi.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
 		if (game.player.GetPlayerId() == item.getPlayerID() && 
 		    armySPECIALIST_TYPE.IsGeneral(item.GetType()) && 
 			item.GetGarrisonGridIdx() > 0  && !item.IsInUse() && !item.isTravellingAway())
@@ -258,7 +239,7 @@ function shortcutsPickupAll(event) {
 		});
     }
 
-    game.zone.mStreetDataMap.GetBuildings_vector().forEach(function(item){
+    game.gi.mCurrentPlayerZone.mStreetDataMap.GetBuildings_vector().forEach(function(item){
         if (item === null) { return; }
         itemGOContainer = item.GetGOContainer();
         if (
@@ -289,7 +270,7 @@ function shortcutsPickupAll(event) {
 function shortcutsRetreatAll()
 {
 	var queue = new TimedQueue(1000);
-	game.zone.GetSpecialists_vector().forEach(function(item){
+	game.gi.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
 		if (game.player.GetPlayerId() == item.getPlayerID() && item.GetGeneralState() == 1){
 			queue.add(function(){ item.GetTask().Retreat(); });
 		}
@@ -316,7 +297,7 @@ function shortcutsFreeAllUnits(event)
 		shortcutsLRUItem.label = "->{0}".format(shortcutsLRUItem.label);
 	}
 	var queue = new TimedQueue(1000);
-	swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
+	game.gi.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
 		if (game.player.GetPlayerId() == item.getPlayerID() && 
 		    armySPECIALIST_TYPE.IsGeneral(item.GetType()) && 
 			item.GetGarrisonGridIdx() > 0  && item.HasUnits() && !item.IsInUse() && !item.isTravellingAway())
@@ -460,11 +441,22 @@ function shortcutsselectTextFile(type)
     root.browseForOpenMultiple("Open", new window.runtime.Array(txtFilter)); 
     root.addEventListener(window.runtime.flash.events.FileListEvent.SELECT_MULTIPLE, function(event) {
 		var nametotype = { 'buff': 'u', 'bui': 'p', 'battle': 'b' };
+		if(mainSettings.shortcutsDir != "" && event.files.length > 0 && event.files[0].nativePath.indexOf(mainSettings.shortcutsDir) != 0) {
+			alert(getText("dir_not_match_base_path")+mainSettings.shortcutsDir+"!");
+			return;
+		}
 		event.files.forEach(function(item) {
-			(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push([item.nativePath + "[{0}]".format(nametotype[type] ? nametotype[type] : type.charAt(0)), null]);
+			(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push([shortcutsGetPath(item.nativePath, true) + "[{0}]".format(nametotype[type] ? nametotype[type] : type.charAt(0)), null]);
 		});
 		shortcutsUpdateView();
 	});
+}
+
+function shortcutsGetPath(path, cut)
+{
+	if(mainSettings.shortcutsDir == "") { return path; }
+	if(cut) { return path.replace(mainSettings.shortcutsDir, ''); }
+	return mainSettings.shortcutsDir + path;
 }
 
 function shortcutsUpdateView()
@@ -611,20 +603,21 @@ function shortcutsImport()
 function shortcutsImportMakeSelect()
 {
 	var select = $('<select>', { 'class': "form-control" });
-	game.zone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
+	game.gi.mCurrentPlayerZone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
 			if(!armySPECIALIST_TYPE.IsGeneralOrAdmiral(item.GetType()) || item.getPlayerID() == -1) { return; }
 			select.append($('<option>', { value: item.GetUniqueID().toKeyString(), id: item.GetType() }).text(item.getName(false).replace(/(<([^>]+)>)/gi, "") + " ({0})".format(item.GetUniqueID().toKeyString())));
 	});
 	return select;
 }
 
-function shortcutsImportFilterSelect(select, type)
+function shortcutsImportFilterSelect(select, type, selectedVal)
 {
 	var result = select.clone();
 	var filter = [ type ];
 	shortcutsGeneralsReplacement[type]&&(filter = filter.concat(shortcutsGeneralsReplacement[type]));
 	result.find('option[id]').filterAttribute('id', filter, true).remove();
 	result.prepend($('<option>', { value: 0 }).text(loca.GetText("LAB", "Select")));
+	if(selectedVal) { result.find('[value="'+selectedVal+'"]').attr('selected', true); }
 	return result.find('option').length == 1 ? getText('NoData') : result.prop('outerHTML');
 }
 
@@ -657,10 +650,11 @@ function shortcutsImportFinal()
 					delete newContent[item][spec];
 					return;
 				}
+				newContent[item][spec].skills = {};
+				if(spec.substr(0,4) == 'buff') { return; }
 				var specialist = armyGetSpecialistFromID(spec);
 				newContent[item][spec].name = specialist.getName(false);
 				newContent[item][spec].type = specialist.GetType();
-				newContent[item][spec].skills = {};
 				specialist.getSkillTree().getItems_vector().forEach(function(skill, index){
 					if(skill.getLevel() > 0) { newContent[item][spec].skills[index] = skill.getLevel(); }
 				});
@@ -676,7 +670,11 @@ function shortcutsImportFinal()
 	}
 	var file = new air.File(); 
 	file.addEventListener(air.Event.SELECT, function(event){
-		shortcutsImportTree(shortcutsImported.tree, newContent, file.nativePath);
+		if(mainSettings.shortcutsDir != "" && file.nativePath.indexOf(mainSettings.shortcutsDir) != 0) {
+			alert(getText("dir_not_match_base_path")+mainSettings.shortcutsDir+"!");
+			return;
+		}
+		shortcutsImportTree(shortcutsImported.tree, newContent, shortcutsGetPath(file.nativePath, true));
 		shortcutsImportData(newContent, file.nativePath, false);
 		if(shortcutsImported.description != '') {
 			shortcutsImportData({ 'README.txt': shortcutsImported.description.replace(/\n/g, '\r\n') }, file.nativePath, true);
@@ -768,19 +766,27 @@ function shortcutsImportGetData()
 	}
 	out += "<H4>{0}</H4>".format(getText("shortImportComparator")) + createTableRow([[5, loca.GetText("RES", "General")],[1, loca.GetText("LAB", "ProductionStatus")],[6, loca.GetText("QUL", "GuiDaiTheGoodGenerals")]], true);
 	shortcutsImportTotalGens = 0;
-	$.each(shortcutsImported.generals, function(item) {
-		if(!shortcutsImportTransport && shortcutscSpecialist.GetSpecialistDescriptionForType(shortcutsImported.generals[item].type).isTransportGeneral()) { return; }
-		var name = loca.GetText("SPE", shortcutscSpecialist.GetSpecialistDescriptionForType(shortcutsImported.generals[item].type).getName_string());
+	var shortImportedGensArr = [];
+	$.each(shortcutsImported.generals, function(item) { 
+		var tmp = shortcutsImported.generals[item];
+		tmp.id = item;
+		shortImportedGensArr.push(tmp);
+	});
+	shortImportedGensArr.sort(function(a,b) { return a.type > b.type ? -1 : a.type < b.type ? 1 : 0; }).forEach(function(item) {
+		if(!shortcutsImportTransport && shortcutscSpecialist.GetSpecialistDescriptionForType(item.type).isTransportGeneral()) { return; }
+		var name = loca.GetText("SPE", shortcutscSpecialist.GetSpecialistDescriptionForType(item.type).getName_string());
 		shortcutsImportTotalGens++;
+		var prevFilterVal = shortcutsWindow.sBody().find('[class*="'+item.id+'"] select').val();
 		out += createTableRow([
-			[5, $('<div>', { 'style': 'line-height: 23px;' }).html(name).prop('outerHTML') + shortcutsImportShowSkills(shortcutsImported.generals[item].skills, shortcutsImported.generals[item].type)],
+			[5, $('<div>', { 'style': 'line-height: 23px;' }).html(name).prop('outerHTML') + shortcutsImportShowSkills(item.skills, item.type)],
 			[1, "", 'match'],
-			[6, shortcutsImportFilterSelect(select, shortcutsImported.generals[item].type) + '<div class="skills" style="text-align: right;"/>', item]
+			[6, shortcutsImportFilterSelect(select, item.type, prevFilterVal) + '<div class="skills" style="text-align: right;"/>', item.id]
 		], false);
 	});
 	shortcutsWindow.sBody().html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;" }).html(out));
 	shortcutsWindow.sBody().find('a').click(function(e) { e.preventDefault(); navigateToURL(this.href); });
 	shortcutsWindow.sBody().find('select').change(shortcutsImportMatch);
+	shortcutsWindow.sBody().find('select').trigger('change');
 }
 
 function shortcutsImportShowSkills(skills, type)
@@ -862,9 +868,11 @@ function shortcutsExport()
 				});
 			});
 			$.each(exportedContent, function(item) {
-				$.each(exportedContent[item], function(spec) { 
-					delete exportedContent[item][spec].skills;
-					delete exportedContent[item][spec].name;
+				$.each(exportedContent[item], function(spec) {
+					if(spec.substr(0,4) != 'buff') {
+						delete exportedContent[item][spec].skills;
+						delete exportedContent[item][spec].name;
+					}
 				});
 			});
 			shortcutsExportFinal({ 'tree': dataToexport, 'content': exportedContent, 'generals': genData, 'description': shortcutsWindow.sBody().find('#description').val() }); 
@@ -957,7 +965,7 @@ function shortcutsExportTree(t, content, skipped)
 function shortcutsExportGetTemplateData(filepath)
 {
 	try {
-		var file = new air.File(filepath);
+		var file = new air.File(shortcutsGetPath(filepath));
 		if(!file.exists) { return getText("buff_not_exist"); }
 		var fileStream = new air.FileStream();
 		fileStream.open(file, air.FileMode.READ);
@@ -975,7 +983,9 @@ function shortcutsExportGetGens(data)
 	var result = { };
 	$.each(data, function(item) { 
 		$.each(data[item], function(spec) { 
-			result[spec] = { 'type': data[item][spec].type, 'skills': data[item][spec].skills, 'name': data[item][spec].name };
+		    if(spec.substr(0,4) != 'buff') {
+				result[spec] = { 'type': data[item][spec].type, 'skills': data[item][spec].skills, 'name': data[item][spec].name };
+			}
 		});
 	});
 	return result;

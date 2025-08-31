@@ -3,7 +3,7 @@
 ** Currently player got to open mails with battle reports before running this script.
 ** This allows to load battle report body into memory and process it by the script.
 */
-// var dIntegerVODef = swmmo.getDefinitionByName("Communication.VO::dIntegerVO");
+var dIntegerVODef = swmmo.getDefinitionByName("Communication.VO::dIntegerVO");
 
 var battlesFromMail = {};
 addToolsMenuItem("JZ Lost units counter", luc_GetData);
@@ -46,6 +46,7 @@ function luc_MakeModal()
 
 function luc_GetCurrentArmyTable(){
 	battlesFromMail = processBattleReports();
+    //battlesFromMail = putBattleMailsInCache();
 	var html = '<div>';
 
     html += luc_getSaveButton();
@@ -111,53 +112,71 @@ function ulc_createRowsWithMaxUnits(rowName, data){
 	return html;
 }
 
-// function getBattleReportsBodies(){
-// 	// MARK_MAIL_AS_READ = 1164;
-// 	// GET_INBOX_BODY = 1177;
-// 	// this.mGI.mClientMessages.SendMessagetoServer(COMMAND.MARK_MAIL_AS_READ,this.mGI.mCurrentViewedZoneID,new dIntegerVO(param1.id));
-// 	var currentMails = globalFlash.gui.mMailWindow.mailTypeHeader.owner.dataProvider;
-// 	for(var i = 0; i < currentMails.length; i++){
-// 		var mail = currentMails[i];
+var getBattleBodyResponder = game.createResponder(getBattleBodyResponderHandler, getBattleBodyResponderHandlerFault);
+function getBattleBodyResponderHandler(event, data)
+{
+	try
+	{
+        // air.Introspector.Console.log("getBattleBodyResponderHandler data: ", data);
+        var battleData = parseBattleScript(data.data.attachments.battleScript, data.data.timestamp);
+        // battleReports.push(battleData);
+        air.Introspector.Console.log("getBattleBodyResponderHandler battleData: ", battleData);
+        insertSorted(battleReports, battleData);
+	}
+	catch (e)
+	{
+		air.Introspector.Console.log("getBattleBodyResponderHandler -> " + e);
+	}
+}
 
-// 		if (mail.type == 8 || mail.type == 29 && (mail.attachments == null || mail.attachments == undefined)) {
-// 			// game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
-// 			// air.Introspector.Console.log("mail: ", mail);
-// 			// air.Introspector.Console.log("mail.type: "+ mail.type);
-// 			// air.Introspector.Console.log("mail.id " + mail.id);
-// 			// air.Introspector.Console.log("mail.attachments " + mail.attachments);
+function getBattleBodyResponderHandlerFault(event, data)
+{
+    air.Introspector.Console.log("getBattleBodyResponderHandlerFault data: ", data);
+    air.Introspector.Console.log("getBattleBodyResponderHandlerFault event: ", event);
+}
 
-// 			var id = parseInt(mail.id, 10);
-// 			// air.Introspector.Console.log("id: "+ id);
-// 			var maildInteger = new dIntegerVODef(id);
-// 			air.Introspector.Console.log("maildInteger: ", maildInteger);
-// 			// air.Introspector.Console.log("marking as read mail.id: "+ mail.id + " " + mail.subject);
-// 			// game.gi.mClientMessages.SendMessagetoServer(1177,game.gi.mCurrentViewedZoneID,maildInteger);
-// 			air.Introspector.Console.log("command sent for mail.id: "+ mail.id);
-// 		}
-// 	}
+// Insert while keeping array sorted
+function insertSorted(arr, item) {
+    var i = arr.length - 1;
+    while (i >= 0 && arr[i].timestamp < item.timestamp) {
+        i--;
+    }
+    arr.splice(i + 1, 0, item);
+}   
 
-// 	setTimeout(function() {processBattleReports()}, 7000);
-// 	processBattleReports()
-// }
-
-function processBattleReports(event){
+function putBattleMailsInCache(){
+    battleReports = [];
+    var vdef = swmmo.getDefinitionByName("Communication.VO::dIntegerVO");
     try {
-		var global = swmmo.getDefinitionByName("global")
         var currentMails = globalFlash.gui.mMailWindow.mailTypeHeader.owner.dataProvider;
-        var battleReports = [];
         for(var i = 0; i < currentMails.length; i++){
             var mail = currentMails[i];
             // BATTLE_REPORT_INTERCEPTED = 29;
             // BATTLE_REPORT = 8;
             if (mail.type == 8 || mail.type == 29) {
-                if(mail.attachments && mail.attachments.battleScript){
-                    // air.Introspector.Console.log("mail", mail);
-                    // air.Introspector.Console.log("global.skills_vector", global.skills_vector);
-                    battleReports.push(mail.attachments.battleScript);
-                }
+                var v = new vdef(mail.id);
+                game.gi.mClientMessages.SendMessagetoServer(1177,game.gi.mCurrentViewedZoneID,v, getBattleBodyResponder);
             }
         };
+    } catch (error) {
+        debug("Error in putBattleMailsInCache: ", error);
+    }
+}
 
+function parseBattleScript(battleScript, timestamp) {
+    var parser = new DOMParser();
+    var xmlDoc = parser.parseFromString(battleScript, "text/xml");
+    var jsonResult = elementToJSON(xmlDoc);
+    jsonResult = jsonResult.Battle[0];
+    jsonResult.ArmyDescription = jsonResult.ArmyDescription[0];
+    jsonResult.CombatModifiers = jsonResult.CombatModifiers[0];
+    jsonResult.Skills = jsonResult.Skills[0];
+    jsonResult.timestamp = timestamp;
+    return jsonResult;
+}
+var battleReports = [];
+function processBattleReports(event){
+    try {
         var parser = new DOMParser();
         var allCasualties = {};
 		var lostGenerals = {};
@@ -166,16 +185,16 @@ function processBattleReports(event){
         var battleDetails = {};
         battleReports.forEach(function (battleScript) {
             var battleCasualties = {};
-            var xmlDoc = parser.parseFromString(battleScript,"text/xml");
-            // air.Introspector.Console.log("battleScript xmlDoc", xmlDoc);
-            var jsonResult = elementToJSON(xmlDoc);
+            // var xmlDoc = parser.parseFromString(battleScript,"text/xml");
+            // // air.Introspector.Console.log("battleScript xmlDoc", xmlDoc);
+            // var jsonResult = elementToJSON(xmlDoc);
 
-            jsonResult = jsonResult.Battle[0];
-            jsonResult.ArmyDescription = jsonResult.ArmyDescription[0];
-            jsonResult.CombatModifiers = jsonResult.CombatModifiers[0];
-            jsonResult.Skills = jsonResult.Skills[0];
+            // jsonResult = jsonResult.Battle[0];
+            // jsonResult.ArmyDescription = jsonResult.ArmyDescription[0];
+            // jsonResult.CombatModifiers = jsonResult.CombatModifiers[0];
+            // jsonResult.Skills = jsonResult.Skills[0];
 
-            var armyCopy = JSON.parse(JSON.stringify(jsonResult.ArmyDescription.Army));
+            var armyCopy = JSON.parse(JSON.stringify(battleScript.ArmyDescription.Army));
             var attackingArmy = armyCopy.filter(function(army) {
                 return army.group === "Attackers";
             })[0];
@@ -188,7 +207,7 @@ function processBattleReports(event){
             }
 
             var roundId = 0;
-            jsonResult.Round.forEach(function(round){
+            battleScript.Round.forEach(function(round){
                 var phaseId = 0;
                 round.Phase.forEach(function(phase){
                     if(phase.Casualties){
@@ -232,7 +251,7 @@ function processBattleReports(event){
 
             perBattleCasualties.push(battleCasualties);
             // air.Introspector.Console.log("jsonResult.Skills", jsonResult.Skills);
-            battleDetails.usedSkills = jsonResult.Skills;
+            battleDetails.usedSkills = battleScript.Skills;
 
             battleId++;
         });

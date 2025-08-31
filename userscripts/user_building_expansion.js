@@ -1,23 +1,17 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////Created by A-Calc Development (PiTi) | In co-operation with Test_Siedler#3694//////////////////////
-///////////////////////////////////////////////////////Projects:////////////////////////////////////////////////////////////////
-//////////////////https://a-calc.de | Taming calculator and companion app for Ark: Survivial Evolved/Ascended///////////////////
-//////////////////https://crypto-webminer.com | Crypto Webminer - Mining in your Browser with Webmining technology//////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////Ihr mögt meine Arbeit und wollt mich Supporten? https://www.paypal.com/paypalme/ACalcDevelopment///////////////////
-/////////////Do you like my work and want to support me? https://www.paypal.com/paypalme/ACalcDevelopment///////////////////////
+/////////////////////////////Created by PiTi | In co-operation with Test_Siedler////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-addToolsMenuItem(loca.GetText("ALT","UpgradeBuilding"), SearchArchitecturesHandler, 120, true);
+addToolsMenuItem(loca.GetText("ALT","UpgradeBuilding"), SearchArchitecturesHandler);
 var _searchArchitecturesViewerModalInitialized = false;
 
 
 const UNDEFINED_TEXT = '[undefined text]',
-    MAXLEVEL = 7,
-	MAXLEVEL2 = 7,
+    MAXLEVEL = 12,
+	MAXLEVEL2 = 12,
     ALLLEVELS = 1,
     DEBUG = false;
-var searchString = '',
+var searchStringUpgrade = '',
     searchLevel = 1,
     destroyableOnlyShow = false,
     improvableOnlyShow = true;
@@ -41,6 +35,10 @@ $.extend(user_building_extension_settings, settings.read(null, 'UpgradeBuilding'
 maxUpgradeLevel = user_building_extension_settings.maxUpgradeLevelSetting;
 
 function SearchArchitecturesHandler(event) {
+	if(game.gi.isOnHomzone() == false) {
+		game.showAlert(getText('not_home'));
+		return;
+	}
     $('div[role="dialog"]:not(#searchArchitecturesModal):visible').modal('hide');
     if (!_searchArchitecturesViewerModalInitialized)
         $('#searchArchitecturesModal').remove();
@@ -61,9 +59,9 @@ function SearchArchitecturesHandler(event) {
 				}
 			} 
 			if (isGridInArray) {
-				$('#_upgrade_' + item.building.GetGrid()).prop('checked', true);
+				$('#_upgradeBuilding_' + item.building.GetGrid()).prop('checked', true);
 				if (isGridInArray) {
-					$('#_upgrade_' + item.building.GetGrid()).prop('checked', true);
+					$('#_upgradeBuilding_' + item.building.GetGrid()).prop('checked', true);
 					if (buildingArray.indexOf(item.building) === -1) {
 						buildingArray.push(item.building);
 					}
@@ -105,7 +103,7 @@ function SearchArchitecturesHandler(event) {
 	
     $('<input>', {
         'type': 'text', 'id': 'searchArchitecturesFind', 'class': 'form-control',
-        'style': 'display: inline;width: 300px;', 'value': searchString
+        'style': 'display: inline;width: 300px;', 'value': searchStringUpgrade
     }).appendTo('#searchArchitecturesSelectFound');
     $('<label>&emsp</label>').appendTo('#searchArchitecturesSelectFound');
     $('<label><input type="checkbox" id="searchImprovableArchitecturesOnly"> &thinsp;'+ loca.GetText("LAB","Search") + ': '+ loca.GetText("ALT","UpgradeBuilding") + '&emsp; </label>'
@@ -113,20 +111,20 @@ function SearchArchitecturesHandler(event) {
     $('<label><input type="checkbox" id="searchDestroyableArchitecturesOnly"> &thinsp;'+ loca.GetText("LAB","Search") + ': '+ loca.GetText("HIL","Help_window_destroyable_mountains_0") + '&emsp; </label>'
     ).appendTo('#searchArchitecturesSelectFound');
     $('#searchArchitecturesModal .modal-header').append('<br><div class="container-fluid">' + createTableRow([
-        [5, 'Name'],
-        [3, 'Buff'],
+        [5, loca.GetText("LAB", "Name")],
+        [3, loca.GetText("LAB", "Buffs")],
         [1, ''],
-        [2, 'Status'],
+        [2, loca.GetText("LAB", "Status")],
         [1, ''],
     ], true) + '</div>');
     $('#searchArchitecturesModal #searchArchitecturesFind').keyup(function (e) {
-        searchString = $(e.target).val();
-        if (!searchString || searchString == "") {
+        searchStringUpgrade = $(e.target).val();
+        if (!searchStringUpgrade || searchStringUpgrade == "") {
             $('#searchArchitecturesModalData .container-fluid div:hidden').show();
             return;
         }
         $('#searchArchitecturesModalData .container-fluid .row').each(function (i, item) {
-            if ($(item.firstChild).text().toUpperCase().indexOf(searchString.toUpperCase()) == -1) {
+            if ($(item.firstChild).text().toUpperCase().indexOf(searchStringUpgrade.toUpperCase()) == -1) {
                 $(item).hide();
             } else {
                 $(item).show();
@@ -213,13 +211,13 @@ function _updateArchitecturesModalData() {
     keys.sort().forEach(function (key) {
         buildingList[key].forEach(function (item) {
             if (item.goto != '')
-                document.getElementById('buildPOS_' + item.grid).addEventListener(
+                document.getElementById('buildPOSUpgrade_' + item.grid).addEventListener(
                     'click', function () { _buildingViewerGoTo(item.grid, item.building); }
                 );
         });
     });
     $('#searchArchitecturesModalData .container-fluid .row').each(function (i, item) {
-        if ($(item.firstChild).text().toUpperCase().indexOf(searchString.toUpperCase()) == -1) {
+        if ($(item.firstChild).text().toUpperCase().indexOf(searchStringUpgrade.toUpperCase()) == -1) {
             $(item).hide();
         } else {
             $(item).show();
@@ -239,7 +237,7 @@ function _getArchitecturesList() {
         var buildingGoto = '';
         if (grid > 0)
             buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace(
-                '<img', '<img id="buildPOS_' + grid + '"'
+                '<img', '<img id="buildPOSUpgrade_' + grid + '"'
             ).replace('style="', 'style="cursor: pointer;');
         var name = item.GetBuildingName_string();
         if (
@@ -310,7 +308,7 @@ function _searchArchitecturesModal(buildingList) {
                 [12, '<b>' + firstItem.locName + '</b>' + (DEBUG ? ' <sup>' + firstItem.name + '</sup>' : '')],
             ]);
             buildingList[key].sort(_compareArchitecturesByLevel).forEach(function (item) {
-                checkboxU = '<input type="checkbox" id="_upgrade_' +  item.building.GetGrid()  + '" />'.format(item.building);
+                _checkboxupgradBuilding_ = '<input type="checkbox" id="_upgradeBuilding_' +  item.building.GetGrid()  + '" />'.format(item.building);
                 if (counter == buildingCount) {
                     prefix = '&#9492;';
                 }
@@ -327,15 +325,15 @@ function _searchArchitecturesModal(buildingList) {
                     ],
                     [3, (itemStatus == '' ? ' ' : ' <span style="color:LightGray;font-style:italic;">') +
                         '<small>' + item.buff + '</small>' + (itemStatus == '' ? '' : '</span>')],
-                    [1, item.isUpgradeAllowed ?  checkboxU : ''],
+                    [1, item.isUpgradeAllowed ?  _checkboxupgradBuilding_ : ''],
                     [2, '<span style="color:LightGray;font-style:italic;"><small>' + itemStatus + '</small></span>'],
                     [1, item.goto]
                 ]);
                 
 
 				
-				$(document).on('click', '#_upgrade_'+ item.building.GetGrid(), function () {
-					var isChecked = $('#_upgrade_' + item.building.GetGrid()).prop('checked');
+				$(document).on('click', '#_upgradeBuilding_'+ item.building.GetGrid(), function () {
+					var isChecked = $('#_upgradeBuilding_' + item.building.GetGrid()).prop('checked');
 
 					if (buildingArray.indexOf(item.building) === -1 && isChecked) {
 						buildingArray.push(item.building);
@@ -386,6 +384,3 @@ function upgradeBuildingForClientArray(buildingArray_input) {
 	buildingArray = [];
 	game.showAlert(getText('command_sent'));
 }
-
-
-

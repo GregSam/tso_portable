@@ -60,9 +60,9 @@
     "explDefTask": 0,
     "explDefTaskByType": {},
     "specDefTimeType": false,
-    "defFilter": "unset",
+    "defFilter": "darkershadow",
     "persistFilter": false,
-    "dtfFormat": "MM-dd HH:mm",
+    "dtfFormat": "dd-MM-yyyy HH:mm",
     "forcegc": true,
     "sortOrder": 6,
     "statusColorOk": "#CEFF9B",
@@ -71,18 +71,190 @@
     "buiFastAccessType": 0,
     "buffOnlyActive": false,
     "changeTemplateFolder": true,
-    "lruCacheSize": 3,
+    "lruCacheSize": 20,
+    "lruDisableDuplicates": false,
     "highlight": true,
     "highlightSize": 45,
     "highlightColor": "#ff0000",
     "highlightGlowColor": "#ffffff",
     "chatFontSize": 12,
-    "chatPanelWidth": 350,
+    "chatPanelWidth": 410,
     "starColsCount": 13,
     "starRowsCount": 6,
     "experimental": true,
-    "armylastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\Home",
-    "battlelastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\Home",
+    "mwWindowSize": "maximized",
+    "useCustomChatCSS": false,
+    "chatCSS": {
+      "bbmsg": "#8CA8FF",
+      "modmsg": "#E5CD2D",
+      "communityleadmsg": "#99ff99",
+      "globaltstamp": "#7FFF7F",
+      "globalsender": "#00FF33",
+      "globalmsg": "#E2E2E2",
+      "globalownname": "#FF8644",
+      "globalimportant": "#E2E2E2",
+      "findcooptstamp": "#00FF33",
+      "findcoopsender": "#00FF33",
+      "findcoopmsg": "#E2E2E2",
+      "findcoopownname": "#FF8644",
+      "findcoopimportant": "#E2E2E2",
+      "tradetstamp": "#00FF33",
+      "tradesender": "#00FF33",
+      "trademsg": "#E2E2E2",
+      "tradeownname": "#FF9347",
+      "tradeimportant": "#E2E2E2",
+      "helptstamp": "#00FF33",
+      "helpsender": "#00FF33",
+      "helpmsg": "#E2E2E2",
+      "helpownname": "#FF9347",
+      "helpimportant": "#E2E2E2",
+      "newststamp": "#FFFF00",
+      "newssender": "#FFFF00",
+      "newsmsg": "#FFFF00",
+      "newsimportant": "#FFFF00",
+      "newsownname": "#FF9347",
+      "guildtstamp": "#7FFF7F",
+      "guildsender": "#7FFF7F",
+      "guildmsg": "#7FFF7F",
+      "guildownname": "#7FFF7F",
+      "guildimportant": "#7FFF7F",
+      "officerststamp": "#7FFF7F",
+      "officerssender": "#7FFF7F",
+      "officersmsg": "#7FFF7F",
+      "officersownname": "#7FFF7F",
+      "officersimportant": "#7FFF7F",
+      "whispertstamp": "#FC68FF",
+      "whispersender": "#FC68FF",
+      "whispermsg": "#FC68FF",
+      "whisperownname": "#FF9347",
+      "whisperimportant": "#FC68FF",
+      "cooptstamp": "#00FF33",
+      "coopsender": "#00FF33",
+      "coopmsg": "#E2E2E2",
+      "coopownname": "#FF8644"
+    },
+    "infoBarResources": [
+      "Balloons",
+      "Coin",
+      "AdvancedTools",
+      "TitaniumOre",
+      "Grout",
+      "Oil"
+    ],
+    "showOnlyActiveGuildMembers": false,
+    "shortcutsDir": "",
+    "shortAsGlobalRelative": false,
+    "lruSkipModules": [],
+    "mwChatPanel": false,
+    "mailRouteStorage": false,
+    "effectSounds": {
+      "DepositDepleted": true,
+      "ExplorerFail_IntrepidExplorer": true,
+      "ExplorerStart_CorageousExplorer": true,
+      "GeologistSuccess_BalancedGeologist": true,
+      "ExplorerSuccess_BenevolentExplorer": true,
+      "BuildingUpgrade": true,
+      "MenuOpen": true,
+      "GeneralMove": true,
+      "GeologistFail_DiligentGeologist": true,
+      "ExplorerStart_BewitchingExplorer": true,
+      "ExplorerFail_LovelyExplorer": true,
+      "ExplorerStart_EmphaticExplorer": true,
+      "ExplorerFail_PrincessZoeExplorer": true,
+      "ExplorerSuccess_LovelyExplorer": true,
+      "GeologistStart": true,
+      "QuestNew": true,
+      "ServerLost": true,
+      "ExplorerSuccess_IntrepidExplorer": true,
+      "GeologistFail": true,
+      "QuestComplete": true,
+      "ExplorerStart_KeenerExplorer": true,
+      "Classic": true,
+      "SelectBuilding": true,
+      "JingleAllTheWay": true,
+      "GeneralWin": true,
+      "ExplorerSuccess_PrincessZoeExplorer": true,
+      "QuestOpenLog": true,
+      "ExplorerStart": true,
+      "GeologistStart_GoldheartedGeologist": true,
+      "SilentNight": true,
+      "GeologistFail_GoldheartedGeologist": true,
+      "ExplorerStart_LovelyExplorer": true,
+      "EarlyBlossom": true,
+      "ExplorerSuccess_RinaTheExplorer": true,
+      "MountainDestruction": true,
+      "CGJackpot": true,
+      "Valentines": true,
+      "CGStartRoll": true,
+      "ExplorerStart_MotherlyExplorer": true,
+      "UnitProduced": true,
+      "ExplorerFail_BewitchingExplorer": true,
+      "GeologistStart_DiligentGeologist": true,
+      "CGGemClick": true,
+      "Standard": true,
+      "ExplorerStart_Soccer2019Explorer": true,
+      "ExplorerFail_Soccer2019Explorer": true,
+      "ExplorerSuccess_EmphaticExplorer": true,
+      "MenuOpenStar": true,
+      "PayitemPurchase": true,
+      "TwinTown": true,
+      "ExplorerFail_BenevolentExplorer": true,
+      "CGCountClick": true,
+      "ExplorerStart_PrincessZoeExplorer": true,
+      "BuffPlace": true,
+      "ExplorerSuccess_KeenerExplorer": true,
+      "ExplorerStart_IntrepidExplorer": true,
+      "ExplorerFail_CorageousExplorer": true,
+      "CGShortCount": true,
+      "ExplorerFail_KeenerExplorer": true,
+      "Birthday2013RetroMusik": true,
+      "ButtonClick": true,
+      "ExplorerSuccess_CorageousExplorer": true,
+      "Halloween": true,
+      "BuildingPlace": true,
+      "ExplorerSuccess_BewitchingExplorer": true,
+      "TSRMusic1": true,
+      "Christmas": true,
+      "GeneralRetreat": true,
+      "GeneralBattleStart": true,
+      "ExplorerStart_BenevolentExplorer": true,
+      "SelectBuilding_statueRabbid": true,
+      "ExplorerStart_RinaTheExplorer": true,
+      "ExplorerFail_RinaTheExplorer": true,
+      "GeneralAttack": true,
+      "SpringParty": true,
+      "GeologistSuccess_DiligentGeologist": true,
+      "BuildingDestroy": true,
+      "Message": true,
+      "GeologistSuccess_GoldheartedGeologist": true,
+      "ExplorerSuccess_Soccer2019Explorer": true,
+      "ExplorerSuccess": true,
+      "ExplorerFail_EmphaticExplorer": true,
+      "GeologistStart_BalancedGeologist": true,
+      "GeneralLose": true,
+      "WeWishYouAMerryChristmas": true,
+      "GeologistSuccess": true,
+      "ExplorerSuccess_MotherlyExplorer": true,
+      "MenuClose": true,
+      "ChatWhisper": true,
+      "BuildingReady": true,
+      "ExplorerFail": true,
+      "ExplorerFail_MotherlyExplorer": true,
+      "BuffProduced": true,
+      "GeologistFail_BalancedGeologist": true,
+      "MessageMail": true,
+      "ExplorerSuccess_BlacktreeExplorer": true,
+      "ExplorerFail_BlacktreeExplorer": true,
+      "ExplorerStart_BlacktreeExplorer": true,
+      "ExplorerStart_ChummyExplorer": true,
+      "ExplorerFail_ChummyExplorer": true,
+      "ExplorerSuccess_ChummyExplorer": true,
+      "ExplorerSuccess_MercenaryExplorer": true,
+      "ExplorerFail_MercenaryExplorer": true,
+      "ExplorerStart_MercenaryExplorer": true
+    },
+    "armylastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_A_giant_Battle",
+    "battlelastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1",
     "bufflastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates",
     "lastRecordedCasualties": {
       "Knight": 169,
@@ -111,7 +283,8 @@
     "expllastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Explorers"
   },
   "UpgradeBuilding": {
-    "maxUpgradeLevelSetting": "4"
+    "maxUpgradeLevelSettingUI": 7,
+    "maxUpgradeLevelSetting": "12"
   },
   "usMKF_Generals": {
     "_exudGeneralsSortType": 1,
@@ -122,5 +295,1259 @@
     "_exudGeneralsArmySorted": false,
     "_exudGeneralsShortcuts": false,
     "_exudGeneralsShortcutsRoot": ""
+  },
+  "exusMonitorBuilding": {
+    "BM": [],
+    "Notify": false,
+    "Minutes": 5,
+    "NotifyUpgrade": [],
+    "NotifyBuffed": [],
+    "UpgradeSound": "BuildingPlace",
+    "BuffSound": "MountainDestruction",
+    "PlayMute": false
+  },
+  "notify": {
+    "enabled": false,
+    "displayTime": 3,
+    "position": "auto",
+    "sound": false,
+    "theme": "dark",
+    "compact": false,
+    "mentionGroup": true,
+    "mentionWords": [],
+    "newsCustom": false,
+    "news": false
+  },
+  "itemsHide": {
+    "BuildBuilding|vases": {
+      "icon": [
+        "buildings",
+        "vases"
+      ]
+    },
+    "BuildBuilding|stoneFlowered": {
+      "icon": [
+        "buildings",
+        "stoneFlowered"
+      ]
+    },
+    "BuildBuilding|statueSoldier": {
+      "icon": [
+        "buildings",
+        "statueSoldier"
+      ]
+    },
+    "BuildBuilding|statueRabbid": {
+      "icon": [
+        "buildings",
+        "statueRabbid"
+      ]
+    },
+    "BuildBuilding|signpostBroken": {
+      "icon": [
+        "buildings",
+        "signpostBroken"
+      ]
+    },
+    "BuildBuilding|lanternQuadGold": {
+      "icon": [
+        "buildings",
+        "lanternQuadGold"
+      ]
+    },
+    "BuildBuilding|flowerbed_red": {
+      "icon": [
+        "buildings",
+        "flowerbed_red"
+      ]
+    },
+    "BuildBuilding|flowerbed_blue": {
+      "icon": [
+        "buildings",
+        "flowerbed_blue"
+      ]
+    },
+    "BuildBuilding|collumStatueTrader": {
+      "icon": [
+        "buildings",
+        "collumStatueTrader"
+      ]
+    },
+    "BuildBuilding|benchStone2": {
+      "icon": [
+        "buildings",
+        "benchStone2"
+      ]
+    },
+    "BuildBuilding|benchIronGold": {
+      "icon": [
+        "buildings",
+        "benchIronGold"
+      ]
+    },
+    "BuildBuilding|barrelTransporter": {
+      "icon": [
+        "buildings",
+        "barrelTransporter"
+      ]
+    },
+    "BuildBuilding|ValentinePavillon": {
+      "icon": [
+        "buildings",
+        "ValentinePavillon"
+      ]
+    },
+    "BuildBuilding|ParkPagode": {
+      "icon": [
+        "buildings",
+        "ParkPagode"
+      ]
+    },
+    "BuildBuilding|wheelBroken": {
+      "icon": [
+        "buildings",
+        "wheelBroken"
+      ]
+    },
+    "BuildBuilding|tomb": {
+      "icon": [
+        "buildings",
+        "tomb"
+      ]
+    },
+    "BuildBuilding|statueTrader": {
+      "icon": [
+        "buildings",
+        "statueTrader"
+      ]
+    },
+    "BuildBuilding|statueRiding": {
+      "icon": [
+        "buildings",
+        "statueRiding"
+      ]
+    },
+    "BuildBuilding|signpost_03": {
+      "icon": [
+        "buildings",
+        "signpost_03"
+      ]
+    },
+    "BuildBuilding|monumentAngel": {
+      "icon": [
+        "buildings",
+        "monumentAngel"
+      ]
+    },
+    "BuildBuilding|furtree_snow_01_deco": {
+      "icon": [
+        "buildings",
+        "furtree_snow_01_deco"
+      ]
+    },
+    "BuildBuilding|flowerbed_green_salat": {
+      "icon": [
+        "buildings",
+        "flowerbed_green_salat"
+      ]
+    },
+    "BuildBuilding|firewoodHut": {
+      "icon": [
+        "buildings",
+        "firewoodHut"
+      ]
+    },
+    "BuildBuilding|brokenWagon": {
+      "icon": [
+        "buildings",
+        "brokenWagon"
+      ]
+    },
+    "BuildBuilding|benchStone1": {
+      "icon": [
+        "buildings",
+        "benchStone1"
+      ]
+    },
+    "BuildBuilding|benchGold": {
+      "icon": [
+        "buildings",
+        "benchGold"
+      ]
+    },
+    "BuildBuilding|Deco_Tree01": {
+      "icon": [
+        "buildings",
+        "Deco_Tree01"
+      ]
+    },
+    "BuildBuilding|Exotic_Tree_03": {
+      "icon": [
+        "buildings",
+        "Exotic_Tree_03"
+      ]
+    },
+    "BuildBuilding|PumpkinFieldDeco": {
+      "icon": [
+        "buildings",
+        "PumpkinFieldDeco"
+      ]
+    },
+    "BuildBuilding|StatueLion": {
+      "icon": [
+        "buildings",
+        "StatueLion"
+      ]
+    },
+    "BuildBuilding|ValentineFountain": {
+      "icon": [
+        "buildings",
+        "ValentineFountain"
+      ]
+    },
+    "BuildBuilding|Easter2017Deco_RabbitBush": {
+      "icon": [
+        "buildings",
+        "Easter2017Deco_RabbitBush"
+      ]
+    },
+    "BuildBuilding|Exotic_Tree_02": {
+      "icon": [
+        "buildings",
+        "Exotic_Tree_02"
+      ]
+    }
+  },
+  "_usTrades2": {
+    "Trades": {
+      "1720859960679": {
+        "ID": 1720859960679,
+        "SendResource": "Fish",
+        "SendAmount": 100000,
+        "ReceiveResource": "Bow",
+        "ReceiveAmount": 1,
+        "ISBV": false,
+        "FriendID": "1883202",
+        "FriendName": "FranekKimono"
+      }
+    }
+  },
+  "usMKF_SaveResources": {
+    "PlayerTo": "1883202",
+    "PercFill": "75",
+    "PercPerc": "81",
+    "SavedBody": {}
+  },
+  "_usShopItems": {
+    "TYPES": [
+      "ConversionGemPackage",
+      "MultiplierBuffZone2_PremiumFriendBuff1Day"
+    ]
+  },
+  "scripts": {
+    "user_guild.js": 1,
+    "user_generals.js": 1,
+    "user_friends.js": 1,
+    "user_deposit.js": 1,
+    "user_buildlist.js": 1,
+    "user_showmyloot.js": 1,
+    "user_langs.js": 1,
+    "user_licence.js": 1,
+    "user_building_expansion.js": 1,
+    "user_zoneBuff.js": 1,
+    "user_mine_rebuild.js": 1,
+    "user_exp_time_matrix.js": 1,
+    "98-gridId.js": 1,
+    "adventures.js": 1,
+    "jz_scripts.js": 1,
+    "jz_selfdrive_adventure_config.js": 1,
+    "user_6-buffs.js": 1,
+    "user_bookbinder.js": 1,
+    "user_collectables.js": 1,
+    "user_fast_shortcut.js": 1,
+    "user_jz-Draw.js": 1,
+    "user_jz_06_mine_search.js": 1,
+    "user_jz_buildlist.js": 1,
+    "user_jz_functions.js": 1,
+    "user_jz_lastDir.js": 1,
+    "user_jz_losses_counter.js": 1,
+    "user_jz_mineBuilder.js": 1,
+    "user_JZ_PlayersTravel.js": 1,
+    "user_jz_rebuild_losses.js": 1,
+    "user_jz_resetScripts.js": 1,
+    "user_jz_SelfDrive_v2.js": 1,
+    "user_jz_send_explo_short.js": 1,
+    "user_jz_Star_to_Storage_Football.js": 1,
+    "user_jz_ToggleStarMenu.js": 1,
+    "user_jz_topupmines.js": 1,
+    "user_merch_filters.js": 1,
+    "user_run_explorers.js": 1,
+    "user_specduty.js": 1,
+    "user_spechide.js": 0,
+    "user_specialists.js": 1,
+    "user_ZoneRefresh.js": 1,
+    "user_ZZZloadUnassigned.js": 1,
+    "user_ZZZ_Click_XY.js": 1
+  },
+  "FastShortcut": {
+    "ATAuswahl": "BonabertiBusiness",
+    "ATAuswahlID": "8",
+    "WarteZeitZwischenVorlagenSelector": "5000",
+    "WarteZeitAusSternVersetzenSelector": "10000",
+    "WarteZeitWeiterNachGenesNachHauseSelector": "30000",
+    "WarteZeitZwischenATNeustartSelector": "60000",
+    "WarteZeitZwischenATAutoStartSelector": "40000",
+    "WarteZeitZwischenInselswitchSelector": "60000",
+    "WarteZeitZwischenAutomatikstartenimATSelector": "40000",
+    "WarteZeitZwischenQuestÜberwachungSelector": "20000",
+    "WarteZeitZwischenZurHeimatinselATEndeSelector": "15000",
+    "RundenanzahlSelector": "20",
+    "Kampfgeraeusche": false,
+    "Fehlergeraeusche": false,
+    "buffNameHufeisenSelector": "GeneralSpeedBuff_Platinum",
+    "Hufeisenbuffen": true,
+    "Wirbelwindbuffen": false,
+    "Resteessenbuffen": true,
+    "Obsibuffen": false,
+    "ObsiSelector": "n/a",
+    "Spaehbuffen": true,
+    "SpaehSelector": "PropagationBuff_AdventureLootBoostXPHigh",
+    "Feldlazabuffen": false,
+    "FeldlazaSelector": "n/a",
+    "Freiluftbuffen": false,
+    "FreiluftSelector": "n/a",
+    "Hammerman": true,
+    "HammermanMethoden": true,
+    "MemUeberwachung": false,
+    "MemUeberwachungLimit": "2000",
+    "MemUeberwachungNONAT": false,
+    "MemUeberwachungNONATTIME": false,
+    "MemUeberwachungLimitNONAT": "2000",
+    "MemUeberwachungLimitNONATTIME": "12:00",
+    "TweaksmessageHistory": false,
+    "TweakstradeMaxAdventureAmount": false,
+    "TweakstradeMaxBuildingAmount": false,
+    "TweakstradeMaxBuffAmount": false,
+    "TweakstradeRefreshInterval": false,
+    "TweaksmaxAnimalsOnMap": false,
+    "TweaksmailboxPageSize": false,
+    "Tweakszoomfactor": false,
+    "TweaksmEventInfoPanel": false,
+    "AutoTrade": false,
+    "PersonalTesting": false,
+    "debugAT": false,
+    "debugPlayground": false,
+    "debugPlaygroundQuestNamen": false,
+    "debugPlaygroundGridGenesIDs": true,
+    "VorlagenUeberwachungEnt": false,
+    "VorlagenUeberwachungGeo": false,
+    "VorlagenUeberwachungBuffs": false,
+    "VorlagenUeberwachungAusbau": false,
+    "VorlagenUeberwachungBauen": false,
+    "VorlagenUeberwachungZonenbuffs": false,
+    "VorlagenUeberwachungEntSafe": true,
+    "VorlagenUeberwachungGeoSafe": true,
+    "VorlagenUeberwachungBuffsSafe": true,
+    "VorlagenUeberwachungAusbauSafe": true,
+    "VorlagenUeberwachungBauenSafe": true,
+    "VorlagenUeberwachungZonenbuffsSafe": true,
+    "VorlagenUeberwachungQuests": false,
+    "VorlagenUeberwachungBuildingCollecting": false,
+    "VorlagenUeberwachungBuildingCollectingOpening": false,
+    "VorlagenUeberwachungAfterAT": false,
+    "VorlagenUeberwachungStarItemsCollect": false,
+    "VorlagenUeberwachungShopItemsBuying": false,
+    "WarteZeitZwischenVorlagenÜberwachungSelector": 10,
+    "AuswahlUeberwachungVorlagenIndexSelectorID": "0",
+    "AuswahlUeberwachungVorlagenIndexSelectorID2": "1",
+    "AuswahlUeberwachungVorlagenIndexSelectorID3": "1",
+    "AuswahlUeberwachungVorlagenIndexSelectorID4": "1",
+    "AuswahlUeberwachungVorlagenIndexSelectorID5": "1",
+    "AuswahlUeberwachungVorlagenIndexSelectorID6": "1",
+    "AuswahlUeberwachungVorlagenIndexInPartitionSelectorID": "0",
+    "AuswahlUeberwachungVorlagenIndexInPartitionSelectorID2": "1",
+    "AuswahlUeberwachungVorlagenIndexInPartitionSelectorID3": "1",
+    "AuswahlUeberwachungVorlagenIndexInPartitionSelectorID4": "1",
+    "AuswahlUeberwachungVorlagenIndexInPartitionSelectorID5": "1",
+    "AuswahlUeberwachungVorlagenIndexInPartitionSelectorID6": "1",
+    "AusbauStufeSelector": "4",
+    "buffNameSöldnerSelector": "Recruit",
+    "BookbinderSelector": "Tome",
+    "VorlagenUeberwachungBookbinder": false,
+    "VorlagenUeberwachungGebaeudeLoot": false,
+    "QuestBeenden": false,
+    "NoGenesLanding": false,
+    "UnloadAllTroops": true,
+    "SafeMonitoring": false,
+    "OverlayMonitoringSetting": false,
+    "ATAuswahlIDB": "1",
+    "ATAuswahlID_B": "1"
+  },
+  "shortcuts": [
+    {
+      "id": 1729935023084,
+      "name": "ArcticExplosion-A",
+      "items": [
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\A\\direktsenden.txt[a]",
+          "load and send"
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\A\\catapult.txt[b]",
+          null
+        ],
+        [
+          "1730403428295[f]",
+          null
+        ],
+        [
+          "1730403441076[s]",
+          null
+        ],
+        [
+          "1731106122502[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\A\\03.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\A\\03.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\A\\03.txt[b]",
+          null
+        ]
+      ]
+    },
+    {
+      "id": 1729939039757,
+      "name": "ArcticExplosion-B",
+      "items": [
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\B\\direktsenden.txt[a]",
+          null
+        ],
+        [
+          "1730547801618[s]",
+          null
+        ],
+        [
+          "1730547810319[f]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\B\\01.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\B\\02.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\B\\01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\B\\02.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\B\\01.txt[b]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\B\\02.txt[b]",
+          null
+        ]
+      ]
+    },
+    {
+      "id": 1730724176950,
+      "name": "ArcticExplosion-OneAttack",
+      "items": [
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\A\\direktsenden.txt[a]",
+          null
+        ],
+        [
+          "1730724206695[s]",
+          null
+        ],
+        [
+          "1730724211097[f]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\A\\03.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\A\\03.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\ArcticExplosion\\A\\03.txt[b]",
+          null
+        ]
+      ]
+    },
+    {
+      "id": 1731719510444,
+      "name": "Woodcutter-Fast",
+      "items": [
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsWoodcutter\\fast\\direktsenden.txt[a]",
+          null
+        ],
+        [
+          "1731719659498[s]",
+          null
+        ],
+        [
+          "1731719663236[f]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsWoodcutter\\fast\\01.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsWoodcutter\\fast\\01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsWoodcutter\\fast\\01.txt[b]",
+          null
+        ],
+        [
+          "1731719744186[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsWoodcutter\\fast\\03.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsWoodcutter\\fast\\03.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsWoodcutter\\fast\\03.txt[b]",
+          null
+        ],
+        [
+          "1731720267355[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsWoodcutter\\fast\\04.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsWoodcutter\\fast\\04.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsWoodcutter\\fast\\04.txt[b]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsWoodcutter\\fast\\05.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsWoodcutter\\fast\\05.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsWoodcutter\\fast\\06.troops.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsWoodcutter\\fast\\05.txt[b]",
+          null
+        ]
+      ]
+    },
+    {
+      "id": 1737284413926,
+      "name": "FirstThief",
+      "items": [
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\direktsenden.txt[a]",
+          null
+        ],
+        [
+          "1737295249977[s]",
+          null
+        ],
+        [
+          "1737295254535[f]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\01.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\01.txt[b]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\02.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\02.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\02.txt[b]",
+          null
+        ],
+        [
+          "1737295384059[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\03.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\03.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\03.txt[b]",
+          null
+        ],
+        [
+          "1737295469921[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\05.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\05.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\05.txt[b]",
+          null
+        ],
+        [
+          "1737295591331[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\06.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\06.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\08.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsFirstThief\\AT\\06.txt[b]",
+          null
+        ]
+      ]
+    },
+    {
+      "id": 1738401716828,
+      "name": "ThirdThief",
+      "items": [
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\direktsenden.txt[a]",
+          null
+        ],
+        [
+          "1738408353476[s]",
+          null
+        ],
+        [
+          "1738408356490[f]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\01.01.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\01.01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\01.01.txt[b]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\01.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\01.txt[b]",
+          null
+        ],
+        [
+          "1738408415374[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\02.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\02.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\02.txt[b]",
+          null
+        ],
+        [
+          "1738408447586[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\03.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\03.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\03.txt[b]",
+          null
+        ],
+        [
+          "1738408480206[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\04.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\04.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\04.txt[b]",
+          null
+        ],
+        [
+          "1738408520850[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\05.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\05.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\05.txt[b]",
+          null
+        ],
+        [
+          "1738408555155[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\06.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\06.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\remaining.units.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsThirdThief\\AT\\06.txt[b]",
+          null
+        ]
+      ]
+    },
+    {
+      "id": 1739556493445,
+      "name": "TheNords",
+      "items": [
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\direktsenden.txt[a]",
+          null
+        ],
+        [
+          "1739556520783[s]",
+          null
+        ],
+        [
+          "1739556524238[f]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_01_01.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_01_01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_01_01.txt[b]",
+          null
+        ],
+        [
+          "1739556563132[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_02_01.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_02_01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_02_01.txt[b]",
+          null
+        ],
+        [
+          "1739556596773[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_03_01.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_03_01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_03_01.txt[b]",
+          null
+        ],
+        [
+          "1739556626743[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_04_01.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_04_01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_04_01.txt[b]",
+          null
+        ],
+        [
+          "1739556664536[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_05_01.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_05_01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_05_01.txt[b]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_05_02.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_05_02.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\S_05_02.txt[b]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\TheNords\\AT\\LoadAll.txt[a]",
+          null
+        ]
+      ]
+    },
+    {
+      "id": 1740389468062,
+      "name": "2ndThief",
+      "items": [
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\direktsenden.txt[a]",
+          null
+        ],
+        [
+          "1740389491348[s]",
+          null
+        ],
+        [
+          "1740389494289[f]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S01.01.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S01.01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S01.01.txt[b]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S02.01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S02.01.txt[b]",
+          null
+        ],
+        [
+          "1740390168145[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S04.01.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S04.01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S04.01.txt[b]",
+          null
+        ],
+        [
+          "1743856119190[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S03.01.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S03.01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S03.02.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S03.02.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S03.01.txt[b]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S03.02.txt[b]",
+          null
+        ],
+        [
+          "1740390200424[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S05.01.load.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S05.01.load.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\1001NightsSecondThief\\AT\\S05.01.attack.2.of.3.txt[b]",
+          null
+        ]
+      ]
+    },
+    {
+      "id": 1747895274234,
+      "name": "Bonanerti Business",
+      "items": [
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\direktsenden.txt[a]",
+          null
+        ],
+        [
+          "1747914854466[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\01.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\01.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\01.txt[b]",
+          null
+        ],
+        [
+          "1747896632346[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\02.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\02.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\02.txt[b]",
+          null
+        ],
+        [
+          "1747897138511[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\03.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\03.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\03.txt[b]",
+          null
+        ],
+        [
+          "1747897803904[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\04.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\04.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\04.txt[b]",
+          null
+        ],
+        [
+          "1747898476604[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\05.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\05.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\05.txt[b]",
+          null
+        ],
+        [
+          "1747899284822[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\06.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\06.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\06.txt[b]",
+          null
+        ],
+        [
+          "1747900060362[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\07.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\07.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\08.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1\\07.txt[b]",
+          null
+        ]
+      ]
+    }
+  ],
+  "FastShortcutAutoAT": {
+    "Runde": 0
+  },
+  "usMKF_Friends": {
+    "_exudFriendsFavorite": [
+      "1267336"
+    ]
+  },
+  "AutoAT": {
+    "1770612": "OFF"
+  },
+  "AutoAT_1770612": "ON",
+  "_usQuestSystem": {
+    "QUESTTYPES": [
+      "GuildQuest",
+      "PathfinderShipQuest"
+    ]
+  },
+  "DM_SETTINGS": {
+    "build": [],
+    "upgrade": [],
+    "switchStatus": false,
+    "maxLvl": {
+      "IronOre": 1,
+      "Coal": 1,
+      "BronzeOre": 1,
+      "GoldOre": 1,
+      "TitaniumOre": 1,
+      "Salpeter": 1
+    }
+  },
+  "_usTradepost": {
+    "Trades": {
+      "1747557140543": {
+        "ID": 1747557140543,
+        "SendResource": "AdvancedTools",
+        "SendAmount": 200,
+        "ReceiveResource": "Coin",
+        "ReceiveAmount": 6000,
+        "Posten": 4
+      },
+      "1747557910926": {
+        "ID": 1747557910926,
+        "SendResource": "Oilseed",
+        "SendAmount": 4000,
+        "ReceiveResource": "Oil",
+        "ReceiveAmount": 1000,
+        "Posten": 4
+      },
+      "1747557938098": {
+        "ID": 1747557938098,
+        "SendResource": "AdvancedPaper",
+        "SendAmount": 500,
+        "ReceiveResource": "Coin",
+        "ReceiveAmount": 1000,
+        "Posten": 4
+      },
+      "1747557952983": {
+        "ID": 1747557952983,
+        "SendResource": "Tool",
+        "SendAmount": 800,
+        "ReceiveResource": "Coin",
+        "ReceiveAmount": 1000,
+        "Posten": 4
+      },
+      "1748076625287": {
+        "ID": 1748076625287,
+        "SendResource": "Oilseed",
+        "SendAmount": 4000,
+        "ReceiveResource": "Oil",
+        "ReceiveAmount": 1000,
+        "Posten": 1
+      },
+      "1748099809037": {
+        "ID": 1748099809037,
+        "SendResource": "Coin",
+        "SendAmount": 300,
+        "ReceiveResource": "CollectibleGrainSacks",
+        "ReceiveAmount": 50,
+        "Posten": 4
+      },
+      "1748242914204": {
+        "ID": 1748242914204,
+        "SendResource": "Grout",
+        "SendAmount": 25000,
+        "ReceiveResource": "Oil",
+        "ReceiveAmount": 5000,
+        "Posten": 4
+      },
+      "1748503173142": {
+        "ID": 1748503173142,
+        "SendResource": "Grout",
+        "SendAmount": 5000,
+        "ReceiveResource": "Oil",
+        "ReceiveAmount": 1000,
+        "Posten": 4
+      },
+      "1752731722351": {
+        "ID": 1752731722351,
+        "SendResource": "Coin",
+        "SendAmount": 1000,
+        "ReceiveResource": "IronOre",
+        "ReceiveAmount": 10000,
+        "Posten": 4
+      },
+      "1754751847818": {
+        "ID": 1754751847818,
+        "SendResource": "Coin",
+        "SendAmount": 300,
+        "ReceiveResource": "CollectibleAdamantium",
+        "ReceiveAmount": 50,
+        "Posten": 4
+      }
+    }
+  },
+  "FastShortcutSZENARIO": {
+    "SzenarioRundenanzahl": "1",
+    "SzenarioAuswahl": "BuffAdventures_twins_easy",
+    "Rari": true
+  },
+  "FastShortcutAutoSzenario": {
+    "Runde": 0
   }
 }

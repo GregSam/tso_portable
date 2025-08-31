@@ -2,6 +2,7 @@ var forcegcIntervalId = null;
 var enabledScripts = {};
 var buiFastAccess = [];
 var lruTemplate = {};
+var baseTranslation = {};
 var highlightCircle;
 var mainSettings = {
 	menuStyle: 'grouped',
@@ -22,6 +23,7 @@ var mainSettings = {
 	buffOnlyActive: false,
 	changeTemplateFolder: true,
 	lruCacheSize: 3,
+	lruDisableDuplicates: false,
 	highlight: true,
 	highlightSize: 45,
 	highlightColor: '#ff0000',
@@ -30,10 +32,43 @@ var mainSettings = {
 	chatPanelWidth: 350,
 	starColsCount: 9,
 	starRowsCount: 4,
-	experimental: false
+	experimental: false,
+	mwWindowSize: 'default',
+	useCustomChatCSS: false, 
+	chatCSS: { 
+		'bbmsg': '#8CA8FF', 'modmsg': '#E5CD2D', 'communityleadmsg': '#99ff99', 'globaltstamp': '#7FFF7F', 'globalsender': '#00FF33', 'globalmsg': '#E2E2E2', 'globalownname': '#FF8644', 'globalimportant': '#E2E2E2', 'findcooptstamp': '#00FF33', 'findcoopsender': '#00FF33', 'findcoopmsg': '#E2E2E2', 'findcoopownname': '#FF8644', 'findcoopimportant': '#E2E2E2', 'tradetstamp': '#00FF33', 'tradesender': '#00FF33', 'trademsg': '#E2E2E2', 'tradeownname': '#FF9347', 'tradeimportant': '#E2E2E2', 'helptstamp': '#00FF33', 'helpsender': '#00FF33', 'helpmsg': '#E2E2E2', 'helpownname': '#FF9347', 'helpimportant': '#E2E2E2', 'newststamp': '#FFFF00', 'newssender': '#FFFF00', 'newsmsg': '#FFFF00', 'newsimportant': '#FFFF00', 'newsownname': '#FF9347', 'guildtstamp': '#7FFF7F', 'guildsender': '#7FFF7F', 'guildmsg': '#7FFF7F', 'guildownname': '#7FFF7F', 'guildimportant': '#7FFF7F', 'officerststamp': '#7FFF7F', 'officerssender': '#7FFF7F', 'officersmsg': '#7FFF7F', 'officersownname': '#7FFF7F', 'officersimportant': '#7FFF7F', 'whispertstamp': '#FC68FF', 'whispersender': '#FC68FF', 'whispermsg': '#FC68FF', 'whisperownname': '#FF9347', 'whisperimportant': '#FC68FF', 'cooptstamp': '#00FF33', 'coopsender': '#00FF33', 'coopmsg': '#E2E2E2', 'coopownname': '#FF8644' 
+	},
+	infoBarResources: ["Tool", "Coin", "Plank", "RealPlank", "Stone", "Marble"],
+	showOnlyActiveGuildMembers: false,
+	shortcutsDir: "",
+	shortAsGlobalRelative: false,
+	lruSkipModules: [],
+	mwChatPanel: false,
+	mailRouteStorage: false,
+	effectSounds: {}
+};
+var chatCSSTemplate = '.bbmsg {#bbmsg;font-weight: bold;}.modmsg {#modmsg;font-weight: bold;}.communityleadmsg {#communityleadmsg;font-weight: bold;}.globaltstamp {#globaltstamp;}.globalsender {#globalsender;text-decoration: underline;}.globalmsg {#globalmsg;}.globalownname {#globalownname;font-weight: bold;}.globalimportant {#globalimportant;font-weight: bold;}.findcooptstamp {#findcooptstamp;}.findcoopsender {#findcoopsender;text-decoration: underline;}.findcoopmsg {#findcoopmsg;}.findcoopownname {#findcoopownname;font-weight: bold;}.findcoopimportant {#findcoopimportant;font-weight: bold;}.tradetstamp {#tradetstamp;}.tradesender {#tradesender;text-decoration: underline;}.trademsg {#trademsg;}.tradeownname {#tradeownname;font-weight: bold;}.tradeimportant {#tradeimportant;font-weight: bold;}.helptstamp {#helptstamp;}.helpsender {#helpsender;text-decoration: underline;}.helpmsg {#helpmsg;}.helpownname {#helpownname;font-weight: bold;}.helpimportant {#helpimportant;font-weight: bold;}.newststamp {#newststamp;}.newssender {#newssender;text-decoration: underline;}.newsmsg {#newsmsg;}.newsimportant {#newsimportant;font-weight: bold;}.newsownname {#newsownname;font-weight: bold;}.guildtstamp {#guildtstamp;}.guildsender {#guildsender;text-decoration: underline;}.guildmsg {#guildmsg;}.guildownname {#guildownname;font-weight: bold;}.guildimportant {#guildimportant;font-weight: bold;}.officerststamp {#officerststamp;}.officerssender {#officerssender;text-decoration: underline;}.officersmsg {#officersmsg;}.officersownname {#officersownname;font-weight: bold;}.officersimportant {#officersimportant;font-weight: bold;}.whispertstamp {#whispertstamp;}.whispersender {#whispersender;text-decoration: underline;}.whispermsg {#whispermsg;}.whisperownname {#whisperownname;font-weight: bold;}.whisperimportant {#whisperimportant;font-weight: bold;}.*coop*tstamp {#cooptstamp;}.*coop*sender {#coopsender;text-decoration: underline;}.*coop*msg {#coopmsg;}.*coop*ownname {#coopownname;}';
+var cssRoomToLoca = {
+	'global': loca.GetText("LAB", "ChatGlobal"),
+	'findcoop': loca.GetText("LAB", "ChatFindcooperation"),
+	'trade': loca.GetText("LAB", "ChatTrade"),
+	'help': loca.GetText("LAB", "ChatHelp"),
+	'news': loca.GetText("LAB", "ChatNews"),
+	'guild': loca.GetText("LAB", "ChatGuild"),
+	'officers': loca.GetText("LAB", "ChatOfficers"),
+	'whisper': loca.GetText("LAB", "ChatWhisper")
 };
 var highlightTracker = game.getTracker('highlightTracker', highlightModifyFrame);
 var scaleFactor = game.def("global").mGraphicScaleFactor;
+var ResourceGroupToWarehouseTab = { 
+	"CL1": "WarehouseTab1",
+	"CL2": "WarehouseTab2",
+	"CL3": "WarehouseTab3",
+	"CL4": "WarehouseTab4",
+	"CL5": "WarehouseTab8",
+	"Collectibles": "WarehouseTab7",
+	"Event": "WarehouseTab6"
+};
 
 function toggleExperimental()
 {
@@ -126,7 +161,7 @@ function specNameSorter(a, b)
 
 function buiFastAccessMenuHandler(event) {
 	try {
-		var vector = game.zone.mStreetDataMap.getBuildingsByName_vector(event.target.name);
+		var vector = game.gi.mCurrentPlayerZone.mStreetDataMap.getBuildingsByName_vector(event.target.name);
 		if(!vector) { return true; }
 		if(mainSettings.buiFastAccessType == 1) {
 			vector.sort(function(a, b) { return a.GetUpgradeLevel() > b.GetUpgradeLevel() ? -1 : 1; });
@@ -142,237 +177,24 @@ function buiFastAccessMenuHandler(event) {
 	} catch (e) { debug(e); }
 }
 
-function mainSettingsHandler(event)
+function cssGetText(id)
 {
-	var w = new Modal('mainSettings', utils.getImageTag('icon_dice.png', '45px') + ' '+loca.GetText("LAB", "ToggleOptionsPanel"));
-	var getDefFolder = function(id){
-		return $('<span>', { 'class': id }).html(mainSettings[id] ? mainSettings[id] : air.File.documentsDirectory.nativePath).prop('outerHTML');
-	};
-	var getDefTimeType = function(){
-		return !mainSettings.specDefTimeType ? getText('spec_time_normal') : getText('spec_time_arrival');
-	};
-	var getBuiFastAccessType = function(){
-		return mainSettings.buiFastAccessType == 0 ? getText('buiFastCarousel') : getText('buiFastLevel');
-	};
-	var getBuffOnlyActive = function(){
-		return mainSettings.buffOnlyActive ? getText('buffonlyactive') : getText('buffall');
-	};
-	var createFilterDrop = function(){
-		const filters = ["unset", "none","snownowater","snowlight","snow","oven","doomsday","night","desert","tropical","blackandwhite","spooky","snow_medium","tundra","darkershadow","magicsepia"];
-		var select = $('<select>', { 'class': 'form-control defFilter' });
-		for(var i in filters) {
-			select.append($('<option>', { value: filters[i] }).text(filters[i]));
-		}
-		return select.prop('outerHTML');
-	};
-	var createDateFormatterDrop = function(){
-		const formats = ['M-d H:m','d-M H:m','MM-dd HH:mm','dd-MM-yyyy hh:mm','yyyy-MM-dd HH:mm','dd-MM-yyyy HH:mm'];
-		var select = $('<select>', { 'class': 'form-control dtfFormat' });
-		for(var i in formats) {
-			select.append($('<option>', { value: formats[i] }).text(formats[i]));
-		}
-		return select.prop('outerHTML');
-	}
-	var createLruDrop = function(){
-		var select = $('<select>', { 'class': 'form-control lruSize' });
-		const num = [3,5,7,10];
-		for(var i in num) {
-			select.append($('<option>', { value: num[i] }).text(num[i]));
-		}
-		return select.prop('outerHTML');
-	}
-	var createChatFontDrop = function(){
-		var select = $('<select>', { 'class': 'form-control chatFontSize' });
-		const num = [12,14,16,18,20];
-		for(var i in num) {
-			select.append($('<option>', { value: num[i] }).text(num[i]));
-		}
-		return select.prop('outerHTML');
-	}
-	var createChatWidthDrop = function(){
-		var select = $('<select>', { 'class': 'form-control chatWidth' });
-		for(var i=350; i < 600; i+=10) {
-			select.append($('<option>', { value: i }).text(i + 'px'));
-		}
-		return select.prop('outerHTML');
-	}
-	var createStarColsDrop = function(){
-		var select = $('<select>', { 'class': 'form-control starCols' });
-		// += 57
-		for(var i=9; i < 20; i++) {
-			select.append($('<option>', { value: i }).text(i));
-		}
-		return select.prop('outerHTML');
-	}
-	var createStarRowsDrop = function(){
-		var select = $('<select>', { 'class': 'form-control starRows' });
-		// += 70
-		for(var i=4; i < 15; i++) {
-			select.append($('<option>', { value: i }).text(i));
-		}
-		return select.prop('outerHTML');
-	}
-	var createHighlightSizeDrop = function(){
-		var select = $('<select>', { 'class': 'form-control hSize' });
-		const num = [45,55,65,75];
-		for(var i in num) {
-			select.append($('<option>', { value: num[i] }).text(num[i]));
-		}
-		return select.prop('outerHTML');
-	}
-	var createButton = function(id, text) {
-		return $('<button>', { 
-			'style': 'cursor: pointer;text-decoration:none;color:#000;height: 20px;padding: 0px;',
-			'class': 'btn form-control',
-			'id': id
-		}).text(text)
-	}
-	w.size = '';
-	w.create();
-	var html = '<div class="container-fluid" style="user-select: all;">';
-	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
-	var menuStyleSelector = $('<select>', { 'class': 'form-control menuStyle' });
-	menuStyleSelector.append([
-		$('<option>', { 'value': 'grouped' }).text(getText('menustyle_grouped')),
-		$('<option>', { 'value': 'linear' }).text(getText('menustyle_linear')),		
-	]);
-	var sortNameSelector = $('<select>', { 'class': 'form-control sortOrder' });
-	sortNameSelector.append([
-		$('<option>', { 'value': 0 }).text('{0} (DESC)'.format(getText('sortbytype'))),
-		$('<option>', { 'value': 1 }).text('{0} (ASC)'.format(getText('sortbytype'))),
-		$('<option>', { 'value': 2 }).text('{0} > {1} (DESC)'.format(getText('sortbytype'), getText('sortbyname'))),
-		$('<option>', { 'value': 3 }).text('{0} > {1} (ASC)'.format(getText('sortbytype'), getText('sortbyname'))),
-		$('<option>', { 'value': 4 }).text('{0} (DESC)'.format(getText('sortbyname'))),
-		$('<option>', { 'value': 5 }).text('{0} (ASC)'.format(getText('sortbyname'))),
-		$('<option>', { 'value': 6 }).text(loca.GetText("LAB", "StarMenu")),
-	]);
-	html += utils.createTableRow([[6, getText('menustyle_desc')], [6, menuStyleSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[6, getText('deffilter_desc')], [6, createFilterDrop()]]);
-	html += utils.createTableRow([[9, "{0} {1}".format(loca.GetText("LAB", "Filter"), loca.GetText("QUL", "TutFreeHomezone3"))], [3, createSwitch('persistFilter', mainSettings.persistFilter)]]);
-	html += utils.createTableRow([[6, getText('dateformat_desc')], [6, createDateFormatterDrop()]]);
-	html += utils.createTableRow([[6, getText('lru_desc')], [6, createLruDrop()]]);
-	html += utils.createTableRow([[9, getText('geotemplates_desc') + getDefFolder('geolastDir')], [3, createButton('geolastDir', loca.GetText("LAB", "Select"))]]);
-	html += utils.createTableRow([[9, getText('expltemplates_desc') + getDefFolder('expllastDir')], [3, createButton('expllastDir', loca.GetText("LAB", "Select"))]]);
-	html += utils.createTableRow([[9, getText('bufftemplates_desc') + getDefFolder('bufflastDir')], [3, createButton('bufflastDir', loca.GetText("LAB", "Select"))]]);
-	html += utils.createTableRow([[9, getText('buitemplates_desc') + getDefFolder('builastDir')], [3, createButton('builastDir', loca.GetText("LAB", "Select"))]]);
-	html += utils.createTableRow([[9, getText('armytemplates_desc') + getDefFolder('armylastDir')], [3, createButton('armylastDir', loca.GetText("LAB", "Select"))]]);
-	html += utils.createTableRow([[9, getText('battletemplates_desc') + getDefFolder('battlelastDir')], [3, createButton('battlelastDir', loca.GetText("LAB", "Select"))]]);
-	html += utils.createTableRow([[9, getText('dontchangefolder_desc')], [3, createSwitch('changeTemplateFolder', mainSettings.changeTemplateFolder)]]);
-	html += utils.createTableRow([[6, getText('geodeftask_desc')], [6, createGeologistDropdown(0, 0, true), 'geoMass']]);
-	html += utils.createTableRow([[6, getText('expldeftask_desc')], [6, createExplorerDropdown(0, 0, 0, true), 'explMass']]);
-	html += utils.createTableRow([
-		[6, getText('spectimetype_desc')], 
-		[6, createSwitch('specDefTimeType', mainSettings.specDefTimeType) + '<div style="position: absolute;left: 55px;top: 1px;" id="specTimeTypeLang">{0}</div>'.format(getDefTimeType())]
-	]);
-	html += utils.createTableRow([[6, getText('sortorder_desc')], [6, sortNameSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[6, getText('forcegc_desc')], [6, createSwitch('forcegc', mainSettings.forcegc)]]);
-	html += utils.createTableRow([[6, getText('okfieldcolor_desc')], [6, '<input type="text" value="'+mainSettings.statusColorOk+'" id="statusColorOk" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
-	html += utils.createTableRow([[6, getText('failfieldcolor_desc')], [6, '<input type="text" value="'+mainSettings.statusColorFail+'" id="statusColorFail" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
-	html += utils.createTableRow([[6, getText('samefieldcolor_desc')], [6, '<input type="text" value="'+mainSettings.statusColorSameGrid+'" id="statusColorSameGrid" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
-	html += utils.createTableRow([
-		[6, getText('buiFastdesc')], 
-		[6, createSwitch('buiFastAccessType', mainSettings.buiFastAccessType == 0 ? false : true) + '<div style="position: absolute;left: 55px;top: 1px;" id="buiFastAccessTypeLang">{0}</div>'.format(getBuiFastAccessType())]
-	]);
-	html += utils.createTableRow([
-		[6, getText('buffactive_desc')], 
-		[6, createSwitch('buffOnlyActive', mainSettings.buffOnlyActive) + '<div style="position: absolute;left: 55px;top: 1px;" id="buffOnlyActiveLang">{0}</div>'.format(getBuffOnlyActive())]
-	]);
-	html += utils.createTableRow([[6, getText('highlight_desc')], [6, createSwitch('highlight', mainSettings.highlight) + '<div style="position: absolute;left: 55px;top: 1px;">{0}</div>'.format(getText('highlight_reboot'))]]);
-	html += utils.createTableRow([[6, getText('highlightSize_desc')], [6, createHighlightSizeDrop()]]);
-	html += utils.createTableRow([[6, getText('highlightColor_desc')], [6, '<input type="text" value="'+mainSettings.highlightColor+'" id="highlightColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
-	html += utils.createTableRow([[6, getText('highlightGlow_desc')], [6, '<input type="text" value="'+mainSettings.highlightGlowColor+'" id="highlightGlowColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
-	html += utils.createTableRow([[6, getText('chatpanelwidth_desc')], [6, createChatWidthDrop()]]);
-	html += utils.createTableRow([[6, getText('chatfontsize_desc')], [2, createChatFontDrop()], [4, getText('highlight_reboot')]]);
-	html += utils.createTableRow([[6, getText('starmenurows_desc')], [6, createStarRowsDrop()]]);
-	html += utils.createTableRow([[6, getText('starmenucols_desc')], [2, createStarColsDrop()], [4, getText('highlight_reboot')]]);
-	html += utils.createTableRow([[6, 'Experimental multi-windows'], [6, createSwitch('experimental', mainSettings.experimental)]]);
-	w.Body().html(html + '<div>');
-	w.withBody('div.row').addClass('nohide');
-	w.withBody('.kolorPicker').change(function() {
-		$(this).closest('div').find('span').css('background-color', this.value);
-		mainSettings[this.id] = this.value;
-		switch(this.id) {
-			case 'statusColorOk':
-				document.styleSheets[0].insertRule(".buffReady{background-color:"+this.value+";}", document.styleSheets[0].rules.length);
-			break;
-			case 'statusColorFail':
-				document.styleSheets[0].insertRule(".buffNotReady{background-color:"+this.value+";}", document.styleSheets[0].rules.length);
-			break;
-			case 'statusColorSameGrid':
-				document.styleSheets[0].insertRule(".specSamegrid{background-color:"+this.value+";}", document.styleSheets[0].rules.length);
-			break;
-		}
+	//global
+	var result = "";
+	$.each(cssRoomToLoca, function(k, v) {
+		if(id.indexOf(k) == 0) { result = "[{0}] {1}".format(v, getText("css_" + id.replace(k, ''))); }
 	});
-	w.withBody('.kolorPicker').change();
-	w.withBody('button').click(function(e) { 
-		var id = $(e.target).attr('id');
-		var file = new air.File(); 
-		file.addEventListener(air.Event.SELECT, function(event){
-			mainSettings[id] = file.nativePath;
-			w.withBody('.' + id).html(file.nativePath);
-		}); 
-		file.browseForDirectory("Select a directory"); 
-	});
-	w.withBody('.menuStyle').val(mainSettings.menuStyle).change(function(e) { mainSettings.menuStyle = $(e.target).val(); });
-	w.withBody('.sortOrder').val(mainSettings.sortOrder).change(function(e) { mainSettings.sortOrder = parseInt($(e.target).val()); });
-	w.withBody('.defFilter').val(mainSettings.defFilter).change(function(e) { mainSettings.defFilter = $(e.target).val(); });
-	w.withBody('.dtfFormat').val(mainSettings.dtfFormat).change(function(e) { mainSettings.dtfFormat = $(e.target).val(); });
-	w.withBody('.lruSize').val(mainSettings.lruCacheSize).change(function(e) { mainSettings.lruCacheSize = parseInt($(e.target).val()); });
-	w.withBody('.chatFontSize').val(mainSettings.chatFontSize).change(function(e) { 
-		mainSettings.chatFontSize = parseInt($(e.target).val());
-		game.def("defines").CHAT_FONT_SIZE = mainSettings.chatFontSize;
-	});
-	w.withBody('.chatWidth').val(mainSettings.chatPanelWidth).change(function(e) { 
-		mainSettings.chatPanelWidth = parseInt($(e.target).val());
-		swmmo.application.blueFireComponent.width = mainSettings.chatPanelWidth;
-	});
-	w.withBody('.starCols').val(mainSettings.starColsCount).change(function(e) { mainSettings.starColsCount = parseInt($(e.target).val()); });
-	w.withBody('.starRows').val(mainSettings.starRowsCount).change(function(e) { mainSettings.starRowsCount = parseInt($(e.target).val()); });
-	w.withBody('.hSize').val(mainSettings.highlightSize).change(function(e) { mainSettings.highlightSize = parseInt($(e.target).val()); });
-	w.withBody('.geoMass select').val(mainSettings.geoDefTask).change(function(e) { mainSettings.geoDefTask = $(e.target).val(); });
-	w.withBody('.explMass select').val(mainSettings.explDefTask).change(function(e) { mainSettings.explDefTask = $(e.target).val(); });
-	w.withBody('#specDefTimeType').change(function(e) {
-		mainSettings.specDefTimeType = $(e.target).is(':checked');
-		w.withBody('#specTimeTypeLang').html(getDefTimeType());
-	});
-	w.withBody('#buiFastAccessType').change(function(e) {
-		mainSettings.buiFastAccessType = $(e.target).is(':checked') ? 1 : 0;
-		w.withBody('#buiFastAccessTypeLang').html(getBuiFastAccessType());
-	});
-	w.withBody('#buffOnlyActive').change(function(e) {
-		mainSettings.buffOnlyActive = $(e.target).is(':checked');
-		w.withBody('#buffOnlyActiveLang').html(getBuffOnlyActive());
-	});
-	w.withBody('#changeTemplateFolder').change(function(e) { mainSettings.changeTemplateFolder = $(e.target).is(':checked'); });
-	w.withBody('#forcegc').change(function(e) {	
-		mainSettings.forcegc = $(e.target).is(':checked');
-		toggleForceGC();
-	});
-	w.withBody('#persistFilter').change(function(e) { mainSettings.persistFilter = $(e.target).is(':checked'); });
-	w.withBody('#highlight').change(function(e) { mainSettings.highlight = $(e.target).is(':checked'); });	
-	w.withBody('#experimental').change(function(e) { 
-		mainSettings.experimental = $(e.target).is(':checked');
-		toggleExperimental();
-	});	
-	w.Footer().prepend($("<button>").attr({'class':"btn btn-primary pull-left"}).text(loca.GetText("LAB","Save")).click(function(){
-		settings.settings["global"] = {};
-		settings.store(mainSettings);
-		if(menu.type != mainSettings.menuStyle) {
-			menu.type = mainSettings.menuStyle;
-			menu.show();
-			reloadScripts(null);
-			shortcutsMakeMenu();
-		}
-		highlightCircle = highlightDrawCircle();
-		highlightProceed(true);
-		game.gi.isOnHomzone()&&setFilterHandler(mainSettings.defFilter);
-		dtf.setDateTimePattern(mainSettings.dtfFormat);
-		// star menu
-		swmmo.application.GAMESTATE_ID_STAR_MENU.width = 557 + (mainSettings.starColsCount - 9 > 0 ? (mainSettings.starColsCount - 9) * 57 : 0);
-		swmmo.application.GAMESTATE_ID_STAR_MENU.height = 400 + (mainSettings.starRowsCount - 4 > 0 ? (mainSettings.starRowsCount - 4) * 70 : 0);
-		w.hide();
-	}));
-	w.show();
+	if(id.indexOf('coop') == 0) { 
+		return "[{0}] {1}".format(getText("css_adventure"), getText("css_" + id.replace('coop', '')));
+	}
+	if(result != "") { return result; }
+	return getText("css_" + id);
+}
+
+function copyAuthTokenHandler(event)
+{
+	air.Clipboard.generalClipboard.setData("air:text", game.def("ServerState::cClientMessagesII").mAuthToken);
+	showAlert("Token copied");
 }
 
 function highlightDrawCircle()
@@ -414,7 +236,11 @@ function highlightProceed(isUpdate)
 		"ruinAncientLibrary_01",
 		"ruinAncientLibrary_02_a",
 		"ruinAncientLibrary_02_b",
-		"ruinAncientLibrary_02"
+		"ruinAncientLibrary_02",
+		"ruinAncientLibrary_02_tls3",
+		"ruinAncientLibrary_02_tls4",
+		"ruinAncientLibrary_02_tls5",
+		"ruinAncientLibrary_01_tls6"
 	];
 	game.def("global").buildingGroup.mGOList_vector.filter(function(item) {
 		try {
@@ -469,6 +295,27 @@ function menuFilterHandler(event)
 	setFilterHandler(event.target.name);
 }
 
+function getSoundsCount()
+{
+	var n = 0;
+	for(var i in game.def("defines").soundEffects) { n++; }
+	return n;
+}
+
+function disableEffectSounds()
+{
+	if(Object.keys(mainSettings.effectSounds).length == 0) { return; }
+	if(game.def("Sound::cSoundManager").getInstance().isEffectsMuted()) { return; }
+	if(getSoundsCount() < Object.keys(mainSettings.effectSounds).length) {
+		debug("wait some");
+		setTimeout(disableEffectSounds, 1000);
+		return;
+	}
+	for(var i in mainSettings.effectSounds) { 
+		game.def("defines").soundEffects[i] = mainSettings.effectSounds[i];
+	}
+}
+
 function menuZoneRefreshHandler(event)
 {
 	game.gi.mClientMessages.SendMessagetoServer(1037, game.gi.mCurrentViewedZoneID, null);
@@ -513,64 +360,6 @@ function menuDebugShowHandler(event)
 	}
 }
 
-function feedbackMenuHandler(event)
-{
-	var w = new Modal('feedbackWindow', utils.getImageTag('ValentineAdventureRewardBoostConditional', '45px') + ' ' + getText('feedbacktitle'));
-	w.create();
-	if(w.withFooter('.feedbackSend').length == 0) {
-		w.Footer().prepend([$('<button>').attr({ "class": "btn btn-primary pull-left feedbackSend" }).text(loca.GetText("LAB", "Send"))]);
-		var html = '<div class="container-fluid" style="user-select: all;">';
-		html += '<p>{1}</p><p style="float: right;"><small>{2} (aka SirriS)</small></p>'.format(getText('feedbacktitle'),getText('feedbackdescription'),getText('feedbackregards'));
-		html += '<textarea maxlength=2000 id="feedbackContent" style="width:100%;height:70%;background:none;"/>';
-		w.Body().html(html + '<div>');
-		w.withFooter('.feedbackSend').click(function() {
-			var val = w.withBody('#feedbackContent').val();
-			if(val.length < 5) { return; }
-			feedbackSendMessage(val);
-		});
-	}
-	w.show();
-	setTimeout(function() { w.withBody('#feedbackContent').focus() }, 1000);
-}
-
-function navigateToURL(url)
-{
-	air.navigateToURL(new air.URLRequest(url));
-}
-
-function openWikiHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://github.com/fedorovvl/tso_client/wiki"));
-}
-
-function openDiscordHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://discord.gg/ScB7RsvxfB"));
-}
-function openDiscordFRHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://discord.gg/9G5X7VhA"));
-}
-function openDiscordENHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://discord.gg/jQZnNAXg99"));
-}
-function openDiscordDEHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://discord.gg/rm6kmzhPg2"));
-}
-function openDiscordESHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://discord.gg/Gkt2DYtUyn"));
-}
-function openDonateHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://ko-fi.com/sirris"));
-}
-function openDonateTfHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://www.tinkoff.ru/cf/7qUyCUSg6ju"));
-}
 function infoClickHandler(event)
 {
 	var help_url = getText(this.id + '_help');
@@ -578,36 +367,42 @@ function infoClickHandler(event)
 	air.navigateToURL(new air.URLRequest("https://github.com/fedorovvl/tso_client/wiki/" + help_url));
 }
 
-function feedbackSendMessage(e) {
-    var z = ['aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd', '2ViaG9va3MvMTA4MzQ2NjU5NTU1MDEy', 'MjAyNC9peGhjUEs1aXlMQm1vMXlKSlR', '5R3RwSkxDNnlYZGFVWTFRVUI5VzlVU2tqZ3'],
-        a = {
-            username: "Client",
-            content: "",
-            embeds: [{
-                author: {
-                    name: document.title
-                },
-                title: gameLang,
-                description: "`" + e + "`",
-                color: 15258703
-            }]
-        },
-        t = new(game.def("mx.utils::Base64Decoder"));
-    t.decode(z.join('') + "pBUDNmZVVUME9RTkR5bGJiLWM5WVozVAo="), $.ajax({
-        type: "POST",
-        url: t.toByteArray(),
-        data: JSON.stringify(a),
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function(e) {
-            $("#feedbackContent").val(getText('feedbacksended'));
-			$('.feedbackSend').hide();
-        },
-        error: function(e) {
-            $("#feedbackContent").val(getText('feedbackerror') + " " + e)
-        }
-    })
-};
+function setupInfoBar()
+{
+	var defines = game.def("defines");
+	for(var i = 0; i < mainSettings.infoBarResources.length; i++) {
+		var slot = i + 1;
+		defines["INFO_RESOURCE_" + slot] = mainSettings.infoBarResources[i];
+		swmmo.application.GAMESTATE_ID_INFO_BAR["resourceIcon" + slot].source = assets.GetResourceIcon(mainSettings.infoBarResources[i]);
+	}
+}
+
+function loadFileWithRetry(file_path, count)
+{
+	try {
+		if(mainSettings.shortcutsDir != "" && count == 0) {
+			file_path = shortcutsGetPath(file_path);
+		}
+		var file = new air.File(file_path);
+		if(!file.exists) {
+			alert(getText("bad_template") + '('+file_path+') not exists');
+			return;
+		}
+		var fileStream = new air.FileStream();
+		fileStream.open(file, air.FileMode.READ);
+		var data = fileStream.readUTFBytes(file.size);
+		fileStream.close();
+		if (data == "") { return; }
+		return { "data": data, "name": file.name };
+	} catch(e) {
+		debug(e);
+		if(count > 3) {
+			alert(getText("bad_template") + '(retry)');
+		} else {
+			loadFileWithRetry(file_path, ++count);
+		}
+	}
+}
 
 //backward compatibility
 function createModalWindow(id, title, drop) {	new Modal(id, title, drop||false).create(); }
@@ -690,7 +485,7 @@ $.fn.filterAttribute=function(t,r,e){var i=[];return(this.each(function(e,n){for
 /* Utils */
 
 var Utils = function() {
-    this.b64 = game.def("mx.utils::Base64Encoder", !0), this.b64.insertNewLines = !1, this.pngOpts = new window.runtime.flash.display.PNGEncoderOptions(!0)
+    this.b64 = game.def("mx.utils::Base64Encoder", !0), this.b64decoder = game.def("mx.utils::Base64Decoder", !0), this.b64.insertNewLines = !1, this.pngOpts = new window.runtime.flash.display.PNGEncoderOptions(!0)
 };
 Utils.prototype = {
     getImage: function(t, e, a) {
@@ -709,6 +504,24 @@ Utils.prototype = {
             .bitmapData;
         return this.getImage(s, a, r)
     },
+	encodeObject: function(o) {
+		var x = new air.ByteArray();
+		x.writeObject(o); 
+		this.b64.encodeBytes(x);
+		return this.b64.toString();
+	},
+	encode: function(o) {
+		this.b64.encodeUTFBytes(x);
+		return this.b64.toString();
+	},
+	decodeObject: function(s) {
+		this.b64decoder.decode(s);
+		return this.b64decoder.toByteArray().readObject();
+	},
+	decode: function(s) {
+		this.b64decoder.decode(s);
+		return this.b64decoder.toByteArray().toString();
+	},
     createTableRow: function(t, e) {
         var a = $("<div>", {
                 'class': "row"
@@ -931,13 +744,25 @@ SaveLoadTemplate.prototype = {
             .resolvePath("{0}Template.txt".format(this.module)), file.addEventListener(air.Event.COMPLETE, (function(t) {
                 if (mainSettings.changeTemplateFolder) {
                     var a = {};
-                    a[e.module + "lastDir"] = t.target.parent.nativePath, mainSettings[e.module + "lastDir"] = t.target.parent.nativePath, e.lastDir = t.target.parent.nativePath, settings.store(a);
+                    a[e.module + "lastDir"] = e.getRealPath(t.target.parent.nativePath, true);
+					mainSettings[e.module + "lastDir"] = e.getRealPath(t.target.parent.nativePath, true);
+					e.lastDir = mainSettings[e.module + "lastDir"];
+					settings.store(a);
                 };
                 a.saveCallback && a.saveCallback(), z && z()
             })), file.save(JSON.stringify(t, null, " "))
     },
+	getRealPath: function(path, cut) {
+		if(!mainSettings.shortAsGlobalRelative) { return path; }
+		if(mainSettings.shortcutsDir == "") { return path; }
+		if(cut) { return path.replace(mainSettings.shortcutsDir, ''); }
+		return mainSettings.shortcutsDir + path;
+	},
+	setLRULabel: function(label, windowFn) {
+		moduleToName[this.module] = { "name": label, "main": windowFn, "loadFn": this.loadCallback };
+	},
     getLastDir: function() {
-        return null != this.lastDir ? this.lastDir : air.File.documentsDirectory.nativePath
+        return null != this.lastDir ? this.getRealPath(this.lastDir) : mainSettings.shortcutsDir != "" ? mainSettings.shortcutsDir : air.File.documentsDirectory.nativePath
     },
     load: function() {
         var t = this;
@@ -952,6 +777,110 @@ SaveLoadTemplate.prototype = {
             })), e.target.load()
         }))
     }
+};
+
+var Dropbox = function(appkey, token) {
+    this.appkey = appkey;
+	this.refresh_token = token;
+	this.token = null;
+	this.initialized = false;
+	this.refreshIntervalId = null;
+};
+Dropbox.prototype = {
+	init: function() {
+		var e = this;
+		$.ajax({
+			type: "POST",
+			url: "https://api.dropboxapi.com/oauth2/token",
+			data: { "grant_type": "refresh_token", "refresh_token": e.refresh_token },
+			dataType: "json",
+			beforeSend: function (xhr) {
+				xhr.setRequestHeader ("Authorization", "Basic " + e.appkey);
+			},
+			success: function(data) {
+				e.token = data.access_token;
+				e.initialized = true;
+				debug("token obtained");
+				// refresh every 2 hours
+				if(e.refreshIntervalId == null) {
+					e.refreshIntervalId = setInterval(function() { dropbox.init(); }, 7200000);
+				}
+				if(menu.nativeMenu.getItemByName("dropbox") == null) {
+					menu.nativeMenu.items[0].submenu.getItemByName("dropbox").enabled = true;
+				} else {
+					menu.nativeMenu.getItemByName("dropbox").enabled = true;
+				}
+			},
+			error: function(data) {
+				debug("get token error");
+				debug(data);
+				if(e.refreshIntervalId != null) { 
+					clearInterval(e.refreshIntervalId);
+				}
+			}
+		});
+	},
+	upload: function() {
+		var e = this;
+		var fd = new FormData();
+		fd.append('data', JSON.stringify(settings.settings)); 
+		$.ajax({
+			type: "POST",
+			url: "https://content.dropboxapi.com/2/files/upload",
+			data: fd,
+			dataType: "json",
+			contentType: 'application/octet-stream',
+			processData: false,
+			beforeSend: function (xhr) {
+				xhr.setRequestHeader ("Authorization", "Bearer " + e.token);
+				xhr.setRequestHeader ("Dropbox-API-Arg", '{"path": "/'+game.gi.mHomePlayer.getPlayerID()+'.json", "mode": {".tag": "overwrite"}}');
+			},
+			success: function(data) {
+				showGameAlert("Upload success");
+			},
+			error: function(data) {
+				showGameAlert("Upload error");
+				debug(data);
+			}
+		});
+	},
+	extractJSON: function(str) {
+		var firstOpen, firstClose, candidate;
+		firstOpen = str.indexOf('{', firstOpen + 1);
+		do {
+			firstClose = str.lastIndexOf('}');
+			if(firstClose <= firstOpen) { return null; }
+			do {
+				candidate = str.substring(firstOpen, firstClose + 1);
+				try { return JSON.parse(candidate);	}
+				catch(e) {	}
+				firstClose = str.substr(0, firstClose).lastIndexOf('}');
+			} while(firstClose > firstOpen);
+			firstOpen = str.indexOf('{', firstOpen + 1);
+		} while(firstOpen != -1);
+	},
+	download: function() {
+		var e = this;
+		$.ajax({
+			type: "POST",
+			url: "https://content.dropboxapi.com/2/files/download",
+			contentType: 'application/octet-stream',
+			beforeSend: function (xhr) {
+				xhr.setRequestHeader ("Authorization", "Bearer " + e.token);
+				xhr.setRequestHeader ("Dropbox-API-Arg", '{"path": "/'+game.gi.mHomePlayer.getPlayerID()+'.json"}');
+			},
+			success: function(data) {
+				showGameAlert("Download success");
+				var d_settings = e.extractJSON(data);
+				settings.settings = d_settings;
+				settings.save();
+			},
+			error: function(data) {
+				showGameAlert("Download error");
+				debug(data);
+			}
+		});
+	}
 };
 
 /* ColorPicker */
@@ -984,7 +913,7 @@ $(document).on("click", ".kolorPicker", function() {
             r[i] += "</tbody></table>"
         }
         return r[0]
-    }()), $("li#0").addClass("kolorpicker-palette-select"), $(r).css("z-index", "10"), $(".kolorPicker-wrapper .kolorPicker").focus(), $("<div/>").attr("class", "kolorPickerUI").appendTo("body"))
+    }()), $("li#0").addClass("kolorpicker-palette-select"), $(".kolorPicker-wrapper .kolorPicker").focus(), $("<div/>").attr("class", "kolorPickerUI").appendTo("body"))
 });
 $(document).on("input", ".kolorPicker", function() {
     "#" != $(this).val().charAt(0) && $(this).val("#" + $(this).val()), /^#[0-9A-Fa-f]*$/.test($(this).val()) || $(this).val(""), $(this).val().length > 7 && $(this).val(""), 0 != $(this).val().length && ($(this).val().length = 7) && $(this).change()
@@ -1018,11 +947,41 @@ document.styleSheets[0].insertRule(".specSamegrid{background-color:"+mainSetting
 game.def("defines").CHAT_FONT_SIZE = mainSettings.chatFontSize;
 if(expZone == null) {
 	swmmo.application.blueFireComponent.width = mainSettings.chatPanelWidth;
+	setupInfoBar();
 }
+if(mainSettings.useCustomChatCSS == true) {
+	var cssFinal = chatCSSTemplate;
+	$.each(mainSettings.chatCSS, function(k, v) { cssFinal = cssFinal.replace('#'+k, 'color: ' + v); });
+	var sheet = new window.runtime.flash.text.StyleSheet();
+	sheet.parseCSS(cssFinal);
+	game.def("GUI.Components.ItemRenderer::CustomChatMessage").setStyleSheet(sheet);
+}
+game.def("defines").GUILD_ACTIVE = !mainSettings.showOnlyActiveGuildMembers;
 swmmo.application.GAMESTATE_ID_STAR_MENU.width = 557 + (mainSettings.starColsCount - 9 > 0 ? (mainSettings.starColsCount - 9) * 57 : 0);
 swmmo.application.GAMESTATE_ID_STAR_MENU.height = 400 + (mainSettings.starRowsCount - 4 > 0 ? (mainSettings.starRowsCount - 4) * 70 : 0);
 if(expZone == null) {
 	mainSettings.experimental&&toggleExperimental();
 	var experimentalVisitTracker = game.getTracker('experimentalVisitTracker', experimentalVisitHandler);
 	game.gi.channels.ZONE.addPropertyObserver("CLIENT_VISIT_ZONE", experimentalVisitTracker);
+} else {
+	if(mainSettings.mwChatPanel) {
+		swmmo.application.blueFireComponent.width = swmmo.application.GAMESTATE_ID_CHAT_PANEL.width = mainSettings.chatPanelWidth;
+		swmmo.application.GAMESTATE_ID_CHAT_PANEL.chatstatusbox.visible = false;
+		swmmo.application.GAMESTATE_ID_CHAT_PANEL.chatInput.visible = false;
+		swmmo.application.blueFireComponent.setConstraintValue("bottom", 0);
+		globalFlash.gui.mChatPanel.addChannel("news", ["news"], true, 7, loca.GetText("LAB","ChatNews"));
+	} else {
+		swmmo.application.GAMESTATE_ID_CHAT_PANEL.visible = false;
+		swmmo.application.blueFireComponent.width = swmmo.application.GAMESTATE_ID_CHAT_PANEL.width = 0;
+	}
 }
+if(mainSettings.mailRouteStorage) {
+	game.def("defines").MAIL_DEF_ROUTE_0 = 1;
+	game.def("defines").MAIL_DEF_ROUTE_1 = 0;
+}
+dropbox = new Dropbox(null, null);
+if(dropboxApiKey != null && expZone == null) {
+	dropbox = new Dropbox(dropboxApiKey, window.atob(dropboxApiRefresh));
+    dropbox.init();
+}
+disableEffectSounds();

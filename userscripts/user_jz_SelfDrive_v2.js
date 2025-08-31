@@ -68,7 +68,6 @@ function jzv2_SelfDriveMenuHandler(event)
 		// $('#jzSelfDriveModalData .loadbattle'+i).click(jzv2_loadbattle);
 	}
 	$('#jzSelfDriveModalData .autoexecutebtn').click(jzv2_execute);
-	$('#jzSelfDriveModalData .loadremainingbtn').click(loadRemainingUnits);
 	// $('#generalSelect').change(function() {
 	// 	currentMainGeneral = $(this).val();
 	// 	$('#selGen').text('Selected general: ' + currentMainGeneral);
@@ -82,18 +81,23 @@ function jzv2_SelfDriveMenuHandler(event)
 	{
 		$("#jzSelfDriveModal .modal-footer").prepend([
 			// test button
+			$('<button>').attr({ "id": "allGensTostar", "class": "btn btn-sm d-block allGensTostar" }).text('All to star'),
+			$('<button>').attr({ "id": "loadremainingbtn", "class": "btn btn-primary d-inline loadremainingbtn"}).text('Load all units'),
 			$('<button>').attr({ "id": "completequestsbtn", "class": "btn btn-sm d-block completequestsbtn" }).text('Complete quests'),
 			$('<button>').attr({ "id": "cancelexecutebtn", "class": "btn btn-sm d-block cancelexecutebtn" }).text('Cancel Execution'),
 			// add button to clear current adventure
 			$('<button>').attr({ "id": "clearadvbtn", "class": "btn btn-sm d-block clearadvbtn" }).text('Clear Adventure'),
+			$('<button>').attr({ "id": "unloadunitsbtn", "class": "btn btn-sm d-block unloadunitsbtn" }).text('Unload all Units'),
 			$('<button>').attr({ "id": "refreshbtn", "class": "btn btn-sm d-block refreshbtn" }).text('Refresh'),
-			$('<button>').attr({ "id": "unloadunitsbtn", "class": "btn btn-sm d-block unloadunitsbtn" }).text('Unload all Units')
+
 		]);
 		// if no selected advenure or selected adventure does not exist in delayExecutions, disable execute button
 		// air.Introspector.Console.log("currentAdventure", currentAdventure);
 		// air.Introspector.Console.log("has execution for adv", delayExecutions.hasOwnProperty(Object.keys(currentAdventure)[0]));
 		// if(currentAdventure == null || !delayExecutions.hasOwnProperty(Object.keys(currentAdventure)[0])) {
 		// }
+		$('button.loadremainingbtn').click(function(event) {loadRemainingUnits()});
+		$('button.allGensTostar').click(function(event) {shortcutsReturnAll();});
 		$('button.completequestsbtn').click(function(event) {jzv2_test(event);});
 		$('button.cancelexecutebtn').click(function(event) {jzv2_CancelExecute();});
 		$('button.clearadvbtn').click(function(event) {jzv2_clearAdventure();});
@@ -104,6 +108,7 @@ function jzv2_SelfDriveMenuHandler(event)
 	$('#jzSelfDriveModal:not(:visible)').modal({backdrop: "static", focus: false});
     $("#jzSelfDriveModal, #jzSelfDriveModalData").css("opacity", 0.8);
     $('#jzSelfDriveModal [data-toggle="tooltip"]').tooltip({container: 'body'});
+	$('#jzSelfDriveModal img[id^="exudBMPOS_"]').click(_exudUserBuildingListGoTo2);
 	// $(".mark-green.row").each(function() {
 	// 	$(this).find(":first-child").addClass("buffready");
 	//   });
@@ -315,7 +320,7 @@ function jzv2_moveGeneralByAttackId(attackId){
 function jzv2_moveGeneralToGrid(parameters){
 	var generalSpec;
 	allSpecs.forEach(function(spec) {
-		if(spec.GetUniqueID().toKeyString() == parameters[0]) {
+		if(spec != null && spec.GetUniqueID().toKeyString() == parameters[0]) {
 			generalSpec = spec;
 		}
 	});
@@ -531,7 +536,7 @@ function jzv2_SelfDriveMakeModal()
 			showGameAlert("Error loading " + e, 'army');
 		}
 	});
-	jzv2_updateFreeArmyInfo();
+	jzv2_updateFreeArmyInfoORG();
 
     try{
         var out = '<div class="container-fluid">';
@@ -540,8 +545,6 @@ function jzv2_SelfDriveMakeModal()
 		} else {
 			out += '<button id="autoexecutebtn" class="btn btn-primary d-inline autoexecutebtn" style="width: 150px; max-width:150px;">Execute</button>';
 		}
-
-		out += '<button id="loadremainingbtn" class="btn btn-primary d-inline loadremainingbtn" style="width: 150px; max-width:150px;">Load remaining units</button>';
 
 		out += utils.createTableRow([[4, "attack sequance"], [8, "some other table title"]], true);
 
@@ -576,11 +579,17 @@ function jzv2_SelfDriveMakeModal()
 			};
 			// check if target still exists
 			var targets = [];
+			// generalIcons += '<span data-toggle="tooltip" data-placement="top" title="{0}">{1}</span>'.format(general+": "+generalName, generalIcon);
+
 			for (var general in currentAdventure[attackId]){
 				var target = currentAdventure[attackId][general].target;
 				var buildingAtTarget = game.zone.mStreetDataMap.GetBuildingByGridPos(target);
+				// air.Introspector.Console.log(buildingAtTarget + " " + target);
 				if(buildingAtTarget && buildingAtTarget.getPlayerID() != 1770612){
-					targets.push(target);
+					var IconMap = getImageTag("accuracy.png", '24px', '24px');
+					var IconMapTooltip = '<span data-toggle="tooltip" data-placement="top" title="{0}">{1}</span>'.format(target, IconMap);
+					// targets.push(target);
+					targets.push(IconMapTooltip);
 				}
 			};
 
@@ -609,14 +618,12 @@ function jzv2_SelfDriveMakeModal()
 			if(!targetsAlive) {
 				continue;
 			}
-			// air.Introspector.Console.log(attacksState);
-			var generalActionButtons = '<button type="button" class="btn btn-sm tostarbtn'+i+' '+attacksState[i-1].isMoveDisabled+'">To Star</button>';
+			var generalActionButtons = '<button type="button" class="btn btn-sm tostarbtn'+i+' '+attacksState[i-1].isMoveDisabled+'">ToStar</button>';
+			generalActionButtons += '<button type="button" class="btn btn-sm regroupbtn'+i+' '+attacksState[i-1].isRegroupDisabled+'">Load</button>';
 			generalActionButtons += '<button type="button" class="btn btn-sm movebtn'+i+' '+attacksState[i-1].isMoveDisabled+'">Move</button>';
-			generalActionButtons += '<button type="button" class="btn btn-sm regroupbtn'+i+' '+attacksState[i-1].isRegroupDisabled+'">Regroup</button>';
 			generalActionButtons += '<button type="button" class="btn btn-sm attackbtn'+i+' '+attacksState[i-1].isAttackDisabled+'">Attack</button>';
-			generalActionButtons += ' '+generalState.join(', ');
 			buttonsTemplate += generalActionButtons;
-			buttonsTemplate += areReady;
+			// buttonsTemplate += areReady;
 			buttonsTemplate += '</div>';
 			out += '<div style="display: flex; align-items: center;" class="d-flex align-items-center justify-content-center">';
 
@@ -625,16 +632,25 @@ function jzv2_SelfDriveMakeModal()
 			for (var general in currentAdventure[attackId]){
 				var spec = generalsSpecs[general];
 				var generalName = currentAdventure[attackId][general].name;
-				// var generalIcon = utils.getImageTag();
+				var generalIcon = utils.getImageTag(spec.getMilitaryUnitType());
+				generalIcons += '<span data-toggle="tooltip" data-placement="top" title="{0}">{1}</span>'.format(general+": "+generalName, generalIcon);
+				generalIcons += GeneralStateToDisplay(spec);
 
-				// air.Introspector.Console.log(spec.getMilitaryUnitType()); //SylvanaGeneral
-				var generalIcon = utils.getImageTag(spec.getMilitaryUnitType()); // utils.getImageTag(unitType)
-				generalIcons += '<span data-toggle="tooltip" data-placement="top" title="{0}">{1}</span>|'.format(general+": "+generalName, generalIcon);
+				var target = currentAdventure[attackId][general].target;
+				var buildingAtTarget = game.zone.mStreetDataMap.GetBuildingByGridPos(target);
+				if(buildingAtTarget && buildingAtTarget.getPlayerID() != 1770612){
+					var IconMap = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudBMPOS_'+ target+'"').replace('style="', 'style="cursor: pointer;');
+					// go to target on click
+					// 'data-unit='+name+'
+					var IconMapTooltip = '<span data-toggle="tooltip" data-placement="top" title="{0}">{1}</span>'.format(target, IconMap);
+					generalIcons += IconMapTooltip;
+				}
+				generalIcons += '|';
 			}
 
 			var row = utils.createTableRow([
-				[7, attackId + ' targets '+targets.join(', ') + ' ' + generalIcons],
-				[5, buttonsTemplate]]);
+				[9, attackId + ' ' + generalIcons],
+				[3, buttonsTemplate]]);
 			out += row;
 		}
         return out + '</div>';
@@ -643,6 +659,27 @@ function jzv2_SelfDriveMakeModal()
 		// alert(e);
         return '<div>' + e + '</div>';
     }
+}
+
+function GeneralStateToDisplay(spec){
+	var state = spec.GetGeneralState();
+	if(spec.GetGarrisonGridIdx() < 0){
+		return getImageTag("Star", '20px', '20px');
+	}
+	switch(state){
+		case -1:
+			return getImageTag("GeneralStateIconRetreat", '20px', '20px');
+		case 0:
+			return getImageTag("OKIcon", '20px', '20px');
+		case 1:
+			return getImageTag("GeneralStateIconAttack", '20px', '20px');
+		case 2:
+			return getImageTag("GeneralStateIconRecovery", '20px', '20px');;
+		case 3:
+			return getImageTag("GeneralStateIconRetreat", '20px', '20px');
+		default:
+			return state;
+	}
 }
 
 function jzv2_battleMove(movePackets)
@@ -800,7 +837,7 @@ function jzv2_armyGetSquadCount(spec, squad)
 	return armyInfo[spec].army[squad] || 0;
 }
 
-function jzv2_updateFreeArmyInfo()
+function jzv2_updateFreeArmyInfoORG()
 {
 	var armyCategory = [];
 	armyFreeInfo = {};
@@ -813,6 +850,7 @@ function jzv2_updateFreeArmyInfo()
 		armyCategory[cat] = armyCategory[cat] || '';
 		armyCategory[cat] += utils.getImageTag(item.GetType(), '20px') + ' ' + item.GetAmount() + '&nbsp;';
 		armyFreeInfo[item.GetType()] = item.GetAmount();
+		// air.Introspector.Console.log(item.GetType(), item.GetAmount());
 	});
 }
 
@@ -856,50 +894,8 @@ function jz_getAvailableQuatermasterId(){
 	return quatermasterId;
 }
 
-function jz_loadRemainingArmyToQuatermaster(){
-	jz_getAvailableQuatermasterId();
-
-	if(quatermasterId == null) {
-		// air.Introspector.Console.log("quatermasterId is null");
-		showGameAlert("No quatermaster available");
-		return; }
-	if(quatermaster == null) {
-		// air.Introspector.Console.log("quatermaster is null");
-		showGameAlert("No quatermaster available");
-		return; }
-
-	var capacity = quatermaster.GetMaxMilitaryUnits();
-
-	jzv2_updateFreeArmyInfo();
-	if(Object.keys(armyFreeInfo).length == 0) { return; }
-
-	var queue = new TimedQueue(1000);
-	var amountLoaded = 0;
-	var dRaiseArmyVO = new dRaiseArmyVODef();
-
-	dRaiseArmyVO.armyHolderSpecialistVO = quatermaster.CreateSpecialistVOFromSpecialist();
-	$.each(armyFreeInfo, function(type) {
-		var unitsToLoad = armyFreeInfo[type];
-		var dResourceVO = new dResourceVODef();
-		dResourceVO.name_string = type;
-		dResourceVO.amount = unitsToLoad;
-
-		if(amountLoaded + unitsToLoad <= capacity) {
-			amountLoaded += unitsToLoad;
-			dRaiseArmyVO.unitSquads.addItem(dResourceVO);
-		} else {
-			showGameAlert("Not enough capacity");
-		}
-	});
-
-	queue.add(function(){
-		game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
-		showGameAlert('Load army completed');
-	});
-	queue.run();
-}
-
 var windowOpened = false;
+var jz_handleQuestBook_timeoutId;
 function jz_handleQuestBook(){
 // public static const QUEST_MODE_string:String = "mQuestMode";
 // public static const QUEST_MODE_QUEST_FAILED:int = 0;
@@ -916,6 +912,7 @@ function jz_handleQuestBook(){
 // public static const QUEST_MODE_DEACTIVATED:int = 11;
 // public static const QUEST_MODE_REWARD_COLLECTED_IDLE:int = 12; // finished
 	showGameAlert("completing quests");
+	globalFlash.gui.mQuestBook.Show();
 	var activeQuests = game.questCallbacks.GetClientQuestPool().GetQuest_vector().source;
 	var global = swmmo.getDefinitionByName("global");
 
@@ -928,6 +925,7 @@ function jz_handleQuestBook(){
 			globalFlash.gui.OpenWindow("GAMESTATE_ID_QUEST_BOOK_START_WITH", quest.getQuestName_string())
 			windowOpened = true;
 		}
+		showGameAlert("quest.mQuestMode: "+ quest.mQuestMode + " name: " + quest.getQuestName_string());
 
 		if(quest.mQuestMode == 12) { // QUEST_MODE_REWARD_COLLECTED_IDLE
 			// finished
@@ -947,19 +945,35 @@ function jz_handleQuestBook(){
 		}
 
 		var mainquest = quest.mQuestDefinition.connectedToQuest_string == "";
-		if(quest.mQuestMode == 3 && !mainquest) { // QUEST_MODE_RUNNING
+		if(quest.mQuestMode == 3) { // QUEST_MODE_RUNNING
 			// notFinishedQuests.push(quest);
 			// air.Introspector.Console.log("endConditions_vector.length", quest.mQuestDefinition.endConditions_vector.length);
 			var questCondition0 = quest.mQuestDefinition.questTriggers_vector[0].condition;
-
+			// showGameAlert(quest.getQuestName_string())
 			if (questCondition0 == 9) { // CONDITION_SELECTED = 9;
 				// air.Introspector.Console.log("quest.mQuestMode: "+ quest.mQuestMode + " name: " + quest.getQuestName_string());
 				showGameAlert("Pickup all: " + quest.getQuestName_string());
-				timeoutDuration = 10*1000;
+				timeoutDuration = 5*1000;
 				shortcutsPickupAll();
 				break
 			}
+			if (questCondition0 == 12) { // CONDITION_SELECTED = 12;
+				// air.Introspector.Console.log("quest.mQuestMode: "+ quest.mQuestMode + " name: " + quest.getQuestName_string());
+				showGameAlert("Select building: " + quest.getQuestName_string());
+				timeoutDuration = 5*1000;
+				// shortcutsPickupAll();
+				break
+			}
+			// wedding cake quest
+			if(quest.getQuestName_string() == "BuffQuestWeddingCake") {
+				showGameAlert("Delivering wedding cake, 10s");
+				FromStarToStorage("2|effectbuffweddingcake|", 1);
+				timeoutDuration = 5*1000;
+				break
+			}
 		}
+
+
 
 		if(quest.mQuestMode == 5) { //QUEST_MODE_REWARD_WINDOW_WAIT_FOR_BUTTON_ACTIVE
 			// notFinishedQuests.push(quest);
@@ -968,113 +982,22 @@ function jz_handleQuestBook(){
 			break;
 		}
 	};
+	globalFlash.gui.mQuestBook.Hide();
 
 	// timeoutId = setTimeout(function() { jz_handleQuestBook() }, 5*1000);
 
 	// close game window if no quests
 	if (notFinishedQuests.length > 0){
-		timeoutId = setTimeout(function() { jz_handleQuestBook() }, timeoutDuration);
+		jz_handleQuestBook_timeoutId = setTimeout(function() { jz_handleQuestBook() }, timeoutDuration);
 	} else {
 		showGameAlert("No quests left");
-		// air.NativeApplication.nativeApplication.exit();
+		air.NativeApplication.nativeApplication.exit();
 		return;
 	}
 }
 
 function loadRemainingUnits(){
-	alert("loadRemainingUnits");
-
-/// adv def
-	// var def = game.zone.GetAdventure().GetAdventureDefinition();
-	// air.Introspector.Console.log(swmmo.application.mGameInterface.mCurrentPlayerZone.mAdventureName);
-
-	// air.Introspector.Console.log("adventureDef", adventureDef);
-	// var advDef = adventureDef.FindAdventureDefinition(swmmo.application.mGameInterface.mCurrentPlayerZone.mAdventureName);
-	// air.Introspector.Console.log(advDef);
-
-
-
-
-	// get all specialists in zone
-	var fullCapacityGenerals = [];
-	var generalsWithEliteUnits = [];
-	var generalsWithStandardUnits = [];
-	game.zone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
-		// item.GetType() == 12){ // as public static const TRANSPORTER_GENERAL:int = 12;
-		if (game.player.GetPlayerId() == item.getPlayerID() &&
-			(armySPECIALIST_TYPE.IsGeneral(item.GetType()) || item.GetType() == 12)){
-				// air.Introspector.Console.log(item);
-				// air.Introspector.Console.log("max units: "+ item.GetMaxMilitaryUnits());
-				// air.Introspector.Console.log("loaded units: "+ item.GetArmy().GetUnitsCount());
-
-				var maxCapacity = item.GetMaxMilitaryUnits();
-				var loadedUnits = item.GetArmy().GetUnitsCount();
-				var freeCapacity = maxCapacity - loadedUnits;
-
-				// air.Introspector.Console.log(loadedUnits+"/"+maxCapacity);
-				var eliteUnit = false;
-				if(freeCapacity == maxCapacity){
-					// air.Introspector.Console.log("full capacity");
-					fullCapacityGenerals.push(item);
-				}else if(freeCapacity > 0 && loadedUnits > 0){
-					// check if elite unit
-					var army = item.GetArmy();
-					var squads = army.GetSquads_vector();
-
-					for(var i = 0; i < squads.length; i++) {
-						var squad = squads[i];
-						if(squad.GetUnitDescription().GetIsElite() == true){
-							eliteUnit = true;
-						}
-					}
-					if(eliteUnit){
-						generalsWithEliteUnits.push(item);
-					} else {
-						generalsWithStandardUnits.push(item);
-					}
-				}
-			}
-	});
-	// air.Introspector.Console.log("fullCapacityGenerals " + fullCapacityGenerals.length);
-	// air.Introspector.Console.log("generalsWithEliteUnits " + generalsWithEliteUnits.length);
-	// air.Introspector.Console.log("generalsWithStandardUnits " + generalsWithStandardUnits.length);
-
-
-	// get free army info
-	jzv2_updateFreeArmyInfo();
-	if(freeArmySquadInfo.length == 0) { return; }
-
-	var queue = new TimedQueue(1000);
-	var amountLoaded = 0;
-	var dRaiseArmyVO = new dRaiseArmyVODef();
-
-	// dRaiseArmyVO.armyHolderSpecialistVO = quatermaster.CreateSpecialistVOFromSpecialist();
-	freeArmySquadInfo.forEach(function(squad){
-		var isElite = squad.GetUnitDescription().GetIsElite();
-		air.Introspector.Console.log(isElite + " unasigned ", squad);
-
-		if(isElite){
-			while(squad.GetAmount() > 0){
-			}
-
-		}
-		// var dResourceVO = new dResourceVODef();
-		// dResourceVO.name_string = type;
-		// dResourceVO.amount = unitsToLoad;
-
-		// if(amountLoaded + unitsToLoad <= capacity) {
-		// 	amountLoaded += unitsToLoad;
-		// 	dRaiseArmyVO.unitSquads.addItem(dResourceVO);
-		// } else {
-		// 	showGameAlert("Not enough capacity");
-		// }
-	});
-
-	// queue.add(function(){
-	// 	game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
-	// 	showGameAlert('Load army completed');
-	// });
-	// queue.run();
+	jz_loadRemainingArmyOrg();
 }
 
 function jz_UpdateButtonStates(){

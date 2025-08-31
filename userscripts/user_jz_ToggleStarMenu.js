@@ -17,7 +17,7 @@ function openStarMenuHandler(event){
 	// 		game.questCallbacks.QuestOkButtonPressedFromGui(quest);
 	// 		air.Introspector.Console.log("updated qest mode");
 	// 	}
-	// });
+	// }); mEventInfoPanel
 
 
 

@@ -49,8 +49,10 @@ function menuBuffsHandler(event)
 		out += $('<button>', { 'class': 'btn btn-primary btn-lg btn-block', 'id': 'stopRecording' }).text(getText('buff_stop_record')).prop('outerHTML');
 	}
 	if(!buffRecordEnabled && buffRecord != null) {
-		buffVector = game.getBuffs();
-		out += getBuffHTML() + getBuffsAvailableHTML() + '<br><button type="button" class="btn btn-primary btn-lg btn-block" id="startRecording">' + getText('buff_record_more') + '</button>';
+		buffVector = game.gi.mCurrentPlayer.getAvailableBuffs_vector();
+		var BuffHTML = getBuffHTML();
+		var BuffsAvailableHTML = getBuffsAvailableHTML();
+		out += BuffsAvailableHTML + '<br>' + BuffHTML + BuffsAvailableHTML + '<br><button type="button" class="btn btn-primary btn-lg btn-block" id="startRecording">' + getText('buff_record_more') + '</button>';
 		if(buffRecordFiltered.length > 0){
 			$('.buffSubmit').attr('disabled', false);
 		}
@@ -142,17 +144,41 @@ function getBuffHTML()
 	$.each(buffRecord['data'], function(index, data) { 
 		status = getBuffStatus(data, isZoneRight);
 		// too dirty
-		if(data['buffName'].indexOf("RemoveBuff") >= 0) { 
-			if(status == 'buff_buffed') { status = 'buff_ready'; } 
-			else if(status == 'buff_ready') { status = 'buff_not_buffed'; } 
+		if(data['buffName'].indexOf("RemoveBuff") >= 0) {
+			if(status == 'buff_buffed') { status = 'buff_ready'; }
+			else if(status == 'buff_ready') { status = 'buff_not_buffed'; }
 		}
+
+		var cssClass = '';
+
+		switch (status) {
+			case 'buff_ready':
+				cssClass = 'buffReady'
+				break;
+			case 'buff_buffed':
+				cssClass = 'buffed'
+				break;
+			case 'buff_notactive':
+				cssClass = 'notActive'
+				break;
+			case 'buff_wrong_name':
+				cssClass = 'wrongName'
+				break;
+			case 'buff_not_exist':
+				cssClass = 'buffNotReady'
+				break;
+			default:
+				cssClass = 'buffNotReady';
+				break;
+		}
+
 		if(status == 'buff_ready') { buffRecordFiltered.push(data); }
 		result += createTableRow([
 			[1, data['buiGrid']],
 			[4, loca.GetText("BUI", data['buiName'])],
 			[1, getBuiLevel(data)],
 			[4, loca.GetText("RES", data['buffName'])],
-			[2, getText(status) + '<button type="button" class="close" value="'+data['buiGrid']+'"><span>&times;</span></button>', (status == 'buff_ready') ? "buffReady" : "buffNotReady"]
+			[2, getText(status) + '<button type="button" class="close" value="'+data['buiGrid']+'"><span>&times;</span></button>', cssClass]
 		]);
 	});
 	return result;
@@ -169,9 +195,9 @@ function buffApliedHandler(event){
 		var zoneUser = game.player.GetPlayerName_string();
 		if(game.gi.isOnHomzone() == false) {
 			try{
-				zoneUser = globalFlash.gui.mFriendsList.GetFriendById(swmmo.application.mGameInterface.mCurrentViewedZoneID).username;
+				zoneUser = globalFlash.gui.mFriendsList.GetFriendById(game.gi.mCurrentViewedZoneID).username;
 			} catch(e) {
-				zoneUser = globalFlash.gui.mFriendsList.GetGuildMemberById(swmmo.application.mGameInterface.mCurrentViewedZoneID).username;
+				zoneUser = globalFlash.gui.mFriendsList.GetGuildMemberById(game.gi.mCurrentViewedZoneID).username;
 			}
 		}
 		buffRecord = { 

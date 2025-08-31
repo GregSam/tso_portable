@@ -1,0 +1,34 @@
+
+
+
+
+
+
+game.def("GUI.GAME.Chat::TSOChatMediator").InitChat(true) // it initialize but login fails
+
+swmmo.application.GAMESTATE_ID_CHAT_PANEL
+
+
+cSettingsManager.getInstance().currentGlobalChatInstance
+
+
+swmmo.getDefinitionByName("cSettingsManager").getInstance().currentGlobalChatInstance
+
+com.bluebyte.bluefire.puremvc.view.xiff.XIFFConnectionMediator
+game.def("com.bluebyte.bluefire.puremvc.view.xiff::XIFFConnectionMediator")
+BlueFireFacade
+game.def("com.bluebyte.bluefire.puremvc::BlueFireFacade")
+game.def("com.bluebyte.bluefire.puremvc::BlueFireFacade").getInstance(null)
+
+game.def("global")
+
+handleNotification XIFF_CONNECT
+
+
+MacroCommand
+org.puremvc.as3.multicore.patterns.command
+game.def("org.puremvc.as3.multicore.patterns.command::MacroCommand")
+
+StartupCommand
+com.bluebyte.bluefire.puremvc.controller
+game.def("com.bluebyte.bluefire.puremvc.controller::StartupCommand")

@@ -1,4 +1,4 @@
-addToolsMenuItem(loca.GetText("LAB", "WarehouseTab7") + " (Ctrl + F4)", _exudHLColl, 115, true);
+addToolsMenuItem(loca.GetText("LAB", "WarehouseTab7") + " (Ctrl + F4)", _exudHLColl);
 
 function _exudHLColl(event) {
     var collectionsManager = swmmo.getDefinitionByName("Collections::CollectionsManager").getInstance(),

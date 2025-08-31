@@ -1,12 +1,15 @@
 addToolsMenuItem('Build mines', Playground3, null, true);
+Playground3();
 function Playground3()
 {
 		game.showAlert('Mines builds started'); // 14-21
-		var xValuesTitan = [13934, 5228, 5502, 7545, 5238, 13425, 12288, 697, 11804, 7814, 13160, 1224, 13846, 9776,
-							785, 6775, 6420, 6154, 10005, 9735, 10089, 5577,
-							4956, 5664, 1794, 1613, 1438, 11864, 1739, 1563, 1388, 3081, 768, 12006, 9201,
-							8668, 9377, 13515, 12997, 11580, 3670, 3672, 2078, 1725, 1907, 1020, 933,
-							8151, 5484, 7887, 5750, 5837, 5123, 7356, 6059, 5882, 13285, 13373 ];
+		var xValuesTitan = [13934, 5228, 5502, 7545, 5238, 13425, 12288, 697,// titan mines
+							11804, 7814, 13160, 1224, 13846, 9776, 785, // salpeter mines
+							6775, 6420, 6154, 10005, 9735, 10089, // copper mines
+							5577, 4956, 5664, 1794, 1613, 1438, // coal mines
+							11864, 1739, 1563, 1388, 3081, 768, 12006, 9201, 8668, 9377, // gold mines
+							13515, 12997, 11580, 3670, 3672, 2078, 1725, 1907, 1020, 933, // iron mines
+							8151, 5484, 7887, 5750, 5837, 5123, 7356, 6059, 5882, 13285, 13373, 3407, 2697 ];// iron mines
 		//var xValuesSalp = [11804, 7814, 13160, 1224, 13846, 9776];
 		var xValuesDeposit = [];
 		var xValuesTemp;
@@ -58,13 +61,6 @@ function Playground3()
 							game.gi.SendServerAction(50, 63, xValues2, 0, null);
 							game.showAlert('Building: Salpeter');
 						}
-						else if(CurrentQueueFree > 0 && i > 14 && i < 21)
-						{
-							CurrentQueueFree--;
-							//air.Introspector.Console.log("Nicht gefunden: " + xValues2 + "Counter: " + i);
-							game.gi.SendServerAction(50, 36, xValues2, 0, null);
-							game.showAlert('Building: Copper');
-						}
 						else if(CurrentQueueFree > 0 && i > 20 && i < 27)
 						{
 							CurrentQueueFree--;
@@ -85,6 +81,13 @@ function Playground3()
 							//air.Introspector.Console.log("Nicht gefunden: " + xValues2 + "Counter: " + i);
 							game.gi.SendServerAction(50, 50, xValues2, 0, null);
 							game.showAlert('Building: Iron');
+						}
+						else if(CurrentQueueFree > 0 && i > 14 && i < 21)
+						{
+							CurrentQueueFree--;
+							//air.Introspector.Console.log("Nicht gefunden: " + xValues2 + "Counter: " + i);
+							game.gi.SendServerAction(50, 36, xValues2, 0, null);
+							game.showAlert('Building: Copper');
 						}
 					}
 				});
