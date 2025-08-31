@@ -6,6 +6,7 @@
 var dIntegerVODef = swmmo.getDefinitionByName("Communication.VO::dIntegerVO");
 
 var battlesFromMail = {};
+var luc_pendingMailRequests = 0; // tracks outstanding battle mail fetches
 var LUC_ICON_SIZE = '24px';
 addToolsMenuItem("JZ Lost units counter", luc_GetData);
 
@@ -17,14 +18,11 @@ function luc_MenuHandler(event)
 {
 	$( "div[role='dialog']:not(#lucModal):visible").modal("hide");
 	createModalWindow('lucModal', 'Lost units counter');
-	// widen this modal to 150% of its default dialog width
+	// set this modal width to 70% of the screen width
 	try {
 		var $dlg = $('#lucModal .modal-dialog');
 		if ($dlg.length) {
-			var curW = $dlg.width();
-			if (curW && curW > 0) {
-				$dlg.css({ 'max-width': 'none', 'width': Math.floor(curW * 1.5) + 'px' });
-			}
+			$dlg.css({ 'max-width': '70vw', 'width': '70vw' });
 		}
 	} catch(e) { }
 	$("#lucModalData, .modal-body").css({
@@ -200,6 +198,14 @@ function getBattleBodyResponderHandler(event, data)
         // battleReports.push(battleData);
         // debug("getBattleBodyResponderHandler battleData: ", battleData);
         insertSorted(battleReports, battleData);
+
+        // Auto refresh when all pending mails are processed
+        if (luc_pendingMailRequests > 0) {
+            luc_pendingMailRequests--;
+            if (luc_pendingMailRequests === 0 && $('#lucModal').length) {
+                setTimeout(function(){ try{ luc_ReloadModal(); }catch(e){} }, 200);
+            }
+        }
 	}
 	catch (e)
 	{
@@ -211,6 +217,12 @@ function getBattleBodyResponderHandlerFault(event, data)
 {
     // debug("getBattleBodyResponderHandlerFault data: ", data);
     // debug("getBattleBodyResponderHandlerFault event: ", event);
+    if (luc_pendingMailRequests > 0) {
+        luc_pendingMailRequests--;
+        if (luc_pendingMailRequests === 0 && $('#lucModal').length) {
+            setTimeout(function(){ try{ luc_ReloadModal(); }catch(e){} }, 200);
+        }
+    }
 }
 
 // Insert while keeping array sorted
@@ -230,6 +242,7 @@ function getEmailsFromServer(){
     try {
         var currentMails = globalFlash.gui.mMailWindow.mailTypeHeader.owner.dataProvider;
         // debug("currentMails: ", currentMails);
+        var requested = 0;
         for(var i = 0; i < currentMails.length; i++){
             var mail = currentMails[i];
             // BATTLE_REPORT_INTERCEPTED = 29;
@@ -238,8 +251,14 @@ function getEmailsFromServer(){
                 // alert("Fetching email "+i);
                 var v = new vdef(mail.id);
                 game.gi.mClientMessages.SendMessagetoServer(1177,game.gi.mCurrentViewedZoneID,v, getBattleBodyResponder);
+                requested++;
             }
         };
+        luc_pendingMailRequests = requested;
+        // If nothing requested, just refresh immediately
+        if (luc_pendingMailRequests === 0 && $('#lucModal').length) {
+            setTimeout(function(){ try{ luc_ReloadModal(); }catch(e){} }, 50);
+        }
     } catch (error) {
         // debug("Error in getEmailsFromServer: ", error);
     }
