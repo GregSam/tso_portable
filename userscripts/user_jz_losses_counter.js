@@ -22,7 +22,7 @@ function luc_MenuHandler(event)
 	try {
 		var $dlg = $('#lucModal .modal-dialog');
 		if ($dlg.length) {
-			$dlg.css({ 'max-width': '1100px', 'width': '1100px' });
+			$dlg.css({ 'max-width': '1200px', 'width': '1200px' });
 		}
 	} catch(e) { }
 	$("#lucModalData, .modal-body").css({
@@ -213,6 +213,7 @@ function getBattleBodyResponderHandler(event, data)
         if (luc_pendingMailRequests > 0) {
             luc_pendingMailRequests--;
             if (luc_pendingMailRequests === 0 && $('#lucModal').length) {
+                try { game.showAlert('All battle mails received.'); } catch(e) {}
                 setTimeout(function(){ try{ luc_ReloadModal(); }catch(e){} }, 200);
             }
         }
@@ -230,6 +231,7 @@ function getBattleBodyResponderHandlerFault(event, data)
     if (luc_pendingMailRequests > 0) {
         luc_pendingMailRequests--;
         if (luc_pendingMailRequests === 0 && $('#lucModal').length) {
+            try { game.showAlert('All battle mails received.'); } catch(e) {}
             setTimeout(function(){ try{ luc_ReloadModal(); }catch(e){} }, 200);
         }
     }
