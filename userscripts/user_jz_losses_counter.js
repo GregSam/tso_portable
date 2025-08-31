@@ -66,12 +66,15 @@ function luc_GetCurrentArmyTable(){
     // Header row
     html += utils.createTableRow([
         [1, '<strong>Battle</strong>'],
-        [5, '<strong>Attackers</strong>'],
-        [6, '<strong>Casualties</strong>']
+        [3, '<strong>Attackers</strong>'],
+        [3, '<strong>Defenders</strong>'],
+        [5, '<strong>Casualties</strong>']
     ]);
+    var perBattleDefenders = (battlesFromMail.perBattleDefenders || []).slice().reverse();
     for (var i = 0; i < perBattleCasualties.length; i++) {
         var battleCasualties = perBattleCasualties[i];
         var attackersHtml = perBattleAttackers[i] || '';
+        var defendersHtml = perBattleDefenders[i] || '';
         var battleCasualtiesInfo = [];
 
         if(battleCasualties.length == 0){
@@ -82,7 +85,7 @@ function luc_GetCurrentArmyTable(){
         for(var unitType in battleCasualties){
             battleCasualtiesInfo.push(utils.getImageTag(unitType) + ' ' + battleCasualties[unitType] + '&nbsp;');
         }
-        html += ulc_createBattleRow('Battle ' + battleId, attackersHtml, battleCasualtiesInfo);
+        html += ulc_createBattleRow('Battle ' + battleId, attackersHtml, defendersHtml, battleCasualtiesInfo);
         battleId++;
     }
 
@@ -142,22 +145,24 @@ function ulc_createRowsWithMaxUnits(rowName, data){
 }
 
 // Create rows for a battle with 3 columns: Battle id, attackers images, casualties
-function ulc_createBattleRow(rowName, attackersHtml, data){
+function ulc_createBattleRow(rowName, attackersHtml, defendersHtml, data){
     var temp = JSON.parse(JSON.stringify(data));
-    var firstN = temp.splice(0, 6);
+    var firstN = temp.splice(0, 5);
     firstN = firstN.map(function(item){ return item; }).join('');
     var html = utils.createTableRow([
         [1, rowName],
-        [5, attackersHtml],
-        [6, firstN]
+        [3, attackersHtml],
+        [3, defendersHtml],
+        [5, firstN]
     ]);
     while(temp.length > 0){
-        var nextN = temp.splice(0, 6);
+        var nextN = temp.splice(0, 5);
         nextN = nextN.map(function(item){ return item; }).join('');
         html += utils.createTableRow([
             [1, ''],
-            [5, ''],
-            [6, nextN]
+            [3, ''],
+            [3, ''],
+            [5, nextN]
         ]);
     }
     return html;
@@ -227,17 +232,19 @@ function parseBattleScript(battleScript, timestamp) {
     jsonResult.CombatModifiers = jsonResult.CombatModifiers[0];
     jsonResult.Skills = jsonResult.Skills[0];
     jsonResult.timestamp = timestamp;
-    // derive attackers summary (images with counts) for quick rendering later
+    // derive attackers/defenders summary (images with counts) for quick rendering later
     try {
         var armies = jsonResult.ArmyDescription.Army;
         // ensure array
         if (!Array.isArray(armies)) { armies = [armies]; }
         var attackingArmy = armies.filter(function(army){ return army.group === 'Attackers'; })[0];
+        var defendingArmy = armies.filter(function(army){ return army.group === 'Defenders'; })[0];
         var attackersCount = {};
+        var defendersCount = {};
         if (attackingArmy) {
-            var squads = attackingArmy.Squad || [];
-            if (!Array.isArray(squads)) { squads = [squads]; }
-            squads.forEach(function(sq){
+            var squadsA = attackingArmy.Squad || [];
+            if (!Array.isArray(squadsA)) { squadsA = [squadsA]; }
+            squadsA.forEach(function(sq){
                 var unitType = sq.unitType || (sq.Unit && sq.Unit[0] && (sq.Unit[0].unitType || sq.Unit[0].type)) || sq.combatantType || sq.name;
                 var amt = parseInt(sq.amount, 10);
                 if (!isNaN(amt) && amt < 0) { amt = 0; }
@@ -246,9 +253,23 @@ function parseBattleScript(battleScript, timestamp) {
                 }
             });
         }
+        if (defendingArmy) {
+            var squadsD = defendingArmy.Squad || [];
+            if (!Array.isArray(squadsD)) { squadsD = [squadsD]; }
+            squadsD.forEach(function(sq){
+                var unitType = sq.unitType || (sq.Unit && sq.Unit[0] && (sq.Unit[0].unitType || sq.Unit[0].type)) || sq.combatantType || sq.name;
+                var amt = parseInt(sq.amount, 10);
+                if (!isNaN(amt) && amt < 0) { amt = 0; }
+                if (unitType) {
+                    defendersCount[unitType] = (defendersCount[unitType] || 0) + (isNaN(amt) ? 0 : amt);
+                }
+            });
+        }
         jsonResult.perBattleAttackers = Object.keys(attackersCount).map(function(u){ return utils.getImageTag(u) + ' ' + attackersCount[u]; }).join('&nbsp;');
+        jsonResult.perBattleDefenders = Object.keys(defendersCount).map(function(u){ return utils.getImageTag(u) + ' ' + defendersCount[u]; }).join('&nbsp;');
     } catch(e) {
         jsonResult.perBattleAttackers = '';
+        jsonResult.perBattleDefenders = '';
     }
     return jsonResult;
 }
@@ -343,6 +364,7 @@ function processBattleReports(event){
         battleReports: battleReports,
         perBattleCasualties: perBattleCasualties,
         perBattleAttackers: battleReports.map(function(b){ return (b && b.perBattleAttackers) ? b.perBattleAttackers : ''; }),
+        perBattleDefenders: battleReports.map(function(b){ return (b && b.perBattleDefenders) ? b.perBattleDefenders : ''; }),
         battleDetails: battleDetails
     };
 }
