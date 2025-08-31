@@ -8,6 +8,9 @@ var dIntegerVODef = swmmo.getDefinitionByName("Communication.VO::dIntegerVO");
 var battlesFromMail = {};
 var luc_pendingMailRequests = 0; // tracks outstanding battle mail fetches
 var LUC_ICON_SIZE = '24px';
+function luc_isGeneralUnit(unitType){
+    try { return (typeof unitType === 'string') && /(general|boss)/i.test(unitType); } catch(e){ return false; }
+}
 addToolsMenuItem("JZ Lost units counter", luc_GetData);
 
 function luc_GetData(){
@@ -90,13 +93,15 @@ function luc_GetCurrentArmyTable(){
         var battleCasualtiesInfo = [];
         var battleDefCasualtiesInfo = [];
 
-        for(var unitType in battleCasualties){
+        var bcKeys = Object.keys(battleCasualties||{}).sort(function(a,b){ var ag=luc_isGeneralUnit(a), bg=luc_isGeneralUnit(b); return ag===bg?0:(ag?-1:1); });
+        bcKeys.forEach(function(unitType){
             battleCasualtiesInfo.push(utils.getImageTag(unitType, LUC_ICON_SIZE) + ' ' + battleCasualties[unitType] + '&nbsp;');
-        }
+        });
         var defCas = perBattleCasualtiesDef[i] || {};
-        for(var unitType in defCas){
+        var dcKeys = Object.keys(defCas||{}).sort(function(a,b){ var ag=luc_isGeneralUnit(a), bg=luc_isGeneralUnit(b); return ag===bg?0:(ag?-1:1); });
+        dcKeys.forEach(function(unitType){
             battleDefCasualtiesInfo.push(utils.getImageTag(unitType, LUC_ICON_SIZE) + ' ' + defCas[unitType] + '&nbsp;');
-        }
+        });
         // Check if defenders total equals their casualties => DEFETED
         try {
             var defCasTotal = 0;
@@ -318,8 +323,10 @@ function parseBattleScript(battleScript, timestamp) {
                 }
             });
         }
-        jsonResult.perBattleAttackers = Object.keys(attackersCount).map(function(u){ return utils.getImageTag(u, LUC_ICON_SIZE) + ' ' + attackersCount[u]; }).join('&nbsp;');
-        jsonResult.perBattleDefenders = Object.keys(defendersCount).map(function(u){ return utils.getImageTag(u, LUC_ICON_SIZE) + ' ' + defendersCount[u]; }).join('&nbsp;');
+        var atkKeys = Object.keys(attackersCount).sort(function(a,b){ var ag=luc_isGeneralUnit(a), bg=luc_isGeneralUnit(b); return ag===bg?0:(ag?-1:1); });
+        var defKeys = Object.keys(defendersCount).sort(function(a,b){ var ag=luc_isGeneralUnit(a), bg=luc_isGeneralUnit(b); return ag===bg?0:(ag?-1:1); });
+        jsonResult.perBattleAttackers = atkKeys.map(function(u){ return utils.getImageTag(u, LUC_ICON_SIZE) + ' ' + attackersCount[u]; }).join('&nbsp;');
+        jsonResult.perBattleDefenders = defKeys.map(function(u){ return utils.getImageTag(u, LUC_ICON_SIZE) + ' ' + defendersCount[u]; }).join('&nbsp;');
         // numeric totals for easier comparisons later
         jsonResult.perBattleDefendersTotal = Object.keys(defendersCount).reduce(function(sum, k){ return sum + (parseInt(defendersCount[k],10)||0); }, 0);
     } catch(e) {
