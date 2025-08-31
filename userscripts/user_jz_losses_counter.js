@@ -18,11 +18,11 @@ function luc_MenuHandler(event)
 {
 	$( "div[role='dialog']:not(#lucModal):visible").modal("hide");
 	createModalWindow('lucModal', 'Lost units counter');
-	// set this modal width to 70% of the screen width
+	// set this modal width to a fixed 1100px
 	try {
 		var $dlg = $('#lucModal .modal-dialog');
 		if ($dlg.length) {
-			$dlg.css({ 'max-width': '70vw', 'width': '70vw' });
+			$dlg.css({ 'max-width': '1100px', 'width': '1100px' });
 		}
 	} catch(e) { }
 	$("#lucModalData, .modal-body").css({
@@ -82,6 +82,7 @@ function luc_GetCurrentArmyTable(){
     ]);
     var perBattleDefenders = (battlesFromMail.perBattleDefenders || []).slice().reverse();
     var perBattleCasualtiesDef = (battlesFromMail.perBattleCasualtiesDef || []).slice().reverse();
+    var perBattleDefendersTotal = (battlesFromMail.perBattleDefendersTotal || []).slice().reverse();
     for (var i = 0; i < perBattleCasualties.length; i++) {
         var battleCasualties = perBattleCasualties[i];
         var attackersHtml = perBattleAttackers[i] || '';
@@ -96,6 +97,15 @@ function luc_GetCurrentArmyTable(){
         for(var unitType in defCas){
             battleDefCasualtiesInfo.push(utils.getImageTag(unitType, LUC_ICON_SIZE) + ' ' + defCas[unitType] + '&nbsp;');
         }
+        // Check if defenders total equals their casualties => DEFETED
+        try {
+            var defCasTotal = 0;
+            for (var ut in defCas) { defCasTotal += (parseInt(defCas[ut],10) || 0); }
+            var defTotal = parseInt(perBattleDefendersTotal[i], 10) || 0;
+            if (defTotal > 0 && defCasTotal >= defTotal) {
+                battleDefCasualtiesInfo.push('<span style="color:#c62828;font-weight:bold;"> DEFETED</span>');
+            }
+        } catch(e) {}
         html += ulc_createBattleRow('Battle ' + battleId, attackersHtml, defendersHtml, battleCasualtiesInfo, battleDefCasualtiesInfo);
         battleId++;
     }
@@ -308,9 +318,12 @@ function parseBattleScript(battleScript, timestamp) {
         }
         jsonResult.perBattleAttackers = Object.keys(attackersCount).map(function(u){ return utils.getImageTag(u, LUC_ICON_SIZE) + ' ' + attackersCount[u]; }).join('&nbsp;');
         jsonResult.perBattleDefenders = Object.keys(defendersCount).map(function(u){ return utils.getImageTag(u, LUC_ICON_SIZE) + ' ' + defendersCount[u]; }).join('&nbsp;');
+        // numeric totals for easier comparisons later
+        jsonResult.perBattleDefendersTotal = Object.keys(defendersCount).reduce(function(sum, k){ return sum + (parseInt(defendersCount[k],10)||0); }, 0);
     } catch(e) {
         jsonResult.perBattleAttackers = '';
         jsonResult.perBattleDefenders = '';
+        jsonResult.perBattleDefendersTotal = 0;
     }
     return jsonResult;
 }
@@ -422,6 +435,7 @@ function processBattleReports(event){
         perBattleCasualtiesDef: perBattleCasualtiesDef,
         perBattleAttackers: battleReports.map(function(b){ return (b && b.perBattleAttackers) ? b.perBattleAttackers : ''; }),
         perBattleDefenders: battleReports.map(function(b){ return (b && b.perBattleDefenders) ? b.perBattleDefenders : ''; }),
+        perBattleDefendersTotal: battleReports.map(function(b){ return (b && typeof b.perBattleDefendersTotal !== 'undefined') ? b.perBattleDefendersTotal : 0; }),
         battleDetails: battleDetails
     };
 }
