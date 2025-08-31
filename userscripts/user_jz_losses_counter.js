@@ -17,6 +17,16 @@ function luc_MenuHandler(event)
 {
 	$( "div[role='dialog']:not(#lucModal):visible").modal("hide");
 	createModalWindow('lucModal', 'Lost units counter');
+	// widen this modal to 150% of its default dialog width
+	try {
+		var $dlg = $('#lucModal .modal-dialog');
+		if ($dlg.length) {
+			var curW = $dlg.width();
+			if (curW && curW > 0) {
+				$dlg.css({ 'max-width': 'none', 'width': Math.floor(curW * 1.5) + 'px' });
+			}
+		}
+	} catch(e) { }
 	$("#lucModalData, .modal-body").css({
 		"margin-top": -10,
 		"padding-top": 0
@@ -156,8 +166,8 @@ function ulc_createBattleRow(rowName, attackersHtml, defendersHtml, atkData, def
     var firstD = tempD.splice(0, 3).map(function(item){ return item; }).join('');
 
     // Placeholders for empty columns
-    if (firstA === '' && (atkData || []).length === 0) firstA = '<span>No Losses</span>';
-    if (firstD === '' && (defData || []).length === 0) firstD = '<span>No Losses</span>';
+    if (firstA === '' && (atkData || []).length === 0) firstA = '<span style="color:#2e7d32;font-weight:bold;">No Losses</span>';
+    if (firstD === '' && (defData || []).length === 0) firstD = '<span style="color:#c62828;font-weight:bold;">No Losses</span>';
 
     var html = utils.createTableRow([
         [1, rowName],
