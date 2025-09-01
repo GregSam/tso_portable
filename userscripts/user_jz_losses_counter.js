@@ -111,7 +111,13 @@ function luc_GetCurrentArmyTable(){
             for (var ut in defCas) { defCasTotal += (parseInt(defCas[ut],10) || 0); }
             var defTotal = parseInt(perBattleDefendersTotal[i], 10) || 0;
             if (defTotal > 0 && defCasTotal >= defTotal) {
-                battleDefCasualtiesInfo.push('<span style="color:#c62828;font-weight:bold;"> DEFETED</span>');
+                var skullIcon = '';
+                try {
+                    skullIcon = utils.getImage(new (game.def('GUI.Assets::gAssetManager_IconSkull'))().bitmapData, 'auto', LUC_ICON_SIZE);
+                } catch(e) {
+                    skullIcon = '<span style="color:#c62828;font-weight:bold;">&#9760;</span>';
+                }
+                battleDefCasualtiesInfo.push('&nbsp;' + skullIcon);
             }
         } catch(e) {}
         html += ulc_createBattleRow('Battle ' + battleId, attackersHtml, defendersHtml, battleCasualtiesInfo, battleDefCasualtiesInfo);
