@@ -132,10 +132,10 @@ function luc_GetCurrentArmyTable(){
             var defendersWiped = (defTotal > 0 && defCasTotal >= defTotal);
             if (defendersWiped) {
                 defendersHtml = skull + '&nbsp;' + defendersHtml;
-                battleDefCasualtiesInfo.unshift(skull);
+                // Do not add icons to Def. Casualties column
             } else {
                 defendersHtml = ok + '&nbsp;' + defendersHtml;
-                battleDefCasualtiesInfo.unshift(ok);
+                // Do not add icons to Def. Casualties column
             }
             // attackers wiped?
             var atkCasTotal = 0; Object.keys(battleCasualties||{}).forEach(function(ut){ atkCasTotal += (parseInt(battleCasualties[ut],10) || 0); });
@@ -143,10 +143,10 @@ function luc_GetCurrentArmyTable(){
             var attackersWiped = (atkTotal > 0 && (atkCasTotal >= atkTotal || perBattleAttackersOneRecruit[i] === true));
             if (attackersWiped) {
                 attackersHtml = skull + '&nbsp;' + attackersHtml;
-                battleCasualtiesInfo.unshift(skull);
+                // Do not add icons to Casualties column
             } else {
                 attackersHtml = ok + '&nbsp;' + attackersHtml;
-                battleCasualtiesInfo.unshift(ok);
+                // Do not add icons to Casualties column
             }
         } catch(e) {}
         html += ulc_createBattleRow('Battle ' + battleId, attackersHtml, defendersHtml, battleCasualtiesInfo, battleDefCasualtiesInfo);
@@ -214,9 +214,9 @@ function ulc_createBattleRow(rowName, attackersHtml, defendersHtml, atkData, def
     var firstA = tempA.splice(0, 3).map(function(item){ return item; }).join('');
     var firstD = tempD.splice(0, 3).map(function(item){ return item; }).join('');
 
-    // Placeholders for empty columns
-    if (firstA === '' && (atkData || []).length === 0) firstA = '<span style="color:#2e7d32;font-weight:bold;">No Losses</span>';
-    if (firstD === '' && (defData || []).length === 0) firstD = '<span style="color:#c62828;font-weight:bold;">No Losses</span>';
+    // Placeholders for empty columns (uniform green "No losses")
+    if (firstA === '' && (atkData || []).length === 0) firstA = '<span style="color:#2e7d32;font-weight:bold;">No losses</span>';
+    if (firstD === '' && (defData || []).length === 0) firstD = '<span style="color:#2e7d32;font-weight:bold;">No losses</span>';
 
     var html = utils.createTableRow([
         [1, rowName],
