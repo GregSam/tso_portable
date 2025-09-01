@@ -17,6 +17,14 @@ function luc_getSkullIcon(){
         return '<span style="color:#c62828;font-weight:bold;">&#9760;</span>';
     }
 }
+function luc_getOkIcon(){
+    try {
+        return utils.getImage(new (game.def('GUI.Assets::gAssetManager_OKIcon'))().bitmapData, 'auto', LUC_ICON_SIZE);
+    } catch(e) {
+        // fallback: simple checkmark
+        return '<span style="color:#2e7d32;font-weight:bold;">&#10003;</span>';
+    }
+}
 function luc_casualtiesToList(casObj){
     var list = [];
     try {
@@ -117,6 +125,7 @@ function luc_GetCurrentArmyTable(){
         // Determine wipe-outs and prepend skulls at the front of related columns
         try {
             var skull = luc_getSkullIcon();
+            var ok = luc_getOkIcon();
             // defenders wiped?
             var defCasTotal = 0; Object.keys(defCas).forEach(function(ut){ defCasTotal += (parseInt(defCas[ut],10) || 0); });
             var defTotal = parseInt(perBattleDefendersTotal[i], 10) || 0;
@@ -124,6 +133,9 @@ function luc_GetCurrentArmyTable(){
             if (defendersWiped) {
                 defendersHtml = skull + '&nbsp;' + defendersHtml;
                 battleDefCasualtiesInfo.unshift(skull);
+            } else {
+                defendersHtml = ok + '&nbsp;' + defendersHtml;
+                battleDefCasualtiesInfo.unshift(ok);
             }
             // attackers wiped?
             var atkCasTotal = 0; Object.keys(battleCasualties||{}).forEach(function(ut){ atkCasTotal += (parseInt(battleCasualties[ut],10) || 0); });
@@ -132,6 +144,9 @@ function luc_GetCurrentArmyTable(){
             if (attackersWiped) {
                 attackersHtml = skull + '&nbsp;' + attackersHtml;
                 battleCasualtiesInfo.unshift(skull);
+            } else {
+                attackersHtml = ok + '&nbsp;' + attackersHtml;
+                battleCasualtiesInfo.unshift(ok);
             }
         } catch(e) {}
         html += ulc_createBattleRow('Battle ' + battleId, attackersHtml, defendersHtml, battleCasualtiesInfo, battleDefCasualtiesInfo);
