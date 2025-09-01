@@ -10,6 +10,13 @@ var LUC_ICON_SIZE = '24px';
 function luc_isGeneralUnit(unitType){
     try { return (typeof unitType === 'string') && /(general|boss)/i.test(unitType); } catch(e){ return false; }
 }
+function luc_getSkullIcon(){
+    try {
+        return utils.getImage(new (game.def('GUI.Assets::gAssetManager_IconSkull'))().bitmapData, 'auto', LUC_ICON_SIZE);
+    } catch(e) {
+        return '<span style="color:#c62828;font-weight:bold;">&#9760;</span>';
+    }
+}
 function luc_casualtiesToList(casObj){
     var list = [];
     try {
@@ -98,6 +105,8 @@ function luc_GetCurrentArmyTable(){
     var perBattleDefenders = (battlesFromMail.perBattleDefenders || []).slice().reverse();
     var perBattleCasualtiesDef = (battlesFromMail.perBattleCasualtiesDef || []).slice().reverse();
     var perBattleDefendersTotal = (battlesFromMail.perBattleDefendersTotal || []).slice().reverse();
+    var perBattleAttackersTotal = (battlesFromMail.perBattleAttackersTotal || []).slice().reverse();
+    var perBattleAttackersOneRecruit = (battlesFromMail.perBattleAttackersOneRecruit || []).slice().reverse();
     for (var i = 0; i < perBattleCasualties.length; i++) {
         var battleCasualties = perBattleCasualties[i];
         var attackersHtml = perBattleAttackers[i] || '';
@@ -105,19 +114,24 @@ function luc_GetCurrentArmyTable(){
         var battleCasualtiesInfo = luc_casualtiesToList(battleCasualties);
         var defCas = perBattleCasualtiesDef[i] || {};
         var battleDefCasualtiesInfo = luc_casualtiesToList(defCas);
-        // Check if defenders total equals their casualties => DEFETED
+        // Determine wipe-outs and prepend skulls at the front of related columns
         try {
-            var defCasTotal = 0;
-            for (var ut in defCas) { defCasTotal += (parseInt(defCas[ut],10) || 0); }
+            var skull = luc_getSkullIcon();
+            // defenders wiped?
+            var defCasTotal = 0; Object.keys(defCas).forEach(function(ut){ defCasTotal += (parseInt(defCas[ut],10) || 0); });
             var defTotal = parseInt(perBattleDefendersTotal[i], 10) || 0;
-            if (defTotal > 0 && defCasTotal >= defTotal) {
-                var skullIcon = '';
-                try {
-                    skullIcon = utils.getImage(new (game.def('GUI.Assets::gAssetManager_IconSkull'))().bitmapData, 'auto', LUC_ICON_SIZE);
-                } catch(e) {
-                    skullIcon = '<span style="color:#c62828;font-weight:bold;">&#9760;</span>';
-                }
-                battleDefCasualtiesInfo.push('&nbsp;' + skullIcon);
+            var defendersWiped = (defTotal > 0 && defCasTotal >= defTotal);
+            if (defendersWiped) {
+                defendersHtml = skull + '&nbsp;' + defendersHtml;
+                battleDefCasualtiesInfo.unshift(skull);
+            }
+            // attackers wiped?
+            var atkCasTotal = 0; Object.keys(battleCasualties||{}).forEach(function(ut){ atkCasTotal += (parseInt(battleCasualties[ut],10) || 0); });
+            var atkTotal = parseInt(perBattleAttackersTotal[i], 10) || 0;
+            var attackersWiped = (atkTotal > 0 && (atkCasTotal >= atkTotal || perBattleAttackersOneRecruit[i] === true));
+            if (attackersWiped) {
+                attackersHtml = skull + '&nbsp;' + attackersHtml;
+                battleCasualtiesInfo.unshift(skull);
             }
         } catch(e) {}
         html += ulc_createBattleRow('Battle ' + battleId, attackersHtml, defendersHtml, battleCasualtiesInfo, battleDefCasualtiesInfo);
@@ -326,10 +340,12 @@ function parseBattleScript(battleScript, timestamp) {
         jsonResult.perBattleDefenders = defKeys.map(function(u){ return utils.getImageTag(u, LUC_ICON_SIZE) + ' ' + defendersCount[u]; }).join('&nbsp;');
         // numeric totals for easier comparisons later
         jsonResult.perBattleDefendersTotal = Object.keys(defendersCount).reduce(function(sum, k){ return sum + (parseInt(defendersCount[k],10)||0); }, 0);
+        jsonResult.perBattleAttackersTotal = Object.keys(attackersCount).reduce(function(sum, k){ return sum + (parseInt(attackersCount[k],10)||0); }, 0);
     } catch(e) {
         jsonResult.perBattleAttackers = '';
         jsonResult.perBattleDefenders = '';
         jsonResult.perBattleDefendersTotal = 0;
+        jsonResult.perBattleAttackersTotal = 0;
     }
     return jsonResult;
 }
@@ -340,6 +356,7 @@ function processBattleReports(event){
 		var lostGenerals = {};
         var perBattleCasualties = [];
         var perBattleCasualtiesDef = [];
+        var perBattleAttackersOneRecruit = [];
         var battleDetails = {};
         battleReports.forEach(function (battleScript) {
             var battleCasualties = {};
@@ -421,6 +438,7 @@ function processBattleReports(event){
             perBattleCasualties.push(battleCasualties);
             perBattleCasualtiesDef.push(battleCasualtiesDef);
             battleDetails.usedSkills = battleScript.Skills;
+            perBattleAttackersOneRecruit.push(!!attackingWithOneUnit);
         });
     }
     catch (e) {
@@ -432,9 +450,11 @@ function processBattleReports(event){
         battleReports: battleReports,
         perBattleCasualties: perBattleCasualties,
         perBattleCasualtiesDef: perBattleCasualtiesDef,
+        perBattleAttackersOneRecruit: perBattleAttackersOneRecruit,
         perBattleAttackers: battleReports.map(function(b){ return (b && b.perBattleAttackers) ? b.perBattleAttackers : ''; }),
         perBattleDefenders: battleReports.map(function(b){ return (b && b.perBattleDefenders) ? b.perBattleDefenders : ''; }),
         perBattleDefendersTotal: battleReports.map(function(b){ return (b && typeof b.perBattleDefendersTotal !== 'undefined') ? b.perBattleDefendersTotal : 0; }),
+        perBattleAttackersTotal: battleReports.map(function(b){ return (b && typeof b.perBattleAttackersTotal !== 'undefined') ? b.perBattleAttackersTotal : 0; }),
         battleDetails: battleDetails
     };
 }
