@@ -415,7 +415,7 @@ var ShortcutTrader = (function () {
             return;
         }
 
-        var queue        = new TimedQueue(3000);
+        var queue        = new TimedQueue(25000);
         var successCount = 0;
         var totalTrades  = tradeArray.length;
 

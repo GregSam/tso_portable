@@ -1543,11 +1543,82 @@
     }
   },
   "FastShortcutSZENARIO": {
-    "SzenarioRundenanzahl": "1",
+    "SzenarioRundenanzahl": "2",
     "SzenarioAuswahl": "BuffAdventures_twins_easy",
     "Rari": true
   },
   "FastShortcutAutoSzenario": {
     "Runde": 0
+  },
+  "FT_SETTINGS": {
+    "zone_id": 1770612,
+    "friendsTrades": [],
+    "marketTrades": [
+      {
+        "offerResName": "AdvancedTools",
+        "offerResAmount": 200,
+        "costResName": "Coin",
+        "costResAmount": 6000,
+        "userId": 0,
+        "UserName": "4"
+      },
+      {
+        "offerResName": "AdvancedPaper",
+        "offerResAmount": 500,
+        "costResName": "Coin",
+        "costResAmount": 1000,
+        "userId": 0,
+        "UserName": "4"
+      },
+      {
+        "offerResName": "Tool",
+        "offerResAmount": 800,
+        "costResName": "Coin",
+        "costResAmount": 1000,
+        "userId": 0,
+        "UserName": "4"
+      },
+      {
+        "offerResName": "Oilseed",
+        "offerResAmount": 3500,
+        "costResName": "Oil",
+        "costResAmount": 1000,
+        "userId": 0,
+        "UserName": "4"
+      },
+      {
+        "offerResName": "Coin",
+        "offerResAmount": 300,
+        "costResName": "CollectibleGrainSacks",
+        "costResAmount": 50,
+        "userId": 0,
+        "UserName": "4"
+      },
+      {
+        "offerResName": "Coin",
+        "offerResAmount": 300,
+        "costResName": "CollectibleAdamantium",
+        "costResAmount": 50,
+        "userId": 0,
+        "UserName": "4"
+      },
+      {
+        "offerResName": "Coin",
+        "offerResAmount": 300,
+        "costResName": "CollectibleWineBarrel",
+        "costResAmount": 200,
+        "userId": 0,
+        "UserName": "4"
+      },
+      {
+        "offerResName": "Grout",
+        "offerResAmount": 100,
+        "costResName": "Bread",
+        "costResAmount": 100000,
+        "userId": 0,
+        "UserName": "4"
+      }
+    ],
+    "isMarketTradeMode": true
   }
 }

@@ -77,6 +77,16 @@ function searchMinesInternal(){
             SendGeosOut(needsSearch, restingGeos, "Salpeter", key);
         }
     };
+
+    // After each cycle, trigger Build Mines script if available
+    try {
+        if (typeof Playground3 === 'function') {
+            // user_jz_mineBuilder.js defines Playground3 and menu item 'Build mines'
+            Playground3();
+        }
+    } catch (e) {
+        // ignore errors to not interrupt the search cycle
+    }
 }
 
 function SendGeosOut(needsSearch, restingGeos, mineType, key){
