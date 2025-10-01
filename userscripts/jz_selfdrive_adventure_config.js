@@ -19,6 +19,7 @@ var YGG_1 = "389488";
 var YGG_2 = "483087";
 var YGG_3 = "495320";
 var YGG_4 = "527488";
+var YGG_5 = "1647661";
 var Quatermaster_1 = "65440";
 var Quatermaster_2 = "65441";
 var Claus_1 = "9898";
