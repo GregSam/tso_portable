@@ -134,7 +134,7 @@
       "coopownname": "#FF8644"
     },
     "infoBarResources": [
-      "Balloons",
+      "HalloweenResource",
       "Coin",
       "AdvancedTools",
       "TitaniumOre",
@@ -253,8 +253,8 @@
       "ExplorerFail_MercenaryExplorer": true,
       "ExplorerStart_MercenaryExplorer": true
     },
-    "armylastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_A_giant_Battle",
-    "battlelastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BonabertiBusiness\\AT_1",
+    "armylastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_Unknown_Regions",
+    "battlelastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_Unknown_Regions",
     "bufflastDir": "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates",
     "lastRecordedCasualties": {
       "Knight": 169,
@@ -590,8 +590,8 @@
     "user_ZZZ_Click_XY.js": 1
   },
   "FastShortcut": {
-    "ATAuswahl": "BonabertiBusiness",
-    "ATAuswahlID": "8",
+    "ATAuswahl": "BuffAdventures_TMC_At_the_foot_of_the_Mountain",
+    "ATAuswahlID": "9",
     "WarteZeitZwischenVorlagenSelector": "5000",
     "WarteZeitAusSternVersetzenSelector": "10000",
     "WarteZeitWeiterNachGenesNachHauseSelector": "30000",
@@ -601,7 +601,7 @@
     "WarteZeitZwischenAutomatikstartenimATSelector": "40000",
     "WarteZeitZwischenQuestÜberwachungSelector": "20000",
     "WarteZeitZwischenZurHeimatinselATEndeSelector": "15000",
-    "RundenanzahlSelector": "20",
+    "RundenanzahlSelector": "1",
     "Kampfgeraeusche": false,
     "Fehlergeraeusche": false,
     "buffNameHufeisenSelector": "GeneralSpeedBuff_Platinum",
@@ -1425,6 +1425,116 @@
           null
         ]
       ]
+    },
+    {
+      "id": 1759217787994,
+      "name": "AtTheFootOfTheMountain",
+      "items": [
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\direktsenden.txt[a]",
+          null
+        ],
+        [
+          "1759217856586[s]",
+          null
+        ],
+        [
+          "1759217865513[f]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\01.RG.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\01.RG.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\01.RG.txt[b]",
+          null
+        ],
+        [
+          "1759218643670[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\02.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\02.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\02.txt[b]",
+          null
+        ],
+        [
+          "1759219236194[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\03.BLOCK.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\03.BLOCK.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\03.BLOCK.txt[b]",
+          null
+        ],
+        [
+          "1759220252317[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\04.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\04.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\04.txt[b]",
+          null
+        ],
+        [
+          "1759221008425[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\05.2xW.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\05.2xW.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\05.2xW.txt[b]",
+          null
+        ],
+        [
+          "1759223058991[s]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\06.txt[m]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\06.txt[a]",
+          null
+        ],
+        [
+          "C:\\Users\\myPc\\Downloads\\SettlersOnline\\Templates\\Army\\BuffAdventures_TMC_At_the_Foot_of_the_Mountain\\06.txt[b]",
+          null
+        ]
+      ]
     }
   ],
   "FastShortcutAutoAT": {
@@ -1543,7 +1653,7 @@
     }
   },
   "FastShortcutSZENARIO": {
-    "SzenarioRundenanzahl": "2",
+    "SzenarioRundenanzahl": "1",
     "SzenarioAuswahl": "BuffAdventures_twins_easy",
     "Rari": true
   },
