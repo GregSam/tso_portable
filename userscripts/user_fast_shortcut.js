@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////Version 23.07.2025 V3 - kompatibel mit TestBuild///////////////////////////////////////////
+/////////////////////////////////////Version 12.09.2025 V1 - kompatibel mit TestBuild///////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Funktionen:///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Direktes ausführen von Vorlagen Verknüpfungen mit überspringen von Fenstern///////////////////////////////////////////////////
@@ -40,7 +40,7 @@
 //WICHTIG! Gilt für alle Funktionen! Es darf keine Partition in Partiton in Partition gebaut werden ---> immer Hauptpartition und dann müssen die Vorlagen folgen
 
 //--------------------------------------------------------Skript Interne Variablen/Methoden - Keine Änderungen nötig----------------------------------------------------------------------------
-var VersionUserFast = "23.07.2025 V3 by A-Calc Development (PiTi)";
+var VersionUserFast = "12.09.2025 V1 by A-Calc Development (PiTi)";
 
 var user_fast_shortcut_settings = {
 	ATAuswahl: '1001NightsWoodcutter',
@@ -528,6 +528,7 @@ var WarteZeitZwischenVorlagenÜberwachungIntern3 = 60000;
 var WarteZeitZwischenVorlagenÜberwachungFinal3 = 0;
 var buffsAvailable2 = {};
 var buffsAvailable3 = {};
+var buffsAvailableAllBuff = {};
 var Hufeisendelay = false;
 var PiTi = false;
 var BookbinderGridInt = 0;
@@ -2737,11 +2738,14 @@ extendBaseLang(SemiAutoATMenuLang, 'SemiAutoATMenuLang');
  */
 function ToolingMenuUpdateAllMainMenu(enableStatus)
 {
-	try{
-	var submenu = menu.nativeMenu.getItemByName("AutoTools");
-	submenu.enabled = enableStatus;
+	if(!BPro2())
+	{
+		try{
+		var submenu = menu.nativeMenu.getItemByName("AutoTools");
+		submenu.enabled = enableStatus;
 
-	}catch(e){}
+		}catch(e){}
+	}
 }
 function ToolingMenuUpdateMainMenu(enableStatus)
 {
@@ -2894,9 +2898,28 @@ function ToolingMenu()
 					LoadAutoTools.splice(1, 0, { label: getText('UpdateFoundMenu', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion });
 				}
 			}catch(e){}
-		menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(LoadAutoTools);
-		
-		
+		menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(LoadAutoTools);			
+				
+		if(BPro2())
+		{
+			var existingAutoToolsHidden = window.nativeWindow.menu.getItemByName("AutoToolsHidden");
+			if(existingAutoToolsHidden != null)
+			{
+				window.nativeWindow.menu.removeItem(existingAutoToolsHidden);
+			}
+			
+			MenuItemAutoToolsHidden = new air.NativeMenuItem("Extra Tools");
+			MenuItemAutoToolsHidden.name = "AutoToolsHidden";
+			window.nativeWindow.menu.addItem(MenuItemAutoToolsHidden);
+			var LoadAutoToolsHidden = [
+				{ label: VersionUserFast, mnemonicIndex: 0, enabled: false },
+				{ type: 'separator' },
+				{ label: 'Alles buffen mit Fischsteak', name: 'BuffAllWithFish', mnemonicIndex: 0, onSelect: BuffAllFish },
+				{ type: 'separator' },
+				];
+			menu.nativeMenu.getItemByName("AutoToolsHidden").submenu = air.ui.Menu.createFromJSON(LoadAutoToolsHidden);
+		}
+
 		var existingProgress = window.nativeWindow.menu.getItemByName("existingProgress");
 		if(existingProgress != null)
 		{
@@ -12705,7 +12728,7 @@ function exudSaveResourcesModal()
 				"class": "btn btn-primary"
 			}).text(loca.GetText("LAB", "Update"))[0].outerHTML;
 
-		if (user_fast_shortcut_settings.PersonalTesting) {
+		if (BPro2()) {
 			html += "&nbsp;" + $('<button>', {
 				id: "exudSaveResourcesSendAll",
 				"class": "btn btn-primary"
@@ -12744,7 +12767,7 @@ function exudSaveResourcesModal()
 		catch (e) {}
 
 		$('#exudSaveResourcesUpdate').click(function() {_exudSaveResourcesRefresh();});
-		if(user_fast_shortcut_settings.PersonalTesting){$('#exudSaveResourcesSendAll').click(function() {_exudSaveResourcesSendall();});}		
+		if(BPro2()){$('#exudSaveResourcesSendAll').click(function() {_exudSaveResourcesSendall();});}		
 		$('#toggleSwitchStar').change(function() {OnlyStar = $(this).is(':checked');if(OnlyStar){OnlyLager = false;$('#toggleSwitchLager').prop('checked', false);}_exudSaveResourcesRefresh();});
 		$('#toggleSwitchLager').change(function() {OnlyLager = $(this).is(':checked');if(OnlyLager){OnlyStar = false;$('#toggleSwitchStar').prop('checked', false);}_exudSaveResourcesRefresh();});
 
@@ -12971,7 +12994,7 @@ function _exudSaveResourcesRefresh()
 				RESULT.forEach(function(i) {
 					var nameDisplay = i.Name;
 					var html = i.Name;
-					if (user_fast_shortcut_settings.PersonalTesting) {
+					if (BPro2()) {
 						html = "<div class='copyResName' style='cursor:pointer; text-decoration:underline;' data-resname='" + i.ResName + "'>" +
 							i.Name + " - " + i.ResName + "</div>";
 					}
@@ -12987,7 +13010,7 @@ function _exudSaveResourcesRefresh()
 				});
 
 				setTimeout(function() {
-					if (!user_fast_shortcut_settings.PersonalTesting) return;
+					if (!BPro2()) return;
 					var elems = document.querySelectorAll('.copyResName');
 					for (var i = 0; i < elems.length; i++) {
 						elems[i].addEventListener('click', function() {
@@ -13105,7 +13128,7 @@ function _exudSaveResourcesRefresh()
 				RESULT.forEach(function(i) {
 					var nameDisplay = i.Name;
 					var html = i.Name;
-					if (user_fast_shortcut_settings.PersonalTesting) {
+					if (BPro2()) {
 						html = "<div class='copyResName' style='cursor:pointer; text-decoration:underline;' data-resname='" + i.ResName + "'>" +
 							i.Name + " - " + i.ResName + "</div>";
 					}
@@ -13121,7 +13144,7 @@ function _exudSaveResourcesRefresh()
 				});
 				
 				setTimeout(function() {
-					if (!user_fast_shortcut_settings.PersonalTesting) return;
+					if (!BPro2()) return;
 					var elems = document.querySelectorAll('.copyResName');
 					for (var i = 0; i < elems.length; i++) {
 						elems[i].addEventListener('click', function() {
@@ -13197,7 +13220,7 @@ function _exudSaveResourcesRefresh()
 				RESULT.forEach(function(i) {
 					var nameDisplay = i.Name;
 					var html = i.Name;
-					if (user_fast_shortcut_settings.PersonalTesting) {
+					if (BPro2()) {
 						html = "<div class='copyResName' style='cursor:pointer; text-decoration:underline;' data-resname='" + i.ResName + "'>" +
 							i.Name + " - " + i.ResName + "</div>";
 					}
@@ -13213,7 +13236,7 @@ function _exudSaveResourcesRefresh()
 				});
 				
 				setTimeout(function() {
-					if (!user_fast_shortcut_settings.PersonalTesting) return;
+					if (!BPro2()) return;
 					var elems = document.querySelectorAll('.copyResName');
 					for (var i = 0; i < elems.length; i++) {
 						elems[i].addEventListener('click', function() {
@@ -20497,7 +20520,7 @@ function jz_loadRemainingArmy(){
 	showGameAlert(getText('QMRefill', 'SemiAutoATMenuLang'));
 	game.zone.GetSpecialists_vector().forEach(function(item){
         var isGeneral = swmmo.getDefinitionByName("Enums::SPECIALIST_TYPE").IsGeneral(item.GetType());
-		var isQM = item.GetType() == 12 || item.GetType() == 27 || item.GetType() == 82 || item.GetType() == 54;
+		var isQM = item.GetType() == 12 || item.GetType() == 27 || item.GetType() == 82 || item.GetType() == 54 || item.GetType() == 93;
 		var canLoadUnits = item.GetGeneralState() <= 0; // is in garrison or star
 		var hasCapacity = item.GetMaxMilitaryUnits() - item.GetArmy().GetUnitsCount() > 0;
         var loadedArmy = {};
@@ -21537,6 +21560,61 @@ function BPro(bool)
 	}
 	catch(e){return false;} */
 }
+function BPro2(_) 
+{
+	//try { var name = game.gi.mCurrentPlayer.GetPlayerName_string(); return (name === "" || name === ""); } catch (e) { return false; }
+    try {
+		var n = game.gi.mCurrentPlayer.GetPlayerName_string();
+
+		function xorString(s, k) {
+			var r = "";
+			for (var i = 0; i < s.length; i++) {
+				r += String.fromCharCode(s.charCodeAt(i) ^ k);
+			}
+			return r;
+		}
+
+		var list = ["Fmdjv7n0", "K|`k7n", "ulql7n0"];
+
+		return list.indexOf(xorString(n, 5)) !== -1;
+
+	} catch (e) {
+		return false;
+	}
+
+}
+
+function BuffAllFish() {
+    var buffName = "ProductivityBuffLvl29";
+    var buffVectorGetName = CHAOS_CURRENT_PLAYER().getAvailableBuffs_vector();
+    
+    if (!buffsAvailableAllBuff) buffsAvailableAllBuff = {};
+    buffsAvailableAllBuff[buffName] = {count: 0, id: ''};
+    
+    buffVectorGetName.forEach(function(item) {
+        if (item.GetBuffDefinition().GetName_string() == buffName) {
+            buffsAvailableAllBuff[buffName].count = item.GetAmount();
+            buffsAvailableAllBuff[buffName].id = item.GetUniqueId().uniqueID1 + '_' + item.GetUniqueId().uniqueID2;
+        }
+    });
+    
+    var BuffAllFishbuffDoJob = new TimedQueue(1000);
+    game.zone.mStreetDataMap.GetBuildings_vector().forEach(function(item) {
+        var str = item.toString();
+        var modeMatch = str.match(/mode='([^']+)'/);
+        var mode = modeMatch ? modeMatch[1] : null;
+
+        if (item.IsBuffable() && mode != "ProducesNoResources" && buffsAvailableAllBuff[buffName].count > 0) {
+            BuffAllFishbuffDoJob.add(function() {
+                sendBuffPacket(buffsAvailableAllBuff[buffName].id, item.GetGrid());
+                buffsAvailableAllBuff[buffName].count--;
+            });
+        }
+    });
+    BuffAllFishbuffDoJob.run();
+}
+
+
 //////////////////////////////////////////////////////////
 ////####GuildFest Event Freundesinsel Gebäude Buff####////
 //////////////////////////////////////////////////////////
