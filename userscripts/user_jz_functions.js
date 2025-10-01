@@ -1030,3 +1030,85 @@ function biggerSendArmyBack(){
 	swmmo.application.GAMESTATE_ID_SPECIALIST_TRAVEL_PANEL.height = 800;
 	swmmo.application.GAMESTATE_ID_SPECIALIST_TRAVEL_PANEL.width = 1100;
 }
+
+addToolsMenuItem("OpenManyFiles", OpenManyFiles);
+function OpenManyFiles(onComplete){
+    if (typeof window === "undefined" || !window.runtime || typeof air === "undefined" || !air.File) {
+        showGameAlert("File dialog is not available in this environment.");
+        return [];
+    }
+    var loadedFiles = [];
+    var fileInfoList = [];
+    var fileRoot = new air.File();
+    var filters = new window.runtime.Array(
+        new air.FileFilter("Text files (*.txt)", "*.txt"),
+        new air.FileFilter("JSON files (*.json)", "*.json")
+    );
+    var handleSelect = null;
+    var handleCancel = null;
+    var cleanup = function(){
+        if (handleSelect) {
+            fileRoot.removeEventListener(window.runtime.flash.events.FileListEvent.SELECT_MULTIPLE, handleSelect);
+        }
+        if (handleCancel) {
+            fileRoot.removeEventListener(window.runtime.flash.events.Event.CANCEL, handleCancel);
+        }
+    };
+    handleSelect = function(event){
+        cleanup();
+        loadedFiles.length = 0;
+        fileInfoList = [];
+        try {
+            event.files.forEach(function(file){
+                try {
+                    var extension = (file.extension || "").toLowerCase();
+                    if (extension !== "txt" && extension !== "json") {
+                        return;
+                    }
+                    var fileStream = new air.FileStream();
+                    try {
+                        fileStream.open(file, air.FileMode.READ);
+                        var contents = fileStream.readUTFBytes(fileStream.bytesAvailable);
+                        loadedFiles.push(contents);
+                        fileInfoList.push({
+                            name: file.name,
+                            nativePath: file.nativePath,
+                            extension: extension
+                        });
+                        showGameAlert("Loaded: " + (file.name || file.nativePath));
+                    } finally {
+                        if (fileStream.connected) {
+                            fileStream.close();
+                        }
+                    }
+                } catch (fileErr) {
+                    air.Introspector.Console.log("Failed to load " + file.nativePath + ": " + fileErr);
+                }
+            });
+            showGameAlert("Loaded " + loadedFiles.length + " file(s).");
+            if (typeof onComplete === "function") {
+                try {
+                    onComplete(loadedFiles, fileInfoList);
+                } catch (callbackErr) {
+                    air.Introspector.Console.log("OpenManyFiles callback error: " + callbackErr);
+                }
+            }
+        } catch (err) {
+            air.Introspector.Console.log("OpenManyFiles selection error: " + err);
+        }
+    };
+    handleCancel = function(){
+        cleanup();
+    };
+    fileRoot.addEventListener(window.runtime.flash.events.FileListEvent.SELECT_MULTIPLE, handleSelect);
+    fileRoot.addEventListener(window.runtime.flash.events.Event.CANCEL, handleCancel);
+    try {
+        fileRoot.browseForOpenMultiple("Select text or JSON files", filters);
+    } catch (browseErr) {
+        cleanup();
+        air.Introspector.Console.log("OpenManyFiles browse error: " + browseErr);
+        showGameAlert("Failed to open file chooser.");
+    }
+    return loadedFiles;
+}
+
