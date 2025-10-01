@@ -30,6 +30,11 @@ var Ghost_2 = "";
 var Ghost_3 = "";
 var RG_1_Skills = "524888";
 var RG_2_Skills = "536169";
+var RG_3_Skills = "1631889";
+var STF_1_BLK_1UP = "622987";
+var STF_2_BLK_1UP = "623570";
+var Frosty_1 = "591848";
+var Frosty_2 = "619530";
 
 TYPE_SantaGeneral = 27;
 
