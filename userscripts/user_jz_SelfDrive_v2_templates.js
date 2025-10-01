@@ -42,7 +42,6 @@ var adventureDef = swmmo.getDefinitionByName("AdventureSystem::cAdventureDefinit
 
 var numberOfAttacks;
 var currentAdventure;
-var selectedAdventure;
 var adventureFromTemplates = {};
 
 var genTracker = game.getTracker('genTracker', genTrackerFn);
@@ -132,7 +131,7 @@ function jzv2_loadAdventuresFromFiles(){
             return;
         }
         var latestAdventure = null;
-        var latestAdventureName = null;
+        var latestAdventureLabel = null;
         for (var i = 0; i < contents.length; i++) {
             var raw = contents[i];
             var info = fileInfoList && fileInfoList[i];
@@ -143,18 +142,20 @@ function jzv2_loadAdventuresFromFiles(){
                 continue;
             }
             var adventureName = info && info.name ? info.name.replace(/\.[^\.]+$/, '') : ('LoadedAdventure_' + (i + 1));
-            air.Introspector.Console.log('Parsed adventure ' + adventureName, parsed);
+            // air.Introspector.Console.log('Parsed adventure ' + adventureName, parsed);
             try {
                 adventureFromTemplates[adventureName] = parsed;
             } catch (assignErr) {
                 air.Introspector.Console.log('Unable to register adventure ' + adventureName + ': ' + assignErr);
             }
             latestAdventure = parsed;
-            latestAdventureName = adventureName;
+            latestAdventureLabel = adventureName;
         }
         if (latestAdventure) {
             currentAdventure = latestAdventure;
-            selectedAdventure = latestAdventureName;
+            if (latestAdventureLabel) {
+                showGameAlert('Activated template: ' + latestAdventureLabel);
+            }
             jzv2_refreshModal();
         } else {
             air.Introspector.Console.log('No valid adventure definitions found in selected files.');
@@ -221,15 +222,7 @@ jzv2_clearAdventure = function() {
 }
 
 function jzv2_execute() {
-	alert("Executing " + selectedAdventure);
-	if(selectedAdventure == null) { return; }
-
-	// execute delayExecutions
-	var execution = delayExecutions[selectedAdventure];
-
-	if(execution == null) { return; }
-
-	jz_triggerExecte(execution);
+	showGameAlert('Auto execution is not available for loaded templates.');
 }
 
 var timeoutId;
@@ -595,11 +588,7 @@ function jzv2_SelfDriveMakeModal()
 
     try{
         var out = '<div class="container-fluid">';
-		if(!delayExecutions.hasOwnProperty(selectedAdventure)) {
-			out += '<button id="autoexecutebtn" class="btn btn-primary d-inline disabled autoexecutebtn" style="width: 150px; max-width:150px;">Execute '+selectedAdventure+' '+step+'</button>';
-		} else {
-			out += '<button id="autoexecutebtn" class="btn btn-primary d-inline autoexecutebtn" style="width: 150px; max-width:150px;">Execute</button>';
-		}
+		out += '<button id="autoexecutebtn" class="btn btn-primary d-inline disabled autoexecutebtn" style="width: 150px; max-width:150px;" disabled title="Auto execution is not available for loaded templates">Execute</button>';
 
 		out += utils.createTableRow([[4, "attack sequance"], [8, "some other table title"]], true);
 
@@ -1117,5 +1106,4 @@ function jz_UpdateButtonStates(){
 		});
 	}
 }
-
 
