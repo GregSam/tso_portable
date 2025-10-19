@@ -679,6 +679,12 @@ function isSpecResting(uniqueID1){
     return isSpecResting;
 }
 
+function showAllSpecialists(){
+	game.getSpecialists().sort(specNameSorter).forEach(function(item){
+		air.Introspector.Console.log(item.getName(true), item);
+	});
+}
+
 function explorers() {
 	var count = 0;
 	game.getSpecialists().sort(specNameSorter).forEach(function(item){
