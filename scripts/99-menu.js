@@ -69,7 +69,9 @@ var Menu = function(type){
 						{ label: loca.GetText("BUI", "EpicWorkyardWood"), name: "EpicWorkyardWood", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "EpicWorkyardCorn"), name: "EpicWorkyardCorn", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "GiftChristmasTree"), name: "GiftChristmasTree", onSelect: buiFastAccessMenuHandler },
-						{ label: loca.GetText("BUI", "FlyingHouse"), name: "FlyingHouse", onSelect: buiFastAccessMenuHandler }
+						{ label: loca.GetText("BUI", "FlyingHouse"), name: "FlyingHouse", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "BalloonMarket_mini"), name: "BalloonMarket_mini", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "GiftGhostShip"), name: "GiftGhostShip", onSelect: buiFastAccessMenuHandler }
 					]},
 					{ label: loca.GetText("LAB", "AdventureLevelSuperHigh"), mnemonicIndex: 0, items: [
 						{ label: loca.GetText("BUI", "Observatory"), name: "Observatory", onSelect: buiFastAccessMenuHandler },
@@ -82,7 +84,8 @@ var Menu = function(type){
 						{ label: loca.GetText("BUI", "SpringPark"), name: "SpringPark", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "ConcertHall"), name: "ConcertHall", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "Meadhall"), name: "Meadhall", onSelect: buiFastAccessMenuHandler },
-						{ label: loca.GetText("BUI", "SoccerField"), name: "SoccerField", onSelect: buiFastAccessMenuHandler }
+						{ label: loca.GetText("BUI", "SoccerField"), name: "SoccerField", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "IceSkatingLake"), name: "IceSkatingLake", onSelect: buiFastAccessMenuHandler }
 					]},
 					{ label: loca.GetText("QUL", "TutZoneWideBuffs1"), mnemonicIndex: 0, items: [
 						{ label: loca.GetText("BUI", "LoveTree"), name: "LoveTree", onSelect: buiFastAccessMenuHandler },
@@ -123,8 +126,7 @@ var Menu = function(type){
 			{ type: 'separator' },
 			{ label: loca.GetText("LAB", "ChatHelp"), name: 'Help', mnemonicIndex: 0, items: [
 				{ label: "Wiki", onSelect: openWikiHandler },
-				{ label: "Discord (RU)", onSelect: openDiscordHandler },
-				{ label: "Discord (EN)", onSelect: openDiscordENHandler },
+				{ label: "Discord (RU/EN)", onSelect: openDiscordENHandler },
 				{ label: "Discord (DE)", onSelect: openDiscordDEHandler },
 				{ label: "Discord (ES)", onSelect: openDiscordESHandler },
 				{ type: 'separator' },
@@ -134,7 +136,8 @@ var Menu = function(type){
 				{ label: getText('feedbacktitle'), onSelect: feedbackMenuHandler }
 			]},
 			{ label: 'v' + version + (mainSettings.experimental ? "-Ex" : ""), enabled: false },
-			{ label: '', name: 'memusage', enabled: false }
+			{ label: '', name: 'memusage', enabled: false },
+			{ label: '', name: 'online', enabled: false }
 		];
 	};
 	this.linearSkip = ['LRU', 'Shortcuts', 'Tools', 'Help'];
@@ -222,5 +225,18 @@ Menu.prototype = {
 menu = new Menu(mainSettings.menuStyle);
 menu.show();
 setInterval(function() { menu.nativeMenu.getItemByName("memusage").label = 'Mem: ' + humanMemorySize(air.System.privateMemory, 1); }, 5000);
+setInterval(function() { 
+    try {
+        var conn = swmmo.application.blueFireComponent.getFacade().retrieveMediator("XIFFConnectionMediator").getViewComponent();
+        if(!conn.isLoggedIn()) { return; }
+        var br = new(game.def("org.igniterealtime.xiff.core::Browser"))(conn);
+        br.getServiceInfo(new(game.def("org.igniterealtime.xiff.core::EscapedJID"))("help@conference."+conn.server), function(result_iq) {
+            try {
+                var online = result_iq.getExtension("query").getNode().childNodes.filter(function(x) { return x.nodeName == "x" })[0].childNodes.filter(function(x) { return x.attributes["var"] == "muc#roominfo_occupants"; })[0].lastChild.lastChild.toString();
+                menu.nativeMenu.getItemByName("online").label = 'Online: ' + online;
+            } catch (ex) { }
+        });
+    } catch(e) { }
+}, 60000);
 reloadScripts(null);
 shortcutsMakeMenu();

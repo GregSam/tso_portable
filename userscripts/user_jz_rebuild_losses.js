@@ -20,7 +20,7 @@ var targets = {
 	"Cavalry": 1500,
 	"Bowman": 1000,
 	"Longbowman": 1000,
-	"Crossbowman": 2200,
+	"Crossbowman": 2500,
 	"Cannoneer": 1000,
 	"Swordsman": 5000,
 	"MountedSwordsman": 2500,

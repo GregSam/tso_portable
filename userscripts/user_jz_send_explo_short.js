@@ -36,3 +36,6 @@
 // 	sendExloTimeout = setTimeout(function(){CheckAndSendExplorers();}, 60*1000);
 // }
 
+// game.getSpecialists().sort(specNameSorter).forEach(function(item){
+//     air.Introspector.Console.log(item.GetType(), item);
+// });

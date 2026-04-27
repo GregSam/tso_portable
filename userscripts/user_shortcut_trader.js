@@ -9,6 +9,46 @@ var ShortcutTrader = (function () {
     var buildTemplates;
     var modalInitialized  = false;
 
+    var GROUPS = {
+               "specialist":"GROUP_SPECIALISTS",
+               "AddResource":"GROUP_RESOURCES",
+               "FillDeposit":"GROUP_RESOURCES",
+               "PremiumAccount":"GROUP_BUFFS",
+               "ProductivityBuff":"GROUP_BUFFS",
+               "ProductivityAreaBuff":"GROUP_BUFFS",
+               "SpeedUpPopulationGrowth":"GROUP_BUFFS",
+               "RecruitingBuff":"GROUP_BUFFS",
+               "ProvisionerBuff":"GROUP_BUFFS",
+               "EventBuff":"GROUP_BUFFS",
+               "HalloweenEvent":"GROUP_BUFFS",
+               "AddRecipe":"GROUP_BUFFS",
+               "EmptyEffectBuff":"GROUP_BUFFS",
+               "#donate-resource#":"GROUP_BUFFS",
+               "MultiplierBuffZone":"GROUP_BUFFS",
+               "EffectBuff":"GROUP_BUFFS",
+               "RemoveBuff":"GROUP_BUFFS",
+               "BattleBuff":"GROUP_BUFFS",
+               "BookbinderBuff":"GROUP_BUFFS",
+               "ShuffleCollectibles":"GROUP_BUFFS",
+               "AnimalBuff":"GROUP_BUFFS",
+               "RevealCollectiblesBuff":"GROUP_BUFFS",
+               "ChangeColorScheme":"GROUP_BUFFS",
+               "ChangeSkin":"GROUP_BUFFS",
+               "ChangeDefaultSkin":"GROUP_BUFFS",
+               "EventMonsterBuff":"GROUP_BUFFS",
+               "GeneralSpeed":"GROUP_BUFFS",
+               "BuildBuilding":"GROUP_BUILDINGS",
+               "BuildDefenseModeBuilding":"GROUP_BUILDINGS",
+               "Adventure":"GROUP_ADVENTURES",
+               "RarityArea":"GROUP_MISC",
+               "QuestStart":"GROUP_MISC",
+               "HiredMilitary":"GROUP_MISC",
+               "ChangeAvatar":"GROUP_MISC",
+               "#withdraw-resource#":"GROUP_MISC",
+               "#transfer-resource#":"GROUP_MISC",
+               "MountainDemolition":"GROUP_MISC"
+            };
+
     function openModal() {
         if (!game.gi.isOnHomzone()) {
             game.showAlert(getText('not_home'));
@@ -340,32 +380,69 @@ var ShortcutTrader = (function () {
         var resourcesByCategory = {};
         var categoryNames       = [];
 
+        // try {
+        //     swmmo.getDefinitionByName("ServerState::gEconomics").mResourceDefaultDefinition_vector.forEach(function (product) {
+        //         if (product.tradable) {
+        //             var category = product.group_string || product.category_string || "WarehouseTab7";
+
+        //             var clMatch = category.match(/^CL(\d+)$/);
+        //             if (clMatch) {
+        //                 category = "WarehouseTab" + clMatch[1];
+        //             } else if (category === "Event") {
+        //                 category = "WarehouseTab6";
+        //             }
+
+        //             if (category === "WarehouseTab5") {
+        //                 category = "WarehouseTab8";
+        //             }
+        //             if (!resourcesByCategory.hasOwnProperty(category)) {
+        //                 resourcesByCategory[category] = [];
+        //                 categoryNames.push(category);
+        //             }
+
+        //             resourcesByCategory[category].push({
+        //                 name: product.resourceName_string,
+        //             });
+        //         }
+        //     });
+        // } catch (e) {
+        //     return [];
+        // }
+
         try {
-            swmmo.getDefinitionByName("ServerState::gEconomics").mResourceDefaultDefinition_vector.forEach(function (product) {
-                if (product.tradable) {
-                    var category = product.group_string || product.category_string || "WarehouseTab7";
-
-                    var clMatch = category.match(/^CL(\d+)$/);
-                    if (clMatch) {
-                        category = "WarehouseTab" + clMatch[1];
-                    } else if (category === "Event") {
-                        category = "WarehouseTab6";
+            game.gi.mCurrentPlayer.getBuffsSortedForStarMenu().forEach(function (product) {
+                if(product.GetBuffDefinition().IsTradable(product.GetResourceName_string())){
+                    // var definition = product.GetBuffDefinition();
+                    // var maxLimit = definition.GetMaxLimit(product.GetResourceName_string());
+                    // var buffType = definition.GetBuffType();
+                    var type = product.GetType();
+                    // find in GROUPS value of key which is at the beginning of type
+                    var group = "GROUP_MISC";
+                    // GROUPS.forEach(function(group){
+                    //     if(type.indexOf(group) === 0){
+                    //         group = GROUPS[group];
+                    //         return;
+                    //     }
+                    // });
+                    for (var key in GROUPS) {
+                        if (type.indexOf(key) === 0) {
+                            group = GROUPS[key];
+                            break;
+                        }
                     }
-
-                    if (category === "WarehouseTab5") {
-                        category = "WarehouseTab8";
+                    // air.Introspector.Console.log(definition, buffType);
+                    if (!resourcesByCategory.hasOwnProperty(group)) {
+                        resourcesByCategory[group] = [];
+                        categoryNames.push(group);
                     }
-                    if (!resourcesByCategory.hasOwnProperty(category)) {
-                        resourcesByCategory[category] = [];
-                        categoryNames.push(category);
-                    }
-
-                    resourcesByCategory[category].push({
-                        name: product.resourceName_string,
+                    resourcesByCategory[group].push({
+                        name: product.getName()
                     });
                 }
             });
-        } catch (e) {
+        }
+        catch (e) {
+            air.Introspector.Console.log("Error in getResourceList:", e);
             return [];
         }
 
@@ -381,6 +458,7 @@ var ShortcutTrader = (function () {
             });
         }
 
+        air.Introspector.Console.log("ShortcutTrader - Resources loaded:", sortedGroupedList);
         return sortedGroupedList;
     }
 
@@ -393,11 +471,11 @@ var ShortcutTrader = (function () {
     function createResourceSelect(id, resources) {
         var $select = $('<select>', {id: id, 'class': 'form-control'});
         resources.forEach(function (cat) {
-            $select.append('<optgroup label="' + loca.GetText("LAB", cat.categoryName) + '">');
+            $select.append('<optgroup label="' + cat.categoryName + '">');
             cat.items.forEach(function (res) {
                 $select.append($('<option>', {
                     value: res.name, 'data-max': res.maxLimit
-                }).text(loca.GetText("RES", res.name)));
+                }).text(res.name));
             })
         });
         $select.append('</optgroup>');
@@ -481,12 +559,34 @@ var ShortcutTrader = (function () {
             costRes.name_string = trade.costResName;
 
             var tradeOffer          = new (game.def("Communication.VO::dTradeOfferVO"));
-            tradeOffer.offerRes     = offerRes;
+            // tradeOffer.offerRes     = offerRes;
             tradeOffer.costsRes     = costRes;
             tradeOffer.receipientId = trade.userId;
             tradeOffer.lots         = 0;
             tradeOffer.slotType     = 4;
             tradeOffer.slotPos      = 0;
+
+            ///////////////////
+            var pumpkinRefills;
+            game.gi.mCurrentPlayer.getAvailableBuffs_vector().forEach(function(item){
+                if(item.sortKey.indexOf("2|filldeposit|halloweenresource") > -1){
+                    pumpkinRefills = item;
+                }
+            });
+            var dBuffVO = swmmo.getDefinitionByName("Communication.VO::dBuffVO");
+            var buff = new dBuffVO();
+				buff.sourceZoneId = game.player.GetPlayerId();
+				buff.uniqueId1 = pumpkinRefills.GetUniqueId().uniqueID1;
+				buff.uniqueId2 = pumpkinRefills.GetUniqueId().uniqueID2;
+                buff.buffName_string = pumpkinRefills.getName();
+				buff.amount = 1;
+
+				buff.buffName_string = pumpkinRefills.GetType();
+				buff.resourceName_string = pumpkinRefills.GetResourceName_string();
+
+            tradeOffer.offerRes = null;
+            tradeOffer.offerBuff = buff;
+            ///////////////////
 
             if (trade.userId === 0) {
                 var freeSlots = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(0);
@@ -499,7 +599,7 @@ var ShortcutTrader = (function () {
 
             (function (currentTradeOffer, currentTrade) {
                 queue.add(function () {
-                    game.gi.mClientMessages.SendMessagetoServer(1049, game.gi.mCurrentViewedZoneID, currentTradeOffer);
+                    // game.gi.mClientMessages.SendMessagetoServer(1049, game.gi.mCurrentViewedZoneID, currentTradeOffer);
                     successCount++;
                     if (currentTrade.userId === 0) {
                         game.showAlert(loca.GetText('LAB', 'TradeOffer') + ' ' + loca.GetText('MES', 'TradeInitiated') + ' (' + successCount + '/' + totalTrades + ')');

@@ -16,7 +16,7 @@ var General_5 = "7155";
 var General_6 = "39780";
 var OGG_1 = "389191";
 var OGG_2 = "3549972";
-var OGG_3 = "";
+var OGG_3 = "3549973";
 var YGG_1 = "389488";
 var YGG_2 = "483087";
 var YGG_3 = "495320";
@@ -42,7 +42,7 @@ var Frosty_2 = "619530";
 TYPE_SantaGeneral = 27;
 
 var adventures = {
-	// "theBlackKnight": theBlackKnight,
+	"theBlackKnight": theBlackKnight,
 	// "horseback_SYLV_2xYGG_A": horseback_SYLV_2xYGG_A,
 	// "horseback_SYLV_2xYGG_B": horseback_SYLV_2xYGG_B,
 	// "FirstThief": FirstThief,
@@ -79,8 +79,8 @@ var adventures = {
 	// "VictorTheVictus_Silvana": VictorTheVictus_Silvana,
 	// "VictorTheVictus_Silvana_2": VictorTheVictus_Silvana_2,
 	// "TheValiantLittleTailor": TheValiantLittleTailor,
-	// "TreasureOfWisdom_Silvana_Ghost": TreasureOfWisdom_Silvana_Ghost,
-	// "TreasureOfKnowlage_RG_SYLV_GHOST": TreasureOfKnowlage_RG_SYLV_GHOST,
+	"TreasureOfWisdom_Silvana_Ghost": TreasureOfWisdom_Silvana_Ghost,
+	"TreasureOfKnowlage_RG_SYLV_GHOST": TreasureOfKnowlage_RG_SYLV_GHOST,
 	"SindbadAndBesiegedCity_RG_SYLV_GHOST": SindbadAndBesiegedCity_RG_SYLV_GHOST,
 	// "RoaringBull_A": RoaringBull_A,
 	"SeaSnake": SeaSnake,
@@ -90,6 +90,7 @@ var adventures = {
 	"BonabertiBuisness_A": BonabertiBuisness_A,
 	// "TheDarkPriest_JZ_B": TheDarkPriest_JZ_B,
 	// "AlladinPrincess_A": AlladinPrincess,
+	"RaidingTheRaiders": RaidingTheRaiders
 }
 
 var delayExecutions = {
@@ -243,11 +244,12 @@ var theBlackKnight = {
 		"64498.0":{"grid":4054,"name":"Mayor 2 (Major General) ","order":3,"time":1000,"skills":{"3":3,"6":3,"11":3,"14":3},"army":{"Recruit":65,"EliteSoldier":1,"Cavalry":120,"Cannoneer":84},"type":13,"target":2834,"targetName":"Bandit Camp (hard)"},
 		"63091.0":{"grid":5142,"name":"Loner","order":4,"time":4000,"skills":{"3":1,"6":3,"11":3,"14":3},"army":{"Recruit":120},"type":13,"target":2295,"targetName":"Bandit Camp (hard)"},
 		"64499.0":{"grid":6094,"name":"Major 1 (Major General) ","order":5,"time":4000,"skills":{"1":2,"2":1,"3":3,"6":3,"11":3,"14":3},"army":{"Recruit":80,"EliteSoldier":1,"Cavalry":120,"Cannoneer":69},"type":13,"target":1822,"targetName":"Bandit Camp (hard)"}},
-	"06": {
+	"06": {"127334.0":{"grid":3426,"name":"General Sylvana</b>","order":3,"time":1000,"skills":{"0":3,"3":3,"6":3,"9":3,"11":3,"14":3},"army":{"Recruit":85,"EliteSoldier":20,"Cannoneer":75},"type":57,"target":3153,"targetName":"Bandit Leader"}},
+	"07": {"127334.0":{"grid":2610,"name":"General Sylvana</b>","order":3,"time":1000,"skills":{"0":3,"3":3,"6":3,"9":3,"11":3,"14":3},"army":{"Recruit":65,"Cavalry":75,"Cannoneer":40},"type":57,"target":2350,"targetName":"Bandit Leader"}},
+	"08": {
 		"262.0":{"grid":3376,"name":"General 1","order":0,"time":1000,"skills":{"6":3,"11":3,"14":2},"army":{"EliteSoldier":59,"Cavalry":135},"type":0,"target":1548,"targetName":"Bandit Camp (hard)"},
-		"127334.0":{"grid":4054,"name":"General Sylvana</b>","order":3,"time":4000,"skills":{"1":2,"2":1,"3":3,"6":3,"11":3,"14":3},"army":{"Recruit":84,"Cannoneer":96},"type":13,"target":1347,"targetName":"Dark Castle"}},
-	"07": {"127334.0":{"grid":3426,"name":"General Sylvana</b>","order":3,"time":1000,"skills":{"0":3,"3":3,"6":3,"9":3,"11":3,"14":3},"army":{"Recruit":85,"EliteSoldier":20,"Cannoneer":75},"type":57,"target":3153,"targetName":"Bandit Leader"}},
-	"08": {"127334.0":{"grid":2610,"name":"General Sylvana</b>","order":3,"time":1000,"skills":{"0":3,"3":3,"6":3,"9":3,"11":3,"14":3},"army":{"Recruit":65,"Cavalry":75,"Cannoneer":40},"type":57,"target":2350,"targetName":"Bandit Leader"}},
+		"127334.0":{"grid":4054,"name":"General Sylvana</b>","order":3,"time":4000,"skills":{"1":2,"2":1,"3":3,"6":3,"11":3,"14":3},"army":{"Recruit":84,"Cannoneer":96},"type":13,"target":1347,"targetName":"Dark Castle"}
+	},
 }
 
 // var horseBackSilvana = {
@@ -1202,130 +1204,166 @@ var TreasureOfWisdom_Silvana_Ghost = {
 }
 
 var TreasureOfKnowlage_RG_SYLV_GHOST = {
-	"01": {"524888.0":{"grid":1367,"name":"RG_1_Skills(Resolute General)","order":15,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"Knight":85,"ArmoredMarksman":5,"MountedMarksman":90},"type":79,"target":497,"targetName":"Desert Bandit Camp (medi..."}},
-	"02": {"536169.0":{"grid":1026,"name":"RG_2_skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":65,"Knight":5,"MountedMarksman":30,"Besieger":115},"type":79,"target":1590,"targetName":"Desert Bandit Camp (medi..."}},
-	"03": {"127334.0":{"grid":960,"name":"Sylvana_1-Skills(General Sylvana)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":1595,"targetName":"Desert Bandit Camp (medi..."}},
-	"04": {"524888.0":{"grid":1367,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":80,"MountedMarksman":135},"type":79,"target":1866,"targetName":"Desert Bandit Leader"}},
-	"05": {"536169.0":{"grid":1026,"name":"RG_2_skills(Resolute General)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":55,"ArmoredMarksman":120,"MountedMarksman":40},"type":79,"target":2390,"targetName":"Desert Bandit Camp (medi..."}},
-	"06": {"524888.0":{"grid":1367,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":30,"ArmoredMarksman":140,"MountedMarksman":45},"type":79,"target":2727,"targetName":"Desert Bandit Camp (medi..."}},
-	"07": {"536169.0":{"grid":1026,"name":"RG_2_skills(Resolute General)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":55,"ArmoredMarksman":160},"type":79,"target":3412,"targetName":"Desert Bandit Camp (medi..."}},
-	"08": {"524888.0":{"grid":1367,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"MountedMarksman":20,"Besieger":135},"type":79,"target":3819,"targetName":"Desert Bandit Camp (medi..."}},
-	"09": {"536169.0":{"grid":1026,"name":"RG_2_skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"Knight":15,"Besieger":150},"type":79,"target":3549,"targetName":"Desert Bandit Leader"}},
-	"10": {"524888.0":{"grid":1367,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"MountedMarksman":155},"type":79,"target":4426,"targetName":"Desert Bandit Camp (easy)"}},
-	"11": {"536169.0":{"grid":1026,"name":"RG_2_skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"Besieger":155},"type":79,"target":5242,"targetName":"Desert Bandit Camp (medi..."}},
-	"12": {"127334.0":{"grid":960,"name":"Sylvana_1-Skills(General Sylvana)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":105,"MountedMarksman":90},"type":57,"target":6682,"targetName":"Desert Bandit Camp (medi..."}},
-	"13": {"524888.0":{"grid":1367,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":30,"MountedMarksman":185},"type":79,"target":6963,"targetName":"Desert Bandit Camp (medi..."}},
-	"14": {"294792.0":{"grid":1297,"name":"Sylvana_2-Skills(General Sylvana)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":7373,"targetName":"Desert Bandit Camp (medi..."}},
-	"15": {"536169.0":{"grid":1026,"name":"RG_2_skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"MountedMarksman":90,"Besieger":90},"type":79,"target":6965,"targetName":"Desert Bandit Leader"}},
-	"16": {"524888.0":{"grid":2368,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":115,"Knight":45,"ArmoredMarksman":35,"MountedMarksman":20},"type":79,"target":3525,"targetName":"Desert Bandit Camp (medi..."}},
-	"17": {"524888.0":{"grid":2368,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":45,"MountedMarksman":170},"type":79,"target":3933,"targetName":"Desert Bandit Camp (medi..."}},
-	"18": {"524888.0":{"grid":2368,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":65,"ArmoredMarksman":10,"MountedMarksman":140},"type":79,"target":3799,"targetName":"Desert Bandit Leader"}},
-	"19": {"127334.0":{"grid":7514,"name":"Sylvana_1-Skills(General Sylvana)","order":25,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":1985,"targetName":"Desert Bandit Camp (easy)"}},
-	"20": {"389488.0":{"grid":7718,"name":"YGG_1_1UP(Younger Gemini General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":125},"type":50,"target":1716,"targetName":"Desert Bandit Camp (medi..."},
-			"294792.0":{"grid":7583,"name":"Sylvana_2-Skills(General Sylvana)","order":24,"time":10000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":1716,"targetName":"Desert Bandit Camp (medi..."}},
-	"21": {"524888.0":{"grid":7788,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":45,"MountedMarksman":100,"Besieger":70},"type":79,"target":1444,"targetName":"Desert Bandit Leader"}},
-	"22": {"536169.0":{"grid":7653,"name":"RG_2_skills(Resolute General)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":65,"MountedMarksman":150},"type":79,"target":6168,"targetName":"Desert Bandit Camp (medi..."}},
-	"23": {"389191.0":{"grid":7248,"name":"OGG_1-Skills(Older Gemini General)","order":16,"time":1000,"skills":{"2":3,"3":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"Swordsman":30,"ArmoredMarksman":120,"MountedMarksman":145},"type":47,"target":6241,"targetName":"Desert Bandit Camp (medi..."}},
-	"24": {"536169.0":{"grid":7653,"name":"RG_2_skills(Resolute General)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"MountedMarksman":165},"type":79,"target":5427,"targetName":"Desert Bandit Camp (medi..."}},
-	"25": {"524888.0":{"grid":7788,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":55,"ArmoredMarksman":100,"MountedMarksman":60},"type":79,"target":5225,"targetName":"Desert Bandit Leader"}},
-	"26": {"536169.0":{"grid":7653,"name":"RG_2_skills(Resolute General)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":70,"ArmoredMarksman":105,"MountedMarksman":40},"type":79,"target":1747,"targetName":"Desert Bandit Leader"}},
-	"27": {"524888.0":{"grid":2427,"name":"RG_1_Skills(Resolute General)","order":22,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":65,"ArmoredMarksman":150},"type":79,"target":2011,"targetName":"Desert Bandit Camp (hard)"}},
-	"28": {"536169.0":{"grid":2429,"name":"RG_2_skills(Resolute General)","order":22,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"ArmoredMarksman":140,"MountedMarksman":40},"type":79,"target":2353,"targetName":"Desert Bandit Camp (hard)"}},
-	"29": {"483089.0":{"grid":2363,"name":"Ghost_1_TR_WW(Ghost General)","order":7,"time":1000,"skills":{"3":3,"6":3,"8":3,"11":3,"12":3,"14":3,"15":3},"army":{"Swordsman":15,"MountedMarksman":215},"type":63,"target":2013,"targetName":"Desert Bandit Leader"}},
-	"30": {"524888.0":{"grid":2427,"name":"RG_1_Skills(Resolute General)","order":20,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"ArmoredMarksman":145,"MountedMarksman":35},"type":79,"target":2266,"targetName":"Desert Bandit Camp (hard)"}},
-	"31": {"127334.0":{"grid":2567,"name":"Sylvana_1-Skills(General Sylvana)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":1992,"targetName":"Desert Bandit Leader"}},
-	"32": {"536169.0":{"grid":2429,"name":"RG_2_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":30,"ArmoredMarksman":130,"MountedMarksman":55},"type":79,"target":3517,"targetName":"Desert Bandit Camp (hard)"}},
-	"33": {"524888.0":{"grid":2427,"name":"RG_1_skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":115,"MountedMarksman":100},"type":79,"target":5008,"targetName":"Desert Bandit Camp (hard)"}},
-	"34": {"389488.0":{"grid":2704,"name":"YGG_1_1UP(Younger Gemini General)","order":25,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":1},"type":50,"target":5959,"targetName":"Desert Bandit Camp (hard)"},
-			"127334.0":{"grid":2567,"name":"Sylvana_1-Skills(General Sylvana)","order":26,"time":15000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":5959,"targetName":"Desert Bandit Camp (hard)"}},
-	"35": {"536169.0":{"grid":2429,"name":"RG_2_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"MountedMarksman":165},"type":79,"target":5947,"targetName":"Desert Bandit Camp (hard)"}},
-	"36": {"524888.0":{"grid":2427,"name":"RG_1_skills(Resolute General)","order":22,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":150,"MountedMarksman":65},"type":79,"target":5949,"targetName":"Desert Bandit Leader"}},
-	"37": {"483089.0":{"grid":2363,"name":"Ghost_1_TR_WW(Ghost General)","order":7,"time":1000,"skills":{"3":3,"6":3,"8":3,"11":3,"12":3,"14":3,"15":3},"army":{"Swordsman":75,"MountedMarksman":155},"type":63,"target":5874,"targetName":"Desert Bandit Leader"}},
-	"38": {"524888.0":{"grid":5946,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":125,"MountedMarksman":90},"type":79,"target":4259,"targetName":"Desert Bandit Leader"}},
-	"39": {"536169.0":{"grid":5944,"name":"RG_2_skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"MountedMarksman":15,"Besieger":140},"type":79,"target":3221,"targetName":"Desert Bandit Camp (hard)"}},
-	"40": {"524888.0":{"grid":5946,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":65,"Besieger":150},"type":79,"target":3359,"targetName":"Desert Bandit Leader"}},
-	"41": {"536169.0":{"grid":5262,"name":"RG_2_skills(Resolute General)","order":22,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":115,"MountedMarksman":100},"type":79,"target":4786,"targetName":"Desert Bandit Camp (medi..."}},
-	"42": {"524888.0":{"grid":5123,"name":"RG_1_Skills(Resolute General)","order":21,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"ArmoredMarksman":130,"MountedMarksman":25},"type":79,"target":4449,"targetName":"Desert Bandit Camp (hard)"}},
-	"43": {"536169.0":{"grid":5262,"name":"RG_2_skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"Besieger":155},"type":79,"target":4385,"targetName":"Desert Bandit Camp (medi..."}},
-	"44": {"524888.0":{"grid":5123,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"MountedMarksman":180},"type":79,"target":4591,"targetName":"Desert Bandit Camp (easy)"}},
-	"45": {"536169.0":{"grid":5262,"name":"RG_2_skills(Resolute General)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"ArmoredMarksman":70,"MountedMarksman":95},"type":79,"target":4184,"targetName":"Desert Bandit Camp (hard)"}},
-	"46": {"127334.0":{"grid":5054,"name":"Sylvana_1-Skills(General Sylvana)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":3571,"targetName":"Desert Bandit Camp (hard)"}},
-	"47": {"524888.0":{"grid":5123,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":75,"Knight":15,"MountedMarksman":95,"Besieger":30},"type":79,"target":3777,"targetName":"Ancient Library"}}
+	"01": {
+		"524888.0":{"grid":1367,"name":"RG_1_Skills(Resolute General)","order":15,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"Knight":85,"ArmoredMarksman":5,"MountedMarksman":90},"type":79,"target":497,"targetName":"Desert Bandit Camp (medi..."},
+		"536169.0":{"grid":1026,"name":"RG_2_skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":65,"Knight":5,"MountedMarksman":30,"Besieger":115},"type":79,"target":1590,"targetName":"Desert Bandit Camp (medi..."},
+		"127334.0":{"grid":960,"name":"Sylvana_1-Skills(General Sylvana)","order":24,"time":25000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":1595,"targetName":"Desert Bandit Camp (medi..."},
+		"1631889.0":{"grid":825,"name":"RG_3_Skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":80,"MountedMarksman":135},"type":79,"target":1866,"targetName":"Desert Bandit Leader"},
+		"4050074.0":{"grid":690,"name":"RG_4_skills(Resolute General)","order":24,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":55,"ArmoredMarksman":120,"MountedMarksman":40},"type":79,"target":2390,"targetName":"Desert Bandit Camp (medi..."},
+		"4144108.0":{"grid":555,"name":"RG_5_Skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":30,"ArmoredMarksman":140,"MountedMarksman":45},"type":79,"target":2727,"targetName":"Desert Bandit Camp (medi..."}
+	},
+	
+	"02": {
+		"524888.0":{"grid":1367,"name":"RG_1_skills(Resolute General)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":55,"ArmoredMarksman":160},"type":79,"target":3412,"targetName":"Desert Bandit Camp (medi..."},
+		"536169.0":{"grid":1026,"name":"RG_2_Skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"MountedMarksman":20,"Besieger":135},"type":79,"target":3819,"targetName":"Desert Bandit Camp (medi..."},
+		"1631889.0":{"grid":825,"name":"RG_3_skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"Knight":15,"Besieger":150},"type":79,"target":3549,"targetName":"Desert Bandit Leader"},
+		"4050074.0":{"grid":690,"name":"RG_4_Skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"MountedMarksman":155},"type":79,"target":4426,"targetName":"Desert Bandit Camp (easy)"},
+		"4144108.0":{"grid":555,"name":"RG_5_skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"Besieger":155},"type":79,"target":5242,"targetName":"Desert Bandit Camp (medi..."}
+	},
+	
+	"03": {
+		"127334.0":{"grid":960,"name":"Sylvana_1-Skills(General Sylvana)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":105,"MountedMarksman":90},"type":57,"target":6682,"targetName":"Desert Bandit Camp (medi..."},
+		"524888.0":{"grid":1367,"name":"RG_1_Skills(Resolute General)","order":23,"time":45000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":30,"MountedMarksman":185},"type":79,"target":6963,"targetName":"Desert Bandit Camp (medi..."},
+		"294792.0":{"grid":688,"name":"Sylvana_2-Skills(General Sylvana)","order":24,"time":35000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":7373,"targetName":"Desert Bandit Camp (medi..."},
+		"536169.0":{"grid":1026,"name":"RG_2_skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"MountedMarksman":90,"Besieger":90},"type":79,"target":6965,"targetName":"Desert Bandit Leader"}
+	},
+	"04": {
+		"1166041.0":{"grid":1481,"name":"<b>Juan_1</b> <font size='-3'>(General Juan)</font>","order":1,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":3,"11":3,"14":2,"19":1},"army":{"Recruit":1},"type":85,"target":2094,"targetName":"Desert Bandit Camp (medi..."},
+		"2990927.0":{"grid":1278,"name":"<b>Juan_2</b> <font size='-3'>(General Juan)</font>","order":2,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":3,"11":3,"14":2,"19":1},"army":{"Recruit":1},"type":85,"target":2094,"targetName":"Desert Bandit Camp (medi..."},
+		"2990928.0":{"grid":1143,"name":"<b>Juan_3</b> <font size='-3'>(General Juan)</font>","order":3,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":3,"11":3,"14":2,"19":1},"army":{"Recruit":1},"type":85,"target":2094,"targetName":"Desert Bandit Camp (medi..."},
+		"483087.0":{"grid":1555,"name":"<b>YGG_2_1UP</b> <font size='-3'>(Younger Gemini General)</font>","order":4,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":1},"type":50,"target":2094,"targetName":"Desert Bandit Camp (medi..."},
+		"495320.0":{"grid":1690,"name":"<b>YGG_3_1UP</b> <font size='-3'>(Younger Gemini General)</font>","order":5,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":1},"type":50,"target":2094,"targetName":"Desert Bandit Camp (medi..."},
+		"527488.0":{"grid":1418,"name":"<b>YGG_4_1UP</b> <font size='-3'>(Younger Gemini General)</font>","order":6,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":1},"type":50,"target":2094,"targetName":"Desert Bandit Camp (medi..."},
+		"1647661.0":{"grid":1553,"name":"<b>YGG_5_1UP</b> <font size='-3'>(Younger Gemini General)</font>","order":7,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":1},"type":50,"target":2094,"targetName":"Desert Bandit Camp (medi..."}
+	},
+	
+	"05": {
+		"1631889.0":{"grid":1212,"name":"RG_3_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":115,"Knight":45,"ArmoredMarksman":35,"MountedMarksman":20},"type":79,"target":3525,"targetName":"Desert Bandit Camp (medi..."},
+		"4050074.0":{"grid":1077,"name":"RG_4_Skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":45,"MountedMarksman":170},"type":79,"target":3933,"targetName":"Desert Bandit Camp (medi..."},
+		"4144108.0":{"grid":942,"name":"RG_5_Skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":65,"ArmoredMarksman":10,"MountedMarksman":140},"type":79,"target":3799,"targetName":"Desert Bandit Leader"},
+	},
+	
+	"06": {
+		"127334.0":{"grid":7514,"name":"Sylvana_1-Skills(General Sylvana)","order":25,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":1985,"targetName":"Desert Bandit Camp (easy)"},
+		"389488.0":{"grid":7718,"name":"YGG_1_1UP(Younger Gemini General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":125},"type":50,"target":1716,"targetName":"Desert Bandit Camp (medi..."},
+		"294792.0":{"grid":7583,"name":"Sylvana_2-Skills(General Sylvana)","order":24,"time":10000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":1716,"targetName":"Desert Bandit Camp (medi..."},
+		"524888.0":{"grid":7788,"name":"RG_1_Skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":45,"MountedMarksman":100,"Besieger":70},"type":79,"target":1444,"targetName":"Desert Bandit Leader"}
+	},
+	
+	"07": {
+		"536169.0":{"grid":7180,"name":"RG_2_skills(Resolute General)","order":24,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":65,"MountedMarksman":150},"type":79,"target":6168,"targetName":"Desert Bandit Camp (medi..."},
+		"389191.0":{"grid":7384,"name":"OGG_1-Skills(Older Gemini General)","order":16,"time":25000,"skills":{"2":3,"3":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"Swordsman":30,"ArmoredMarksman":120,"MountedMarksman":145},"type":47,"target":6241,"targetName":"Desert Bandit Camp (medi..."},
+		"1631889.0":{"grid":7251,"name":"RG_3_skills(Resolute General)","order":24,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"MountedMarksman":165},"type":79,"target":5427,"targetName":"Desert Bandit Camp (medi..."},
+		"4144108.0":{"grid":7585,"name":"RG_5_Skills(Resolute General)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":70,"ArmoredMarksman":105,"MountedMarksman":40},"type":79,"target":1747,"targetName":"Desert Bandit Leader"},
+		"4050074.0":{"grid":7386,"name":"RG_4_Skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":55,"ArmoredMarksman":100,"MountedMarksman":60},"type":79,"target":5225,"targetName":"Desert Bandit Leader"}
+	},
+	
+	"08": {
+		"524888.0":{"grid":2427,"name":"RG_1_Skills(Resolute General)","order":22,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":65,"ArmoredMarksman":150},"type":79,"target":2011,"targetName":"Desert Bandit Camp (hard)"},
+		"536169.0":{"grid":2429,"name":"RG_2_skills(Resolute General)","order":22,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"ArmoredMarksman":140,"MountedMarksman":40},"type":79,"target":2353,"targetName":"Desert Bandit Camp (hard)"},
+		"483089.0":{"grid":2363,"name":"Ghost_1_TR_WW(Ghost General)","order":7,"time":25000,"skills":{"3":3,"6":3,"8":3,"11":3,"12":3,"14":3,"15":3},"army":{"Swordsman":15,"MountedMarksman":215},"type":63,"target":2013,"targetName":"Desert Bandit Leader"},
+		"1631889.0":{"grid":2567,"name":"RG_3_Skills(Resolute General)","order":20,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"ArmoredMarksman":145,"MountedMarksman":35},"type":79,"target":2266,"targetName":"Desert Bandit Camp (hard)"},
+		"127334.0":{"grid":2772,"name":"Sylvana_1-Skills(General Sylvana)","order":24,"time":25000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":1992,"targetName":"Desert Bandit Leader"}
+	},
+	
+	"09": {
+		"524888.0":{"grid":2427,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":30,"ArmoredMarksman":130,"MountedMarksman":55},"type":79,"target":3517,"targetName":"Desert Bandit Camp (hard)"},
+		"536169.0":{"grid":2429,"name":"RG_2_skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":115,"MountedMarksman":100},"type":79,"target":5008,"targetName":"Desert Bandit Camp (hard)"},
+		"389488.0":{"grid":1609,"name":"YGG_1_1UP(Younger Gemini General)","order":25,"time":15000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":1},"type":50,"target":5959,"targetName":"Desert Bandit Camp (hard)"},
+		"127334.0":{"grid":2772,"name":"Sylvana_1-Skills(General Sylvana)","order":26,"time":15000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":5959,"targetName":"Desert Bandit Camp (hard)"},
+		"1631889.0":{"grid":2567,"name":"RG_3_Skills(Resolute General)","order":23,"time":35000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"MountedMarksman":165},"type":79,"target":5947,"targetName":"Desert Bandit Camp (hard)"},
+		"4050074.0":{"grid":1471,"name":"RG_4_skills(Resolute General)","order":22,"time":30000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":150,"MountedMarksman":65},"type":79,"target":5949,"targetName":"Desert Bandit Leader"},
+		"483089.0":{"grid":2363,"name":"Ghost_1_TR_WW(Ghost General)","order":7,"time":1000,"skills":{"3":3,"6":3,"8":3,"11":3,"12":3,"14":3,"15":3},"army":{"Swordsman":75,"MountedMarksman":155},"type":63,"target":5874,"targetName":"Desert Bandit Leader"}
+	},
+	
+	"10": {
+		"524888.0":{"grid":5946,"name":"RG_1_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":125,"MountedMarksman":90},"type":79,"target":4259,"targetName":"Desert Bandit Leader"},
+		"536169.0":{"grid":5944,"name":"RG_2_skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"MountedMarksman":15,"Besieger":140},"type":79,"target":3221,"targetName":"Desert Bandit Camp (hard)"},
+		"1631889.0":{"grid":5941,"name":"RG_3_Skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":65,"Besieger":150},"type":79,"target":3359,"targetName":"Desert Bandit Leader"}
+	},
+	
+	"11": {
+		"294792.0":{"grid":5262,"name":"Sylvana_2-Skills(General Sylvana)","order":22,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":85,"MountedMarksman":110},"type":79,"target":4786,"targetName":"Desert Bandit Camp (medi..."},
+		"4050074.0":{"grid":3150,"name":"RG_4_Skills(Resolute General)","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"MountedMarksman":180},"type":79,"target":4591,"targetName":"Desert Bandit Camp (easy)"},
+		"536169.0":{"grid":5123,"name":"RG_2_Skills(Resolute General)","order":21,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"ArmoredMarksman":130,"MountedMarksman":25},"type":79,"target":4449,"targetName":"Desert Bandit Camp (hard)"},
+		"4144108.0":{"grid":3084,"name":"RG_5_skills(Resolute General)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"ArmoredMarksman":70,"MountedMarksman":95},"type":79,"target":4184,"targetName":"Desert Bandit Camp (hard)"},
+		"1631889.0":{"grid":5054,"name":"RG_3_skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"Besieger":155},"type":79,"target":4385,"targetName":"Desert Bandit Camp (medi..."},
+		"127334.0":{"grid":3086,"name":"Sylvana_1-Skills(General Sylvana)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":3571,"targetName":"Desert Bandit Camp (hard)"},
+		"524888.0":{"grid":3358,"name":"RG_1_Skills(Resolute General)","order":23,"time":25000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":75,"Knight":15,"MountedMarksman":95,"Besieger":30},"type":79,"target":3777,"targetName":"Ancient Library"}
+	}
 }
 
 var SindbadAndBesiegedCity_RG_SYLV_GHOST = {
 	"01": {
 		"127334.0":{"grid":6981,"name":"Sylvana_1-Skills","order":8,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":50,"MountedMarksman":145},"type":57,"target":6370,"targetName":"Sailor Camp (hard)"},
-		"524888.0":{"grid":7047,"name":"RG_1_Skills (Resolute General) ","order":8,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"MountedMarksman":165},"type":79,"target":6305,"targetName":"Sailor Camp (easy)"},
-		"294792.0":{"grid":7184,"name":"Sylvana_2-Skills","order":8,"time":30000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":150},"type":57,"target":5896,"targetName":"Sailor Camp (easy)"},
-		"389488.0":{"grid":7386,"name":"YGG_1_1UP (Younger Gemini General) ","order":15,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":155},"type":50,"target":5898,"targetName":"Sailor Camp (medium)"}},
+		"524888.0":{"grid":7116,"name":"RG_1_Skills (Resolute General) ","order":8,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"MountedMarksman":165},"type":79,"target":6305,"targetName":"Sailor Camp (easy)"},
+		"294792.0":{"grid":7251,"name":"Sylvana_2-Skills","order":8,"time":30000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":150},"type":57,"target":5896,"targetName":"Sailor Camp (easy)"},
+		"389488.0":{"grid":7317,"name":"YGG_1_1UP (Younger Gemini General) ","order":15,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":155},"type":50,"target":5898,"targetName":"Sailor Camp (medium)"},
+		"855112.0":{"grid":7384,"name":"Sylvana_3-Skills","order":13,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":100,"MountedMarksman":95},"type":57,"target":5898,"targetName":"Sailor Camp (medium)"},
+		"1055695.0":{"grid":7450,"name":"Sylvana_4-Skills","order":13,"time":30000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":14,"MountedMarksman":181},"type":57,"target":5488,"targetName":"Sailor Camp (easy)"},
+		"4090198.0":{"grid":7517,"name":"Sylvana_5-Skills","order":13,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":50,"Knight":50,"MountedMarksman":50,"Besieger":45},"type":57,"target":5618,"targetName":"Sailor Leader"},
+		"536169.0":{"grid":7583,"name":"RG_2_Skills (Resolute General) ","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":215},"type":79,"target":5904,"targetName":"Sailor Camp (hard)"},
+		"1631889.0":{"grid":7650,"name":"RG_3_Skills (Resolute General) ","order":11,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"MountedMarksman":165},"type":79,"target":6042,"targetName":"Sailor Leader"},
+		"4050074.0":{"grid":7648,"name":"RG_4_Skills (Resolute General) ","order":12,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"MountedMarksman":180},"type":79,"target":5360,"targetName":"Sailor Camp (easy)"}
+		},
 	"02": {
-		"127334.0":{"grid":6981,"name":"Sylvana_1-Skills","order":13,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":100,"MountedMarksman":95},"type":57,"target":5898,"targetName":"Sailor Camp (medium)"},
-		"294792.0":{"grid":7184,"name":"Sylvana_2-Skills","order":13,"time":30000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":14,"MountedMarksman":181},"type":57,"target":5488,"targetName":"Sailor Camp (easy)"}},
-	"03": {"127334.0":{"grid":6981,"name":"Sylvana_1-Skills","order":13,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":50,"Knight":50,"MountedMarksman":50,"Besieger":45},"type":57,"target":5618,"targetName":"Sailor Leader"}},
-	"04": {
-		"524888.0":{"grid":7047,"name":"RG_1_Skills (Resolute General) ","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":215},"type":79,"target":5904,"targetName":"Sailor Camp (hard)"},
-		"536169.0":{"grid":7182,"name":"RG_2_Skills (Resolute General) ","order":11,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"MountedMarksman":165},"type":79,"target":6042,"targetName":"Sailor Leader"}},
-	"05": {"524888.0":{"grid":7047,"name":"RG_1_Skills (Resolute General) ","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"MountedMarksman":180},"type":79,"target":5360,"targetName":"Sailor Camp (easy)"}},
-	"06": {"483089.0":{"grid":7319,"name":"Ghost_1_TR_WW (Ghost General) ","order":4,"time":1000,"skills":{"4":3,"6":3,"8":3,"11":3,"12":3,"14":3,"15":3},"army":{"MountedSwordsman":15,"ArmoredMarksman":140,"MountedMarksman":75},"type":63,"target":4820,"targetName":"Sailor Camp (easy)"}},
-	"07": {
-		"536169.0":{"grid":7182,"name":"RG_2_Skills (Resolute General) ","order":11,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":40,"MountedSwordsman":25,"MountedMarksman":135},"type":79,"target":4278,"targetName":"Sailor Camp (hard)"},
-		"389488.0":{"grid":7386,"name":"YGG_1_1UP (Younger Gemini General) ","order":14,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":75},"type":50,"target":4075,"targetName":"Sailor Leader"}},
-	"08": {"524888.0":{"grid":7047,"name":"RG_1_Skills (Resolute General) ","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":190},"type":79,"target":4075,"targetName":"Sailor Leader"}},
-	"09": {
+		"483089.0":{"grid":6981,"name":"Ghost_1_TR_WW (Ghost General) ","order":4,"time":1000,"skills":{"4":3,"6":3,"8":3,"11":3,"12":3,"14":3,"15":3},"army":{"MountedSwordsman":15,"ArmoredMarksman":140,"MountedMarksman":75},"type":63,"target":4820,"targetName":"Sailor Camp (easy)"},
+		"536169.0":{"grid":7116,"name":"RG_2_Skills (Resolute General) ","order":11,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":40,"MountedSwordsman":25,"MountedMarksman":135},"type":79,"target":4278,"targetName":"Sailor Camp (hard)"},
+		"389488.0":{"grid":7251,"name":"YGG_1_1UP (Younger Gemini General) ","order":14,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":75},"type":50,"target":4075,"targetName":"Sailor Leader"},
+		"524888.0":{"grid":7317,"name":"RG_1_Skills (Resolute General) ","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":190},"type":79,"target":4075,"targetName":"Sailor Leader"}
+		},
+	"03": {
 		"536169.0":{"grid":2850,"name":"RG_2_Skills (Resolute General) ","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":85,"MountedMarksman":130},"type":79,"target":3253,"targetName":"Sailor Camp (easy)"},
 		"495322.0":{"grid":2987,"name":"Ghost_2_TR_WW (Ghost General) ","order":4,"time":30000,"skills":{"4":3,"6":3,"8":3,"11":3,"12":3,"14":3,"15":3},"army":{"MountedSwordsman":40,"MountedMarksman":190},"type":63,"target":3176,"targetName":"Sailor Leader"},
 		"127334.0":{"grid":4550,"name":"Sylvana_1-Skills","order":11,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":15,"Knight":140,"Besieger":40},"type":57,"target":1619,"targetName":"Sailor Camp (medium)"},
-		"294792.0":{"grid":4685,"name":"Sylvana_2-Skills","order":12,"time":30000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":170},"type":57,"target":1423,"targetName":"Sailor Leader"}},
-	"10": {
-		"536169.0":{"grid":2850,"name":"RG_2_Skills (Resolute General) ","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":190},"type":79,"target":1209,"targetName":"Sailor Camp (easy)"},
-		"483087.0":{"grid":4210,"name":"YGG_2_1UP (Younger Gemini General) ","order":14,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":40},"type":50,"target":1070,"targetName":"Sailor Camp (easy)"}},
-	"11": {
-		"127334.0":{"grid":4550,"name":"Sylvana_1-Skills","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":150},"type":57,"target":1070,"targetName":"Sailor Camp (easy)"},
-		"294792.0":{"grid":4685,"name":"Sylvana_2-Skills","order":13,"time":25000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":45,"MountedMarksman":150},"type":57,"target":868,"targetName":"Sailor Leader"},
-		"536169.0":{"grid":2850,"name":"RG_2_Skills (Resolute General) ","order":6,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"MountedMarksman":25,"Besieger":140},"type":79,"target":3921,"targetName":"Sailor Camp (medium)"}},
-	"12": {
-		"524888.0":{"grid":3176,"name":"RG_1_Skills (Resolute General) ","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":90,"ArmoredMarksman":25,"Besieger":100},"type":79,"target":3725,"targetName":"Sailor Leader"},
-		"536169.0":{"grid":2363,"name":"RG_2_Skills (Resolute General) ","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"Besieger":165},"type":79,"target":3578,"targetName":"Sailor Camp (hard)"}},
-	"13": {"524888.0":{"grid":3176,"name":"RG_1_Skills (Resolute General) ","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":20,"MountedMarksman":195},"type":79,"target":3511,"targetName":"Sailor Leader"}},
-	"14": {
+		"294792.0":{"grid":4685,"name":"Sylvana_2-Skills","order":12,"time":30000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":170},"type":57,"target":1423,"targetName":"Sailor Leader"},
+		"524888.0":{"grid":4820,"name":"RG_1_Skills (Resolute General) ","order":12,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":190},"type":79,"target":1209,"targetName":"Sailor Camp (easy)"},
+		"483087.0":{"grid":5159,"name":"YGG_2_1UP (Younger Gemini General) ","order":14,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":40},"type":50,"target":1070,"targetName":"Sailor Camp (easy)"},
+		"855112.0":{"grid":5294,"name":"Sylvana_3-Skills","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":150},"type":57,"target":1070,"targetName":"Sailor Camp (easy)"},
+		"1055695.0":{"grid":5429,"name":"Sylvana_4-Skills","order":13,"time":30000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":45,"MountedMarksman":150},"type":57,"target":868,"targetName":"Sailor Leader"},
+		"1631889.0":{"grid":5564,"name":"RG_3_Skills (Resolute General) ","order":6,"time":30000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"MountedMarksman":25,"Besieger":140},"type":79,"target":3921,"targetName":"Sailor Camp (medium)"},
+		"4050074.0":{"grid":5767,"name":"RG_4_Skills (Resolute General) ","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":90,"ArmoredMarksman":25,"Besieger":100},"type":79,"target":3725,"targetName":"Sailor Leader"},
+		"4144108.0":{"grid":5902,"name":"RG_5_Skills (Resolute General) ","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"Besieger":165},"type":79,"target":3578,"targetName":"Sailor Camp (hard)"}
+	},
+	"04": {
+		"524888.0":{"grid":3176,"name":"RG_1_Skills (Resolute General) ","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":20,"MountedMarksman":195},"type":79,"target":3511,"targetName":"Sailor Leader"},
 		"127334.0":{"grid":3041,"name":"Sylvana_1-Skills","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"MountedMarksman":160},"type":57,"target":5211,"targetName":"Sailor Leader"},
-		"389191.0":{"grid":2566,"name":"OGG_1-Skills (Older Gemini General) ","order":8,"time":10000,"skills":{"4":3,"4":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"MountedSwordsman":50,"MountedMarksman":245},"type":47,"target":4457,"targetName":"Sailor Camp (easy)"}},
-	"15": {
-		"127334.0":{"grid":3041,"name":"Sylvana_1-Skills","order":13,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":150},"type":57,"target":4520,"targetName":"Sailor Camp (hard)"},
-		"389191.0":{"grid":2566,"name":"OGG_1-Skills (Older Gemini General) ","order":8,"time":10000,"skills":{"4":3,"4":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"MountedSwordsman":70,"ArmoredMarksman":40,"MountedMarksman":185},"type":47,"target":4248,"targetName":"Sailor Leader"},
-		"495320.0":{"grid":2771,"name":"YGG_3_1UP (Younger Gemini General) ","order":14,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":25},"type":50,"target":5060,"targetName":"Sailor Camp (medium)"},
-		"524888.0":{"grid":3176,"name":"RG_1_Skills (Resolute General) ","order":11,"time":40000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":15,"MountedMarksman":200},"type":79,"target":5060,"targetName":"Sailor Camp (medium)"}},
-	"16": {
-		"127334.0":{"grid":3041,"name":"Sylvana_1-Skills","order":11,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":26,"MountedMarksman":169},"type":57,"target":5401,"targetName":"Sailor Camp (hard)"},
-		"262.0":{"grid":2906,"name":"General 1","order":0,"time":25000,"skills":{"6":3,"11":3,"14":2},"army":{"MountedSwordsman":200},"type":0,"target":4433,"targetName":"Sailor Camp (medium)"},
-		"389191.0":{"grid":2566,"name":"OGG_1-Skills (Older Gemini General) ","order":1,"time":12000,"skills":{"4":3,"4":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"MountedSwordsman":40,"MountedMarksman":255},"type":47,"target":4367,"targetName":"Sailor Leader"}},
-	"17": {
+		"389191.0":{"grid":2906,"name":"OGG_1-Skills (Older Gemini General) ","order":8,"time":1000,"skills":{"4":3,"4":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"MountedSwordsman":50,"MountedMarksman":245},"type":47,"target":4457,"targetName":"Sailor Camp (easy)"},
+		"294792.0":{"grid":2771,"name":"Sylvana_2-Skills","order":13,"time":30000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":150},"type":57,"target":4520,"targetName":"Sailor Camp (hard)"},
+		"3549972.0":{"grid":2634,"name":"OGG_2-Skills","order":8,"time":30000,"skills":{"4":3,"4":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"MountedSwordsman":70,"ArmoredMarksman":40,"MountedMarksman":185},"type":47,"target":4248,"targetName":"Sailor Leader"},
+		"495320.0":{"grid":2499,"name":"YGG_3_1UP","order":14,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":25},"type":50,"target":5060,"targetName":"Sailor Camp (medium)"},
+		"536169.0":{"grid":2092,"name":"RG_2_Skills","order":11,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":15,"MountedMarksman":200},"type":79,"target":5060,"targetName":"Sailor Camp (medium)"},
+		"855112.0":{"grid":1888,"name":"Sylvana_3-Skills","order":11,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":26,"MountedMarksman":169},"type":57,"target":5401,"targetName":"Sailor Camp (hard)"},
+		"262.0":{"grid":1686,"name":"General 1","order":0,"time":25000,"skills":{"6":3,"11":3,"14":2},"army":{"MountedSwordsman":200},"type":0,"target":4433,"targetName":"Sailor Camp (medium)"},
+		"3549973.0":{"grid":1551,"name":"OGG_3-Skills (Older Gemini General) ","order":1,"time":30000,"skills":{"4":3,"4":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"MountedSwordsman":40,"MountedMarksman":255},"type":47,"target":4367,"targetName":"Sailor Leader"}
+	},
+	"05": {
 		"524888.0":{"grid":5471,"name":"RG_1_Skills (Resolute General) ","order":8,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"Besieger":155},"type":79,"target":5677,"targetName":"Sailor Leader"},
-		"127334.0":{"grid":5336,"name":"Sylvana_1-Skills","order":12,"time":25000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":10,"MountedMarksman":185},"type":57,"target":5874,"targetName":"Sailor Camp (hard)"},
-		"536169.0":{"grid":5201,"name":"RG_2_Skills (Resolute General) ","order":11,"time":25000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":85,"Besieger":45},"type":79,"target":5601,"targetName":"Sailor Camp (easy)"}},
-	"18": {
-		"524888.0":{"grid":5471,"name":"RG_1_Skills (Resolute General) ","order":11,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":85,"ArmoredMarksman":35,"MountedMarksman":95},"type":79,"target":5603,"targetName":"Sailor Leader"},
-		"536169.0":{"grid":5201,"name":"RG_2_Skills (Resolute General) ","order":11,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"MountedMarksman":165},"type":79,"target":5111,"targetName":"Sailor Camp (hard)"},
-		"389191.0":{"grid":5401,"name":"OGG_1-Skills (Older Gemini General) ","order":8,"time":40000,"skills":{"4":3,"4":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"MountedSwordsman":60,"MountedMarksman":170,"Besieger":65},"type":47,"target":5113,"targetName":"Sailor Leader"}},
-	"19": {
+		"4144108.0":{"grid":1372,"name":"RG_5_Skills (Resolute General) ","order":3,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":190},"type":79,"target":2188,"targetName":"Sailor Leader"},
+		"127334.0":{"grid":5336,"name":"Sylvana_1-Skills","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":10,"MountedMarksman":185},"type":57,"target":5874,"targetName":"Sailor Camp (hard)"},
+		"536169.0":{"grid":5201,"name":"RG_2_Skills (Resolute General) ","order":11,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":85,"Besieger":45},"type":79,"target":5601,"targetName":"Sailor Camp (easy)"},
+		"1631889.0":{"grid":4997,"name":"RG_3_Skills","order":11,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":85,"ArmoredMarksman":35,"MountedMarksman":95},"type":79,"target":5603,"targetName":"Sailor Leader"},
+		"4050074.0":{"grid":4862,"name":"RG_4_Skills","order":11,"time":15000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"MountedMarksman":165},"type":79,"target":5111,"targetName":"Sailor Camp (hard)"},
+		"389191.0":{"grid":4727,"name":"OGG_1-Skills (Older Gemini General) ","order":8,"time":30000,"skills":{"4":3,"4":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"MountedSwordsman":60,"MountedMarksman":170,"Besieger":65},"type":47,"target":5113,"targetName":"Sailor Leader"},
+		"294792.0":{"grid":3784,"name":"Sylvana_2-Skills","order":10,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":3,"MountedMarksman":192},"type":57,"target":2555,"targetName":"Besieged building"}
+	},
+	"06": {
 		"127334.0":{"grid":4227,"name":"Sylvana_1-Skills","order":2,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":150},"type":57,"target":4168,"targetName":"Sailor Camp (easy)"},
-		"536169.0":{"grid":1372,"name":"RG_2_Skills (Resolute General) ","order":3,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":190},"type":79,"target":2188,"targetName":"Sailor Leader"},
 		"294792.0":{"grid":4293,"name":"Sylvana_2-Skills","order":13,"time":25000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":20,"Knight":175},"type":57,"target":3420,"targetName":"Sailor Camp (medium)"},
-		"524888.0":{"grid":4430,"name":"RG_1_Skills (Resolute General) ","order":11,"time":25000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":40,"MountedMarksman":175},"type":79,"target":3557,"targetName":"Sailor Leader"}},
-	"20": {
-		"262.0":{"grid":1307,"name":"General 1","order":0,"time":1000,"skills":{"6":3,"11":3,"14":2},"army":{"MountedSwordsman":135},"type":0,"target":972,"targetName":"Sailor Camp (hard)"},
-		"127334.0":{"grid":3784,"name":"Sylvana_1-Skills","order":10,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":3,"MountedMarksman":192},"type":57,"target":2555,"targetName":"Besieged building"},
-		"536169.0":{"grid":1372,"name":"RG_2_Skills (Resolute General) ","order":1,"time":7000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":165,"Besieger":25},"type":79,"target":703,"targetName":"Sailor Leader"},
-		"524888.0":{"grid":4058,"name":"RG_1_Skills (Resolute General) ","order":11,"time":10000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":55,"ArmoredMarksman":160},"type":79,"target":2213,"targetName":"Besieged building"}},
-	"21": {
-		"536169.0":{"grid":3784,"name":"RG_1_Skills (Resolute General) ","order":11,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":40,"MountedMarksman":85,"Besieger":90},"type":79,"target":2220,"targetName":"Sailor Camp (easy)"},
-		"524888.0":{"grid":4058,"name":"RG_1_Skills (Resolute General) ","order":11,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":30,"MountedMarksman":185},"type":79,"target":1672,"targetName":"Sailor Camp (hard)"}},
-	"22": {
-		"483087.0":{"grid":3784,"name":"YGG_2_1UP (Younger Gemini General) ","order":0,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":1},"type":50,"target":920,"targetName":"Sailor Camp (easy)"},
-		"524888.0":{"grid":4058,"name":"RG_1_Skills (Resolute General) ","order":1,"time":5000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":16,"MountedMarksman":199},"type":79,"target":920,"targetName":"Sailor Camp (easy)"}},
-	"23": {"389191.0":{"grid":3921,"name":"OGG_1-Skills (Older Gemini General) ","order":8,"time":1000,"skills":{"4":3,"4":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"Knight":40,"ArmoredMarksman":40,"MountedMarksman":215},"type":47,"target":990,"targetName":"Sailor Leader"}},
-	"24": {"127334.0":{"grid":4058,"name":"Sylvana_1-Skills","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":50,"MountedMarksman":145},"type":57,"target":1666,"targetName":"Besieged palace"}}
+		"524888.0":{"grid":4430,"name":"RG_1_Skills (Resolute General) ","order":11,"time":25000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":40,"MountedMarksman":175},"type":79,"target":3557,"targetName":"Sailor Leader"},
+		"1631889.0":{"grid":3783,"name":"RG_3_Skills (Resolute General) ","order":11,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":55,"ArmoredMarksman":160},"type":79,"target":2213,"targetName":"Besieged building"},
+		"262.0":{"grid":2319,"name":"General 1","order":0,"time":30000,"skills":{"6":3,"11":3,"14":2},"army":{"MountedSwordsman":135},"type":0,"target":972,"targetName":"Sailor Camp (hard)"},
+		"536169.0":{"grid":2587,"name":"RG_2_Skills (Resolute General) ","order":1,"time":7000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":165,"Besieger":25},"type":79,"target":703,"targetName":"Sailor Leader"}
+	},
+	"07": {
+		"524888.0":{"grid":3784,"name":"RG_1_Skills (Resolute General) ","order":11,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":40,"MountedMarksman":85,"Besieger":90},"type":79,"target":2220,"targetName":"Sailor Camp (easy)"},
+		"536169.0":{"grid":3921,"name":"RG_2_Skills (Resolute General) ","order":11,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":30,"MountedMarksman":185},"type":79,"target":1672,"targetName":"Sailor Camp (hard)"},
+		"483087.0":{"grid":4058,"name":"YGG_2_1UP (Younger Gemini General) ","order":0,"time":30000,"skills":{"4":3,"4":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":1},"type":50,"target":920,"targetName":"Sailor Camp (easy)"},
+		"1631889.0":{"grid":3992,"name":"RG_3_Skills (Resolute General) ","order":1,"time":1000,"skills":{"4":3,"4":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":16,"MountedMarksman":199},"type":79,"target":920,"targetName":"Sailor Camp (easy)"},
+		"389191.0":{"grid":4197,"name":"OGG_1-Skills (Older Gemini General) ","order":8,"time":30000,"skills":{"4":3,"4":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"Knight":40,"ArmoredMarksman":40,"MountedMarksman":215},"type":47,"target":990,"targetName":"Sailor Leader"}
+	},
+	"08": {"127334.0":{"grid":3994,"name":"Sylvana_1-Skills","order":12,"time":1000,"skills":{"4":3,"4":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":50,"MountedMarksman":145},"type":57,"target":1666,"targetName":"Besieged palace"}
+}
 }
 
 var RoaringBull_A = {
@@ -1343,62 +1381,103 @@ var RoaringBull_A = {
 }
 
 var SeaSnake = {
-	"01": {"389488.0":{"grid":8696,"name":"YGG_1_1UP(Younger Gemini General)","order":19,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":80},"type":50,"target":8354,"targetName":"Sailor Camp (hard)"}},
-	"02": {"524888.0":{"grid":8493,"name":"RG_1_Skills(Resolute General)","order":15,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":15,"MountedMarksman":200},"type":79,"target":8354,"targetName":"Sailor Camp (hard)"}},
-	"03": {"294792.0":{"grid":8084,"name":"Sylvana_2-Skills(General Sylvana)","order":19,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":8014,"targetName":"Sailor Camp (easy)"}},
-	"04": {"294792.0":{"grid":8084,"name":"Sylvana_2-Skills(General Sylvana)","order":25,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":55,"MountedMarksman":140},"type":57,"target":7873,"targetName":"Sailor Camp (hard)"}},
-	"05": {"389488.0":{"grid":8696,"name":"YGG_1_1UP(Younger Gemini General)","order":26,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":1},"type":50,"target":8623,"targetName":"Sailor Camp (easy)"}},
-	"06": {"524888.0":{"grid":8493,"name":"RG_1_Skills(Resolute General)","order":22,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":190},"type":79,"target":8623,"targetName":"Sailor Camp (easy)"}},
-	"07": {"536169.0":{"grid":8562,"name":"RG_1_Skills(Resolute General)","order":22,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":160,"Besieger":55},"type":79,"target":8890,"targetName":"Sailor Camp (hard)"}},
-	"08": {"524888.0":{"grid":8493,"name":"RG_2_Skills(Resolute General)","order":22,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":45,"Besieger":170},"type":79,"target":8614,"targetName":"Sailor Camp (easy)"}},
-	"09": {"483087.0":{"grid":8153,"name":"YGG_2_1UP(Younger Gemini General)","order":26,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":120},"type":50,"target":8476,"targetName":"Sailor Leader"}},
-	"10": {"389191.0":{"grid":8288,"name":"OGG_1-Skills(Older Gemini General)","order":15,"time":1000,"skills":{"2":3,"3":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"Swordsman":15,"ArmoredMarksman":35,"MountedMarksman":245},"type":47,"target":8476,"targetName":"Sailor Leader"}},
-	"11": {"294792.0":{"grid":8084,"name":"Sylvana_2-Skills(General Sylvana)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":7729,"targetName":"Sailor Camp (easy)"}},
-	"12": {"483087.0":{"grid":8153,"name":"YGG_2_1UP(Younger Gemini General)","order":26,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":70},"type":50,"target":7049,"targetName":"Sailor Camp (medium)"}},
-	"13": {"524888.0":{"grid":8493,"name":"RG_1_Skills(Resolute General)","order":22,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":190},"type":79,"target":7049,"targetName":"Sailor Camp (medium)"}},
+	"01": {
+		"389488.0":{"grid":8696,"name":"YGG_1_1UP(Younger Gemini General)","order":19,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":80},"type":50,"target":8354,"targetName":"Sailor Camp (hard)"},
+		"524888.0":{"grid":8493,"name":"RG_1_Skills(Resolute General)","order":15,"time":5000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":15,"MountedMarksman":200},"type":79,"target":8354,"targetName":"Sailor Camp (hard)"},
+		"127334.0":{"grid":8084,"name":"Sylvana_1-Skills(General Sylvana)","order":19,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":8014,"targetName":"Sailor Camp (easy)"},
+		"294792.0":{"grid":8288,"name":"Sylvana_2-Skills(General Sylvana)","order":25,"time":30000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":55,"MountedMarksman":140},"type":57,"target":7873,"targetName":"Sailor Camp (hard)"},
+		"483087.0":{"grid":8630,"name":"YGG_2_1UP(Younger Gemini General)","order":26,"time":30000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":1},"type":50,"target":8623,"targetName":"Sailor Camp (easy)"},
+		"536169.0":{"grid":8495,"name":"RG_2_Skills(Resolute General)","order":22,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":190},"type":79,"target":8623,"targetName":"Sailor Camp (easy)"},
+		"1631889.0":{"grid":8290,"name":"RG_3_Skills(Resolute General)","order":22,"time":30000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":160,"Besieger":55},"type":79,"target":8890,"targetName":"Sailor Camp (hard)"},
+		"4050074.0":{"grid":7543,"name":"RG_4_Skills(Resolute General)","order":22,"time":20000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":45,"Besieger":170},"type":79,"target":8614,"targetName":"Sailor Camp (easy)"},
+		"495320.0":{"grid":7067,"name":"YGG_3_1UP(Younger Gemini General)","order":26,"time":30000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":120},"type":50,"target":8476,"targetName":"Sailor Leader"},
+		"389191.0":{"grid":6863,"name":"OGG_1-Skills(Older Gemini General)","order":15,"time":1000,"skills":{"2":3,"3":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"Swordsman":15,"ArmoredMarksman":35,"MountedMarksman":245},"type":47,"target":8476,"targetName":"Sailor Leader"}
+	},
+	"02": {
+		"127334.0":{"grid":8084,"name":"Sylvana_1-Skills(General Sylvana)","order":24,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":7729,"targetName":"Sailor Camp (easy)"},
+		"483087.0":{"grid":8153,"name":"YGG_2_1UP(Younger Gemini General)","order":26,"time":20000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Recruit":70},"type":50,"target":7049,"targetName":"Sailor Camp (medium)"},
+		"524888.0":{"grid":8493,"name":"RG_1_Skills(Resolute General)","order":22,"time":10000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":190},"type":79,"target":7049,"targetName":"Sailor Camp (medium)"},
+		"262.0":{"grid":8288,"name":"General 1(General)","order":0,"time":30000,"skills":{"6":3,"11":3,"14":2},"army":{"MountedSwordsman":200},"type":0,"target":6507,"targetName":"Sailor Camp (hard)"},
+		"3549972.0":{"grid":7543,"name":"OGG_2-Skills(Older Gemini General)","order":1,"time":4000,"skills":{"2":3,"3":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"Swordsman":10,"ArmoredMarksman":200,"MountedMarksman":85},"type":47,"target":6233,"targetName":"Sailor Leader"},
+		"536169.0":{"grid":7067,"name":"RG_2_Skills(Resolute General)","order":2,"time":4000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":80,"MountedMarksman":50,"Besieger":85},"type":79,"target":6233,"targetName":"Sailor Leader"}
+	},
+	"06": {
+		"536169.0":{"grid":6568,"name":"RG_2_skills(Resolute General)","order":18,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":65,"MountedMarksman":125,"Besieger":25},"type":79,"target":5686,"targetName":"Sailor Camp (easy)"}},
+	"07": {
+		"524888.0":{"grid":6705,"name":"RG_1_Skills(Resolute General)","order":19,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"Besieger":165},"type":79,"target":5485,"targetName":"Sailor Camp (medium)"}},
+	"08": {
+		"1631889.0":{"grid":6638,"name":"RG_3_skills(Resolute General)","order":18,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":20,"MountedMarksman":175,"Besieger":20},"type":79,"target":6311,"targetName":"Sailor Camp (hard)"}},
+	"09": {
+		"294792.0":{"grid":6638,"name":"Sylvana_2-Skills(General Sylvana)","order":9,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":40,"MountedMarksman":155},"type":57,"target":6921,"targetName":"Sailor Camp (easy)"}},
+	"10": {
+		"389191.0":{"grid":6503,"name":"OGG_1-Skills(Older Gemini General)","order":11,"time":1000,"skills":{"2":3,"3":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"Swordsman":45,"ArmoredMarksman":165,"MountedMarksman":85},"type":47,"target":7059,"targetName":"Sailor Leader"}},
+	"11": {
+		"127334.0":{"grid":3814,"name":"Sylvana_1-Skills(General Sylvana)","order":6,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":30,"MountedMarksman":165},"type":57,"target":3952,"targetName":"Sailor Camp (easy)"}},
+	"12": {
+		"524888.0":{"grid":3201,"name":"RG_1_Skills(Resolute General)","order":6,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":190},"type":79,"target":3751,"targetName":"Sailor Camp (hard)"}},
+	"13": {
+		"536169.0":{"grid":3066,"name":"RG_2_skills(Resolute General)","order":6,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":170,"MountedMarksman":45},"type":79,"target":3413,"targetName":"Sailor Camp (medium)"}},
 	"14": {
-		"262.0":{"grid":8084,"name":"General 1(General)","order":0,"time":1000,"skills":{"6":3,"11":3,"14":2},"army":{"MountedSwordsman":200},"type":0,"target":6507,"targetName":"Sailor Camp (hard)"},
-		"389191.0":{"grid":7543,"name":"OGG_1-Skills(Older Gemini General)","order":1,"time":4000,"skills":{"2":3,"3":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"Swordsman":10,"ArmoredMarksman":200,"MountedMarksman":85},"type":47,"target":6233,"targetName":"Sailor Leader"},
-		"536169.0":{"grid":7067,"name":"RG_2_Skills(Resolute General)","order":2,"time":4000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":80,"MountedMarksman":50,"Besieger":85},"type":79,"target":6233,"targetName":"Sailor Leader"}},
-	"15": {"536169.0":{"grid":6568,"name":"RG_2_skills(Resolute General)","order":18,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":65,"MountedMarksman":125,"Besieger":25},"type":79,"target":5686,"targetName":"Sailor Camp (easy)"}},
-	"16": {"524888.0":{"grid":6705,"name":"RG_1_Skills(Resolute General)","order":19,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"Besieger":165},"type":79,"target":5485,"targetName":"Sailor Camp (medium)"}},
-	"17": {"536169.0":{"grid":6568,"name":"RG_2_skills(Resolute General)","order":18,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":20,"MountedMarksman":175,"Besieger":20},"type":79,"target":6311,"targetName":"Sailor Camp (hard)"}},
-	"18": {"294792.0":{"grid":6638,"name":"Sylvana_2-Skills(General Sylvana)","order":9,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":40,"MountedMarksman":155},"type":57,"target":6921,"targetName":"Sailor Camp (easy)"}},
-	"19": {"389191.0":{"grid":6503,"name":"OGG_1-Skills(Older Gemini General)","order":11,"time":1000,"skills":{"2":3,"3":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"Swordsman":45,"ArmoredMarksman":165,"MountedMarksman":85},"type":47,"target":7059,"targetName":"Sailor Leader"}},
-	"20": {"127334.0":{"grid":3814,"name":"Sylvana_1-Skills(General Sylvana)","order":6,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":30,"MountedMarksman":165},"type":57,"target":3952,"targetName":"Sailor Camp (easy)"}},
-	"21": {"524888.0":{"grid":3201,"name":"RG_1_Skills(Resolute General)","order":6,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":190},"type":79,"target":3751,"targetName":"Sailor Camp (hard)"}},
-	"22": {"536169.0":{"grid":3066,"name":"RG_2_skills(Resolute General)","order":6,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":170,"MountedMarksman":45},"type":79,"target":3413,"targetName":"Sailor Camp (medium)"}},
-	"23": {"524888.0":{"grid":3201,"name":"RG_1_Skills(Resolute General)","order":8,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"Knight":25,"MountedMarksman":130},"type":79,"target":3207,"targetName":"Sailor Leader"}},
-	"24": {"536169.0":{"grid":3066,"name":"RG_2_skills(Resolute General)","order":18,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":150,"Besieger":65},"type":79,"target":2939,"targetName":"Sailor Camp (medium)"}},
-	"25": {"127334.0":{"grid":3814,"name":"Sylvana_1-Skills(General Sylvana)","order":19,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":1921,"targetName":"Sailor Camp (easy)"}},
-	"26": {"524888.0":{"grid":3201,"name":"RG_1_Skills(Resolute General)","order":18,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":65,"MountedMarksman":150},"type":79,"target":2059,"targetName":"Sailor Leader"}},
+		"524888.0":{"grid":3201,"name":"RG_1_Skills(Resolute General)","order":8,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"Knight":25,"MountedMarksman":130},"type":79,"target":3207,"targetName":"Sailor Leader"}},
+	"15": {
+		"536169.0":{"grid":3066,"name":"RG_2_skills(Resolute General)","order":18,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":150,"Besieger":65},"type":79,"target":2939,"targetName":"Sailor Camp (medium)"}},
+	"16": {
+		"127334.0":{"grid":3814,"name":"Sylvana_1-Skills(General Sylvana)","order":19,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":1921,"targetName":"Sailor Camp (easy)"}},
+	"17": {
+		"524888.0":{"grid":3201,"name":"RG_1_Skills(Resolute General)","order":18,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":65,"MountedMarksman":150},"type":79,"target":2059,"targetName":"Sailor Leader"}},
 	// block not working
-	"27": {"262.0":{"grid":3814,"name":"General 1(General)","order":0,"time":1000,"skills":{"6":3,"11":3,"14":2},"army":{"MountedSwordsman":76,"MountedMarksman":124},"type":0,"target":1109,"targetName":"Sailor Camp (easy)"},"536169.0":{"grid":3066,"name":"RG_2_skills(Resolute General)","order":1,"time":4000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":70,"ArmoredMarksman":30,"MountedMarksman":115},"type":79,"target":703,"targetName":"Sailor Leader"}},
-	"28": {"524888.0":{"grid":703,"name":"RG_1_Skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":190},"type":79,"target":1182,"targetName":"Sailor Camp (hard)"}},
-	"29": {"127334.0":{"grid":1109,"name":"Sylvana_1-Skills(General Sylvana)","order":19,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":438,"targetName":"Sailor Camp (easy)"}},
-	"30": {"495320.0":{"grid":1922,"name":"YGG_3_1UP(Younger Gemini General)","order":22,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Swordsman":150},"type":50,"target":1723,"targetName":"Sailor Camp (medium)"}},
-	"31": {"524888.0":{"grid":703,"name":"RG_1_Skills(Resolute General)","order":16,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":20,"MountedMarksman":195},"type":79,"target":1723,"targetName":"Sailor Camp (medium)"}},
-	"32": {"536169.0":{"grid":1988,"name":"RG_2_skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":75,"MountedMarksman":140},"type":79,"target":2809,"targetName":"Sailor Camp (medium)"}},
-	"33": {"524888.0":{"grid":703,"name":"RG_1_Skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":95,"ArmoredMarksman":35,"MountedMarksman":85},"type":79,"target":2606,"targetName":"Sailor Leader"}},
-	"34": {"524888.0":{"grid":703,"name":"RG_1_Skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":85,"MountedMarksman":70,"Besieger":60},"type":79,"target":4508,"targetName":"Sailor Leader"}},
-	"35": {"6365.0":{"grid":1244,"name":"General 1(General)","order":0,"time":1000,"skills":{"6":3,"11":3,"14":2},"army":{"MountedSwordsman":164,"ArmoredMarksman":36},"type":0,"target":579,"targetName":"Sailor Camp (medium)"},"389191.0":{"grid":1988,"name":"OGG_1-Skills(Older Gemini General)","order":1,"time":4000,"skills":{"2":3,"3":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"Swordsman":35,"ArmoredMarksman":55,"MountedMarksman":205},"type":47,"target":307,"targetName":"Sailor Leader"}},
-	"36": {"524888.0":{"grid":4509,"name":"RG_1_Skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":40,"MountedMarksman":30,"Besieger":145},"type":79,"target":4511,"targetName":"Sailor Camp (medium)"}},
-	"37": {"536169.0":{"grid":4712,"name":"RG_2_skills(Resolute General)","order":18,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":180,"Besieger":35},"type":79,"target":5671,"targetName":"Sailor Camp (hard)"}},
-	"38": {"524888.0":{"grid":4509,"name":"RG_1_Skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"ArmoredMarksman":15,"MountedMarksman":165},"type":79,"target":6006,"targetName":"Sailor Camp (medium)"}},
-	"39": {"389191.0":{"grid":4438,"name":"OGG_1-Skills(Older Gemini General)","order":13,"time":1000,"skills":{"2":3,"3":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"Swordsman":60,"ArmoredMarksman":85,"MountedMarksman":150},"type":47,"target":5733,"targetName":"Sailor Leader"}},
-	"40": {"536169.0":{"grid":4712,"name":"RG_2_skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":55,"ArmoredMarksman":160},"type":79,"target":5477,"targetName":"Sailor Leader"}},
-	"41": {"524888.0":{"grid":4509,"name":"RG_1_Skills(Resolute General)","order":16,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"MountedMarksman":180},"type":79,"target":4798,"targetName":"Sailor Camp (medium)"}},
-	"42": {"536169.0":{"grid":4712,"name":"RG_2_skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":55,"ArmoredMarksman":45,"MountedMarksman":115},"type":79,"target":3372,"targetName":"Sailor Camp (hard)"}},
-	"43": {"127334.0":{"grid":4575,"name":"Sylvana_1-Skills(General Sylvana)","order":9,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":2759,"targetName":"Sailor Camp (hard)"}},
-	"44": {"524888.0":{"grid":4509,"name":"RG_1_Skills(Resolute General)","order":13,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":100,"Knight":15,"ArmoredMarksman":40,"MountedMarksman":60},"type":79,"target":3234,"targetName":"Bubbling Cave Lake"}},
-	"45": {"536169.0":{"grid":2759,"name":"RG_2_skills(Resolute General)","order":5,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"ArmoredMarksman":70,"MountedMarksman":110},"type":79,"target":857,"targetName":"Sailor Camp (easy)"}},
-	"46": {"524888.0":{"grid":2963,"name":"RG_1_Skills(Resolute General)","order":9,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":150,"Besieger":65},"type":79,"target":584,"targetName":"Sailor Leader"}},
-	"47": {"536169.0":{"grid":2759,"name":"RG_2_skills(Resolute General)","order":16,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"ArmoredMarksman":50,"MountedMarksman":115},"type":79,"target":1272,"targetName":"Sailor Camp (easy)"}},
-	"48": {"524888.0":{"grid":2963,"name":"RG_1_Skills(Resolute General)","order":15,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"ArmoredMarksman":85,"MountedMarksman":95},"type":79,"target":1479,"targetName":"Sailor Camp (medium)"}},
-	"49": {"536169.0":{"grid":2759,"name":"RG_2_skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":20,"ArmoredMarksman":155,"MountedMarksman":40},"type":79,"target":1005,"targetName":"Sailor Camp (hard)"}},
-	"50": {"524888.0":{"grid":2963,"name":"RG_1_Skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"ArmoredMarksman":120,"MountedMarksman":35},"type":79,"target":799,"targetName":"Sailor Leader"}},
-	"51": {"127334.0":{"grid":1277,"name":"Sylvana_1-Skills(General Sylvana)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":30,"MountedMarksman":165},"type":57,"target":1758,"targetName":"Sailor Camp (hard)"}},
-	"52": {"6365.0":{"grid":1482,"name":"General 1(General)","order":0,"time":1000,"skills":{"6":3,"11":3,"14":2},"army":{"MountedSwordsman":150},"type":0,"target":1488,"targetName":"Sailor Camp (easy)"},
+	"18": {
+		"262.0":{"grid":3814,"name":"General 1(General)","order":0,"time":1000,"skills":{"6":3,"11":3,"14":2},"army":{"MountedSwordsman":76,"MountedMarksman":124},"type":0,"target":1109,"targetName":"Sailor Camp (easy)"},"536169.0":{"grid":3066,"name":"RG_2_skills(Resolute General)","order":1,"time":4000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":70,"ArmoredMarksman":30,"MountedMarksman":115},"type":79,"target":703,"targetName":"Sailor Leader"}},
+	"19": {
+		"524888.0":{"grid":703,"name":"RG_1_Skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":25,"MountedMarksman":190},"type":79,"target":1182,"targetName":"Sailor Camp (hard)"}},
+	"20": {
+		"127334.0":{"grid":1109,"name":"Sylvana_1-Skills(General Sylvana)","order":19,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":438,"targetName":"Sailor Camp (easy)"}},
+	"21": {
+		"495320.0":{"grid":1922,"name":"YGG_3_1UP(Younger Gemini General)","order":22,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"16":1},"army":{"Swordsman":150},"type":50,"target":1723,"targetName":"Sailor Camp (medium)"}},
+	"22": {
+		"524888.0":{"grid":703,"name":"RG_1_Skills(Resolute General)","order":16,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":20,"MountedMarksman":195},"type":79,"target":1723,"targetName":"Sailor Camp (medium)"}},
+	"23": {
+		"536169.0":{"grid":1988,"name":"RG_2_skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":75,"MountedMarksman":140},"type":79,"target":2809,"targetName":"Sailor Camp (medium)"}},
+	"24": {
+		"524888.0":{"grid":703,"name":"RG_1_Skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":95,"ArmoredMarksman":35,"MountedMarksman":85},"type":79,"target":2606,"targetName":"Sailor Leader"}},
+	"25": {
+		"524888.0":{"grid":703,"name":"RG_1_Skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":85,"MountedMarksman":70,"Besieger":60},"type":79,"target":4508,"targetName":"Sailor Leader"}},
+	"26": {
+		"6365.0":{"grid":1244,"name":"General 1(General)","order":0,"time":1000,"skills":{"6":3,"11":3,"14":2},"army":{"MountedSwordsman":164,"ArmoredMarksman":36},"type":0,"target":579,"targetName":"Sailor Camp (medium)"},"389191.0":{"grid":1988,"name":"OGG_1-Skills(Older Gemini General)","order":1,"time":4000,"skills":{"2":3,"3":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"Swordsman":35,"ArmoredMarksman":55,"MountedMarksman":205},"type":47,"target":307,"targetName":"Sailor Leader"}},
+	"36": {
+		"524888.0":{"grid":4509,"name":"RG_1_Skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":40,"MountedMarksman":30,"Besieger":145},"type":79,"target":4511,"targetName":"Sailor Camp (medium)"}},
+	"37": {
+		"536169.0":{"grid":4712,"name":"RG_2_skills(Resolute General)","order":18,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":180,"Besieger":35},"type":79,"target":5671,"targetName":"Sailor Camp (hard)"}},
+	"38": {
+		"524888.0":{"grid":4509,"name":"RG_1_Skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"ArmoredMarksman":15,"MountedMarksman":165},"type":79,"target":6006,"targetName":"Sailor Camp (medium)"}},
+	"39": {
+		"389191.0":{"grid":4438,"name":"OGG_1-Skills(Older Gemini General)","order":13,"time":1000,"skills":{"2":3,"3":3,"8":2,"9":3,"11":3,"12":3,"14":3,"19":1},"army":{"Swordsman":60,"ArmoredMarksman":85,"MountedMarksman":150},"type":47,"target":5733,"targetName":"Sailor Leader"}},
+	"40": {
+		"536169.0":{"grid":4712,"name":"RG_2_skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":55,"ArmoredMarksman":160},"type":79,"target":5477,"targetName":"Sailor Leader"}},
+	"41": {
+		"524888.0":{"grid":4509,"name":"RG_1_Skills(Resolute General)","order":16,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"MountedMarksman":180},"type":79,"target":4798,"targetName":"Sailor Camp (medium)"}},
+	"42": {
+		"536169.0":{"grid":4712,"name":"RG_2_skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":55,"ArmoredMarksman":45,"MountedMarksman":115},"type":79,"target":3372,"targetName":"Sailor Camp (hard)"}},
+	"43": {
+		"127334.0":{"grid":4575,"name":"Sylvana_1-Skills(General Sylvana)","order":9,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedMarksman":195},"type":57,"target":2759,"targetName":"Sailor Camp (hard)"}},
+	"44": {
+		"524888.0":{"grid":4509,"name":"RG_1_Skills(Resolute General)","order":13,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":100,"Knight":15,"ArmoredMarksman":40,"MountedMarksman":60},"type":79,"target":3234,"targetName":"Bubbling Cave Lake"}},
+	"45": {
+		"536169.0":{"grid":2759,"name":"RG_2_skills(Resolute General)","order":5,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"ArmoredMarksman":70,"MountedMarksman":110},"type":79,"target":857,"targetName":"Sailor Camp (easy)"}},
+	"46": {
+		"524888.0":{"grid":2963,"name":"RG_1_Skills(Resolute General)","order":9,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":150,"Besieger":65},"type":79,"target":584,"targetName":"Sailor Leader"}},
+	"47": {
+		"536169.0":{"grid":2759,"name":"RG_2_skills(Resolute General)","order":16,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"ArmoredMarksman":50,"MountedMarksman":115},"type":79,"target":1272,"targetName":"Sailor Camp (easy)"}},
+	"48": {
+		"524888.0":{"grid":2963,"name":"RG_1_Skills(Resolute General)","order":15,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":35,"ArmoredMarksman":85,"MountedMarksman":95},"type":79,"target":1479,"targetName":"Sailor Camp (medium)"}},
+	"49": {
+		"536169.0":{"grid":2759,"name":"RG_2_skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":20,"ArmoredMarksman":155,"MountedMarksman":40},"type":79,"target":1005,"targetName":"Sailor Camp (hard)"}},
+	"50": {
+		"524888.0":{"grid":2963,"name":"RG_1_Skills(Resolute General)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":60,"ArmoredMarksman":120,"MountedMarksman":35},"type":79,"target":799,"targetName":"Sailor Leader"}},
+	"51": {
+		"127334.0":{"grid":1277,"name":"Sylvana_1-Skills(General Sylvana)","order":17,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"MountedSwordsman":30,"MountedMarksman":165},"type":57,"target":1758,"targetName":"Sailor Camp (hard)"}},
+	"52": {
+		"6365.0":{"grid":1482,"name":"General 1(General)","order":0,"time":1000,"skills":{"6":3,"11":3,"14":2},"army":{"MountedSwordsman":150},"type":0,"target":1488,"targetName":"Sailor Camp (easy)"},
 		"536169.0":{"grid":1411,"name":"RG_2_skills(Resolute General)","order":1,"time":4000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":50,"MountedMarksman":165},"type":79,"target":1763,"targetName":"Sailor Leader"}}
 }
 
@@ -1536,6 +1615,26 @@ var AlladinPrincess = {
 	"28": {"63091.0":{"grid":2737,"name":"<b>Loner 1_skills</b> <font size='-3'>(Loner General)</font>","order":9,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":2,"9":3,"11":3,"12":3,"19":1},"army":{"Recruit":1},"type":67,"target":2711,"targetName":"Oasis Leader Camp"},"187526.0":{"grid":2872,"name":"<b>Loner_2-Skills</b> <font size='-3'>(Loner General)</font>","order":10,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":2,"9":3,"11":3,"12":3,"19":1},"army":{"Recruit":1},"type":67,"target":2711,"targetName":"Oasis Leader Camp"},"127334.0":{"grid":2667,"name":"<b>Sylvana_1-Skills</b> <font size='-3'>(General Sylvana)</font>","order":22,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"Recruit":1},"type":57,"target":2711,"targetName":"Oasis Leader Camp"},"294792.0":{"grid":2802,"name":"<b>Sylvana_2-Skills</b> <font size='-3'>(General Sylvana)</font>","order":23,"time":1000,"skills":{"2":3,"3":3,"6":3,"9":3,"11":3,"12":3,"14":2,"19":1},"army":{"Recruit":1},"type":57,"target":2711,"targetName":"Oasis Leader Camp"}},
 	"29": {"536169.0":{"grid":2397,"name":"RG_2_skills (Resolute General)","order":19,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"11":3,"12":3,"14":2,"19":1},"army":{"Swordsman":100,"ArmoredMarksman":85,"MountedMarksman":30},"type":79,"target":2711,"targetName":"Oasis Leader Camp"}},
 	// "30": {"buff_DYZAG":{"name":"BattleBuffBomb_random_units_limited","order":25,"time":1000,"type":"buff","skills":{},"army":{},"target":3031,"targetName":"Old palace"}},
+};
+var RaidingTheRaiders ={
+	"01": {
+		"4979915.0":{"grid":2800,"name":"<b>Narcissistic General</b>","order":0,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"18":1},"army":{"EliteSoldier":1},"type":96,"target":2202,"targetName":"Harbor Master"},
+		"4979916.0":{"grid":5456,"name":"<b>Narcissistic General</b>","order":1,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"18":1},"army":{"EliteSoldier":1},"type":96,"target":4451,"targetName":"Harbor Master"},
+		"4987932.0":{"grid":6694,"name":"<b>Narcissistic General</b>","order":2,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"18":1},"army":{"EliteSoldier":1},"type":96,"target":5344,"targetName":"Harbor Master"},
+
+		"389488.0":{"grid":2636,"name":"YGG_1_1UP","order":0,"time":120000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"18":1},"army":{"EliteSoldier":1},"type":96,"target":2202,"targetName":"Harbor Master"},
+		"483087.0":{"grid":5251,"name":"YGG_2_1UP","order":1,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"18":1},"army":{"EliteSoldier":1},"type":96,"target":4451,"targetName":"Harbor Master"},
+		"495320.0":{"grid":6558,"name":"YGG_3_1UP","order":2,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"18":1},"army":{"EliteSoldier":1},"type":96,"target":5344,"targetName":"Harbor Master"}
+	},
+	"02": {
+		"4979915.0":{"grid":2800,"name":"<b>Narcissistic General</b>","order":0,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"18":1},"army":{"EliteSoldier":1},"type":96,"target":2149,"targetName":"Harbor Master"},
+		"4979916.0":{"grid":5456,"name":"<b>Narcissistic General</b>","order":1,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"18":1},"army":{"EliteSoldier":1},"type":96,"target":2424,"targetName":"Harbor Master"},
+		"4987932.0":{"grid":6694,"name":"<b>Narcissistic General</b>","order":2,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"18":1},"army":{"EliteSoldier":1},"type":96,"target":2699,"targetName":"Harbor Master"},
+	
+		"389488.0":{"grid":2636,"name":"YGG_1_1UP","order":0,"time":30000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"18":1},"army":{"EliteSoldier":1},"type":96,"target":2149,"targetName":"Harbor Master"},
+		"483087.0":{"grid":5251,"name":"YGG_2_1UP","order":1,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"18":1},"army":{"EliteSoldier":1},"type":96,"target":2424,"targetName":"Harbor Master"},
+		"495320.0":{"grid":6558,"name":"YGG_3_1UP","order":2,"time":1000,"skills":{"2":3,"3":3,"6":3,"8":3,"10":1,"11":3,"12":3,"14":1,"18":1},"army":{"EliteSoldier":1},"type":96,"target":2699,"targetName":"Harbor Master"}
+	}
 };
 
 function getRequiredUnits(){

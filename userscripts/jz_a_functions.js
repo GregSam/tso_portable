@@ -1,5 +1,18 @@
-// use addMenuItem from main script
-addToolsMenuItem("JZ Functions", FunctionsMenuHandler);
+const johnnyScriptsItem = new air.NativeMenuItem("Johnny Scripts");
+johnnyScriptsItem.name = "Johnny Scripts";
+johnnyScriptsItem.submenu = new air.NativeMenu();
+menu.nativeMenu.getItemByName("Tools").submenu.addItem(johnnyScriptsItem);
+
+function addJohnnyScriptsSubmenuItem(label, onSelectFunction) {
+	var johnnyScriptsSubmenu = menu.nativeMenu.getItemByName("Tools").submenu.getItemByName("Johnny Scripts").submenu;
+	var item = new air.NativeMenuItem(label);
+	item.addEventListener(air.Event.SELECT, onSelectFunction);
+	johnnyScriptsSubmenu.addItem(item);
+	return item;
+}
+
+addJohnnyScriptsSubmenuItem("Functions Menu", FunctionsMenuHandler);
+addJohnnyScriptsSubmenuItem("PlayersZones", PlayersZones);
 
 var GingerBreadGeo ={
 	"uniqueId": "639822_0",
@@ -15,6 +28,31 @@ var GingerBreadGeo2 = {
 	// "searchTime": 645*1000 // for copper search normal 10:30
 	"searchTime": 530*1000 // for copper search with PFB
 }
+
+// ginger 3 4570604.0
+var GingerBreadGeo3 = {
+	"uniqueId": "4570604_0",
+	"name": "Gingerbread Geologist 3",
+	// "searchTime": 645*1000 // for copper search normal 10:30
+	"searchTime": 530*1000 // for copper search with PFB
+}
+
+// ginger 4 4578296.0
+var GingerBreadGeo4 = {
+	"uniqueId": "4578296_0",
+	"name": "Gingerbread Geologist 4",
+	// "searchTime": 645*1000 // for copper search normal 10:30
+	"searchTime": 530*1000 // for copper search with PFB
+}
+
+// ginger 5 4583542.0
+var GingerBreadGeo5 = {
+	"uniqueId": "4583542_0",
+	"name": "Gingerbread Geologist 5",
+	// "searchTime": 645*1000 // for copper search normal 10:30
+	"searchTime": 530*1000 // for copper search with PFB
+}
+
 
 var GeoOnVacation = {
 	"uniqueId": "237984_0",
@@ -36,6 +74,111 @@ var GeoOnVacation3 = {
 	"searchTime": 350*1000 // for copper search with PFB
 }
 
+function JZStartups(){
+	// farmWithGeologist(GingerBreadGeo);
+	// farmWithGeologist(GingerBreadGeo2);
+	// farmWithGeologist(GeoOnVacation);
+	// farmWithGeologist(GeoOnVacation2);
+	// farmWithGeologist(GeoOnVacation3);
+	JZ_StartGeologistFarming();
+	buildAndDemolish_CopperMine();
+	jz_questbookresize();
+	SeachForMines();
+	// sendExplorers();
+}
+
+addJohnnyScriptsSubmenuItem("JZ Start Geologist Farming", JZ_StartGeologistFarming);
+function JZ_StartGeologistFarming(){
+	farmWithGeologist(GingerBreadGeo);
+	farmWithGeologist(GingerBreadGeo2);
+	farmWithGeologist(GingerBreadGeo3);
+	farmWithGeologist(GingerBreadGeo4);
+	farmWithGeologist(GingerBreadGeo5);
+	farmWithGeologist(GeoOnVacation);
+	farmWithGeologist(GeoOnVacation2);
+	farmWithGeologist(GeoOnVacation3);
+}
+
+function fkstartups(){
+	geoOnVac1FK();
+	geoOnVac2FK();
+	ginger1FK();
+	ginger2FK();
+	ginger3FK();
+	ginger4FK();
+
+	buildAndDemolish_CopperMine(); //TODO make separate function for FK
+	jz_questbookresize();
+	// SeachForMines();
+	// sendExplorers();
+}
+
+var jzFreeArmyLowestCounts = {};
+var jzFreeArmyLowestIntervalId = null;
+function jz_startFreeArmyLowestTracker(unitsToTrack)
+{
+	// Track lowest counts out of the free army snapshot.
+	if(Array.isArray(unitsToTrack)) {
+		unitsToTrack.forEach(function(type){
+			if(typeof jzFreeArmyLowestCounts[type] === 'undefined') {
+				jzFreeArmyLowestCounts[type] = 0;
+			}
+		});
+	}
+
+	var updateLowestCounts = function(){
+		// air.introspector.Console.log("jz_startFreeArmyLowestTracker", jzFreeArmyLowestCounts);
+		try {
+			if(typeof jzv2_updateFreeArmyInfoORG === 'function') {
+				jzv2_updateFreeArmyInfoORG();
+			} else if(typeof jzv2_updateFreeArmyInfo === 'function') {
+				jzv2_updateFreeArmyInfo();
+			}
+		} catch (err) {}
+
+		var currentInfo = (typeof armyFreeInfo === 'object' && armyFreeInfo) ? armyFreeInfo : {};
+		if(Array.isArray(unitsToTrack) && unitsToTrack.length > 0) {
+			unitsToTrack.forEach(function(type){
+				var storedAmount = jzFreeArmyLowestCounts[type];
+				if(!currentInfo.hasOwnProperty(type)) {
+					if(typeof storedAmount === 'undefined' || storedAmount > 0) {
+						jzFreeArmyLowestCounts[type] = 0;
+					}
+					return;
+				}
+				var currentAmount = currentInfo[type] || 0;
+				if(typeof storedAmount === 'undefined' || (storedAmount === 0 && currentAmount > 0)) {
+					jzFreeArmyLowestCounts[type] = currentAmount;
+				} else if(currentAmount < storedAmount) {
+					jzFreeArmyLowestCounts[type] = currentAmount;
+				}
+			});
+		} else {
+			$.each(currentInfo, function(type, amount){
+				var storedAmount = jzFreeArmyLowestCounts[type];
+				if(typeof storedAmount === 'undefined' || (storedAmount === 0 && amount > 0)) {
+					jzFreeArmyLowestCounts[type] = amount;
+				} else if(amount < storedAmount) {
+					jzFreeArmyLowestCounts[type] = amount;
+				}
+			});
+			$.each(jzFreeArmyLowestCounts, function(type, storedAmount){
+				if(!currentInfo.hasOwnProperty(type) && storedAmount !== 0) {
+					jzFreeArmyLowestCounts[type] = 0;
+				}
+			});
+		}
+	};
+
+	if(jzFreeArmyLowestIntervalId) {
+		clearInterval(jzFreeArmyLowestIntervalId);
+	}
+
+	updateLowestCounts();
+	jzFreeArmyLowestIntervalId = setInterval(updateLowestCounts, 60 * 1000);
+	return jzFreeArmyLowestCounts;
+}
+
 function FunctionsMenuHandler(event)
 {
 	// close all modals
@@ -55,14 +198,14 @@ function FunctionsMenuHandler(event)
 	// fill modal data
 	$('#jzFunctionsModalData').html(JzFunctionsModalMake());
 	// bind buttons
-	$('#jzFunctionsModalData .function1').click(function1);
+	$('#jzFunctionsModalData .sendExplorers').click(sendExplorers);
 	$('#jzFunctionsModalData .function2').click(function2);
 	$('#jzFunctionsModalData .function3').click(function3);
 	$('#jzFunctionsModalData .function4').click(function4);
 	$('#jzFunctionsModalData .function5').click(function5);
-	$('#jzFunctionsModalData .function6').click(function6);
+	$('#jzFunctionsModalData .jzstartups').click(JZStartups);
 	$('#jzFunctionsModalData .function13').click(function13);
-	$('#jzFunctionsModalData .function7').click(function7);
+	$('#jzFunctionsModalData .fkstartups').click(fkstartups);
 	$('#jzFunctionsModalData .function8').click(function8);
 	$('#jzFunctionsModalData .function9').click(function9);
 	$('#jzFunctionsModalData .function10').click(function10);
@@ -77,7 +220,7 @@ function FunctionsMenuHandler(event)
 	$('#jzFunctionsModal:not(:visible)').modal({backdrop: "static"});
 }
 
-function function1()
+function sendExplorers()
 {
 	CheckAndSendExplorersOnOff();
 }
@@ -99,13 +242,8 @@ function function5(){
 	getRequiredGenerals();
 }
 
-function function6(){
-	// getGingerBreadGeo();
-	farmWithGeologist(GingerBreadGeo);
-}
 function function13(){
 	// getGingerBreadGeo();
-	farmWithGeologist(GingerBreadGeo2);
 }
 
 function ginger1FK(){
@@ -129,6 +267,34 @@ function ginger2FK(){
 	var ginger1 = {
 		// '328855:0
 		"uniqueId": "328855_0",
+		"name": "Gingerbread Geologist",
+		"searchTime": 915*1000
+	}
+	farmWithGeologist(ginger1);
+}
+
+function ginger3FK(){
+	if(game.gi.isOnHomzone() == false) {
+		game.showAlert(getText('not_home'));
+		return;
+	}
+	var ginger1 = {
+		// '1188651:0
+		"uniqueId": "1188651_0",
+		"name": "Gingerbread Geologist",
+		"searchTime": 915*1000
+	}
+	farmWithGeologist(ginger1);
+}
+
+function ginger4FK(){
+	if(game.gi.isOnHomzone() == false) {
+		game.showAlert(getText('not_home'));
+		return;
+	}
+	var ginger1 = {
+		// '1209796:0
+		"uniqueId": "1209796_0",
 		"name": "Gingerbread Geologist",
 		"searchTime": 915*1000
 	}
@@ -159,10 +325,6 @@ function geoOnVac2FK(){
 		"searchTime": 615*1000
 	}
 	farmWithGeologist(geoOnVac2);
-}
-
-function function7(){
-	farmWithGeologist(GeoOnVacation);
 }
 
 function function8(){
@@ -200,15 +362,13 @@ function function10(){
 			}
 		}
 	});
-	// air.Introspector.Console.log(specsByPlayer);
+	// // air.introspector.Console.log(specsByPlayer);
 }
 
 function function11(){
-	farmWithGeologist(GeoOnVacation2);
 }
 
 function function14(){
-	farmWithGeologist(GeoOnVacation3);
 }
 
 function FootballResToMayor(){
@@ -247,19 +407,12 @@ function getPlayerNameFromVector(playerid){
 }
 
 function JzFunctionsModalMake()
-{
+{ // ginger1FK ginger2FK geoOnVac1FK geoOnVac2FK
 	var out = '<div class="container-fluid"><H3>Hello from functions</H3>';
-	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary function1">Send Explorers</button>'],[9, "Check And Send Explorers to short treasure hunt every 60s"]]);
+	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary sendExplorers">Send Explorers</button>'],[9, "Check And Send Explorers to short treasure hunt every 60s"]]);
 	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary function2">BookBinder</button>'],[9, "Collect from bookbinder and queue new production"]]);
-	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary function6">Farm with Ginger Geo</button>'],[9, "Sending, resetting copper mine, sending again"]]);
-	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary function13">Farm with Ginger Geo 2</button>'],[9, "Sending, resetting copper mine, sending again"]]);
-	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary function7">Farm with Geo on vacation</button>'],[9, "Sending, resetting copper mine, sending again"]]);
-	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary function11">Farm with Geo on vacation 2</button>'],[9, "Sending, resetting copper mine, sending again"]]);
-	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary function14">Farm with Geo on vacation 3</button>'],[9, "Sending, resetting copper mine, sending again"]]);
-	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary ginger1FK">FK Farm with Ginger 1</button>'],[9, "Sending, resetting copper mine, sending again"]]);
-	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary ginger2FK">FK Farm with Ginger 2</button>'],[9, "Sending, resetting copper mine, sending again"]]);
-	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary geoOnVac1FK">FK Farm with Geo on vacation</button>'],[9, "Sending, resetting copper mine, sending again"]]);
-	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary geoOnVac2FK">FK Farm with Geo on vacation 2</button>'],[9, "Sending, resetting copper mine, sending again"]]);
+	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary jzstartups">JohnnyZabyaka startup scripts</button>'],[9, "sending geos"]]);
+	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary fkstartups">FranekKimono startup scripts</button>'],[9, "sending geos"]]);
 	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary function8">Bigger mail window</button>'],[9, "Bigger mail window"]]);
 	out += utils.createTableRow([[3, ''],[9, ""]]);
 	out += utils.createTableRow([[3, '<button type="button" class="btn btn-primary function3">Attack when ready</button>'],[9, "Send attack when ghost arrives"]]);
@@ -329,8 +482,8 @@ function testingStuff(){
 	// 53: GiantTreeOfHope
 	// 54: StarfallAirship
 	// 55: RomanticRestaurant
-	// air.Introspector.Console.log(globalFlash.gui.ShowBuilding("Bookbinder"));
-	// air.Introspector.Console.log(globalFlash.gui.mSkillProductionPanel);
+	// // air.introspector.Console.log(globalFlash.gui.ShowBuilding("Bookbinder"));
+	// // air.introspector.Console.log(globalFlash.gui.mSkillProductionPanel);
 	// this.mPanel.pickUp.visible = false;
 
 	// var DELIVER_PRODUCTION = 141;
@@ -342,11 +495,11 @@ function testingStuff(){
 	// 	if (prodQueue == null) {
 	// 		continue;
 	// 	}
-	// 	air.Introspector.Console.log(prodQueue);
-	// 	air.Introspector.Console.log(i+": "+prodQueue.productionBuilding.GetBuildingName_string());
+	// 	// air.introspector.Console.log(prodQueue);
+	// 	// air.introspector.Console.log(i+": "+prodQueue.productionBuilding.GetBuildingName_string());
 	// }
 
-//  for (var i = 17; i < 20; i++) {var prodQueue = swmmo.application.mGameInterface.mCurrentPlayerZone.GetProductionQueue(i);if (prodQueue == null) {continue;}if(prodQueue.mTimedProductions_vector.length > 0 ){air.Introspector.Console.log(prodQueue.mTimedProductions_vector)};air.Introspector.Console.log(i+": "+prodQueue.productionBuilding.GetBuildingName_string());}
+//  for (var i = 17; i < 20; i++) {var prodQueue = swmmo.application.mGameInterface.mCurrentPlayerZone.GetProductionQueue(i);if (prodQueue == null) {continue;}if(prodQueue.mTimedProductions_vector.length > 0 ){// air.introspector.Console.log(prodQueue.mTimedProductions_vector)};// air.introspector.Console.log(i+": "+prodQueue.productionBuilding.GetBuildingName_string());}
 
 	// ORDER_TYPE"EffectTimedProduction"
 	// name_string"ProductivityBuffZoneScienceLvl2"
@@ -356,7 +509,7 @@ function testingStuff(){
 	// working collection from mayor house
 	// var MayorhouseProductionQueueId = 4;
 	// var prodQueue4 = swmmo.application.mGameInterface.mCurrentPlayerZone.GetProductionQueue(MayorhouseProductionQueueId); // mayorhouse
-	// // air.Introspector.Console.log(prodQueue4);
+	// // // air.introspector.Console.log(prodQueue4);
 	// var mProductionType = prodQueue4.mProductionType;
 	// var cPlayerData = swmmo.application.mGameInterface.mHomePlayer;
 	// var IncCollectedTime = true;
@@ -367,10 +520,10 @@ function testingStuff(){
 	// game.gi.mClientMessages.SendMessagetoServer(DELIVER_PRODUCTION, game.gi.mCurrentViewedZoneID, mProductionType);
 
 
-	// air.Introspector.Console.log(globalFlash.gui.mSkillProductionPanel); // mMayorhouseInfoPanel
+	// // air.introspector.Console.log(globalFlash.gui.mSkillProductionPanel); // mMayorhouseInfoPanel
 	// globalFlash.gui.mMayorhouseInfoPanel.Show();
 	// globalFlash.gui.mMayorhouseInfoPanel.showCollectiblesTab()
-	// air.Introspector.Console.log(globalFlash.gui.mMayorhouseInfoPanel);
+	// // air.introspector.Console.log(globalFlash.gui.mMayorhouseInfoPanel);
 	// update(param1:Notifier, param2:String, param3:Object)
 	// var PRODUCTION_FINISH = "ProductionFinish";
 	// globalFlash.gui.mTimedProductionInfoPanel.update(null, PRODUCTION_FINISH, null);
@@ -378,10 +531,10 @@ function testingStuff(){
 	// dispatchEvent(new Event(CollectionEvent.PICK_UP_COLLECTION,true,false));
 	// var PICK_UP_COLLECTION = "pickUpCollection";
 	// var completeEvent = new window.runtime.flash.events.Event(PICK_UP_COLLECTION, true, false);
-	// air.Introspector.Console.log(completeEvent);
+	// // air.introspector.Console.log(completeEvent);
 	// globalFlash.gui.mMayorhouseInfoPanel.dispatchEvent(completeEvent);
 	// globalFlash.gui.mTimedProductionInfoPanel.dispatchEvent(completeEvent);
-	// air.Introspector.Console.log(globalFlash.gui.mMayorhouseInfoPanel);
+	// // air.introspector.Console.log(globalFlash.gui.mMayorhouseInfoPanel);
 
 
 
@@ -396,10 +549,10 @@ function testingStuff(){
 
 
 function channelObserver(){
-	air.Introspector.Console.log(game.gi.channels);
+	// air.introspector.Console.log(game.gi.channels);
 	// swmmo.getDefinitionByName("global").buildingGroup.mGOList_vector.forEach(function(item){
 	// 	if (item === null) { return; }
-	// 	air.Introspector.Console.log(item.mId+" "+item.mGfxResourceListName_string);
+	// 	// air.introspector.Console.log(item.mId+" "+item.mGfxResourceListName_string);
 	// bookbinder - 87
 	// });
 
@@ -455,7 +608,7 @@ function channelObserver(){
 
 	// var ellitebarrackstracker = game.getTracker('ellitebarrackstracker', allTrackersHandler);
 	// var prodQueue8 = swmmo.application.mGameInterface.mCurrentPlayerZone.GetProductionQueue(8);
-	// // air.Introspector.Console.log(prodQueue8);
+	// // // air.introspector.Console.log(prodQueue8);
 	// prodQueue8.removePropertyObserver("ProductionFinish", ellitebarrackstracker);
 	// prodQueue8.addPropertyObserver("ProductionFinish", ellitebarrackstracker);
 
@@ -499,7 +652,7 @@ function channelObserver(){
 	// game.gi.channels.ZONE.addPropertyObserver(UNITS_OWNED_NOTIFICATION_PROPERTY_NAME, taskmanagertracker3);
 
 
-	game.gi.mCurrentPlayer.getAvailableBuffs_vector().forEach(function(item){air.Introspector.Console.log(item.GetType(), item);});
+	// game.gi.mCurrentPlayer.getAvailableBuffs_vector().forEach(function(item){// air.introspector.Console.log(item.GetType(), item);});
 
 
 
@@ -507,25 +660,25 @@ function channelObserver(){
 
 
 
-	air.Introspector.Console.log("channelObserver done");
+	// air.introspector.Console.log("channelObserver done");
 }
 
 var prodTrackerHandlerTimeout = null;
 function prodTrackerHandler(event){
-	air.Introspector.Console.log(event);
+	// air.introspector.Console.log(event);
 	var type = event.data.GetType();
-	air.Introspector.Console.log("GetType "+ type, event);
+	// air.introspector.Console.log("GetType "+ type, event);
 	var bookBinderItems = ["Manuscript", "Tome", "Codex"];
 	if(bookBinderItems.indexOf(type) > -1){
-		air.Introspector.Console.log("type "+ type + " found");
+		// air.introspector.Console.log("type "+ type + " found");
 		prodTrackerHandlerTimeout = setTimeout(function(){BookbinderHandleJZ();}, 5000);
 	}
 }
 
 function specialistTrackerHandler(event){
-	air.Introspector.Console.log(event);
-	air.Introspector.Console.log(event.target);
-	air.Introspector.Console.log(event.data.getTargetName());
+	// air.introspector.Console.log(event);
+	// air.introspector.Console.log(event.target);
+	// air.introspector.Console.log(event.data.getTargetName());
 	// var bookBinderItems = ["Manuscript", "Tome", "Codex"];
 	// if(bookBinderItems.indexOf(event.data.GetType()) > -1){
 	// 	setTimeout(() => {
@@ -536,7 +689,7 @@ function specialistTrackerHandler(event){
 }
 
 function taskTrackerHandler(event){
-	air.Introspector.Console.log(event);
+	// air.introspector.Console.log(event);
 	// var bookBinderItems = ["Manuscript", "Tome", "Codex"];
 	// if(bookBinderItems.indexOf(event.data.GetType()) > -1){
 	// 	setTimeout(() => {
@@ -547,12 +700,12 @@ function taskTrackerHandler(event){
 }
 
 function allTrackersHandler(event){
-	air.Introspector.Console.log(event);
+	// air.introspector.Console.log(event);
 }
 
 function prodTrackerHandler(event){
-	air.Introspector.Console.log(event);
-	air.Introspector.Console.log(event.data.GetType());
+	// air.introspector.Console.log(event);
+	// air.introspector.Console.log(event.data.GetType());
 }
 
 function farmWithGeologist(geo){
@@ -596,7 +749,7 @@ function isStoneDepleted(){
 	}
 	return false;
 }
-addToolsMenuItem("JZ destroy copper mines", buildAndDemolish_CopperMine);
+addJohnnyScriptsSubmenuItem("Build and Demolish Copper Mines", buildAndDemolish_CopperMine);
 function buildAndDemolish_CopperMine(){
 	if(game.gi.isOnHomzone() == false) {
 		game.showAlert(getText('not_home'));
@@ -605,7 +758,7 @@ function buildAndDemolish_CopperMine(){
 	}
 
 	var xValuesDeposit = [];
-	var copperMines = [10005, 9735, 10089];
+	var copperMines = [6775, 6420, 10005, 9735, 10089];
 
 	swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.GetDeposits_vector().forEach(function(item) {
 		try {
@@ -645,21 +798,21 @@ function _MyIID_DestroyBuildingAtGridIdx(copperMineid)
 		try
 		{
 			var loc2 = game.gi.mCurrentPlayerZone.mStreetDataMap.GetBuildingByGridPos(copperMineid);
-			// air.Introspector.Console.log("building: ", loc2);
+			// // air.introspector.Console.log("building: ", loc2);
 			if (loc2 != null)
 				{
 				game.showAlert('Destroying copper at grid: '+copperMineid);
-				// air.Introspector.Console.log("Destroying building at grid "+copperMineid);
+				// // air.introspector.Console.log("Destroying building at grid "+copperMineid);
 				var PlayerID = game.gi.mCurrentPlayer.GetPlayerId();
 				game.gi.mCurrentPlayerZone.SendDestructBuildingCommand(loc2, "cSetBuilding-" + copperMineid + "-" + copperMineid +
 					" # Cursor: Street_DeleteBuildingCursor # Alert Title: " + loca.GetText("ALT", "ConfirmTeardown") +
 					" # Owner: " + PlayerID + " # Current Player: " + PlayerID);
-				// air.Introspector.Console.log("Building destroyed at copperMineid: " + copperMineid);
+				// // air.introspector.Console.log("Building destroyed at copperMineid: " + copperMineid);
 			}
 		}
 		catch (e)
 		{
-			// air.Introspector.Console.log("Error: " + e);
+			// // air.introspector.Console.log("Error: " + e);
 		}
 	}
 }
@@ -669,7 +822,7 @@ function isSpecResting(uniqueID1){
     game.gi.mCurrentPlayerZone.GetSpecialists_vector().sort(0).forEach(function(item){
 		if(uniqueID1 == item.GetUniqueID().uniqueID1) {
 			// if(uniqueID1 == "639822"){
-			// 	air.Introspector.Console.log(item.GetTask());
+			// 	// air.introspector.Console.log(item.GetTask());
 			// }
             if(item.GetTask() == null) {
 				isSpecResting = true;
@@ -681,7 +834,7 @@ function isSpecResting(uniqueID1){
 
 function showAllSpecialists(){
 	game.getSpecialists().sort(specNameSorter).forEach(function(item){
-		air.Introspector.Console.log(item.getName(true), item);
+		// // air.introspector.Console.log(item.getName(true), item);
 	});
 }
 
@@ -692,7 +845,7 @@ function explorers() {
 			count++;
 		}
 	});
-	air.Introspector.Console.log(count);
+	// air.introspector.Console.log(count);
 }
 biggerMailWindow()
 function biggerMailWindow(){
@@ -754,9 +907,9 @@ function CheckAndSendExplorers(){
 	var RomanticExplorerType = 66;
 	var BlackTreeExp = 87;
 	game.getSpecialists().sort(specNameSorter).forEach(function(item){
-		// air.Introspector.Console.log(item);
-		// air.Introspector.Console.log(item.GetType());
-		// game.zone.GetSpecialists_vector().forEach(function(item){air.Introspector.Console.log(item.GetType(), item.getName(true))});
+		// // air.introspector.Console.log(item);
+		// // air.introspector.Console.log(item.GetType());
+		// game.zone.GetSpecialists_vector().forEach(function(item){// air.introspector.Console.log(item.GetType(), item.getName(true))});
 		if (item.GetTask() != null || item.GetBaseType() != explorerType || item.getPlayerID() == -1) { return; }
 		isThereAnySpec = true;
 
@@ -779,55 +932,38 @@ function CheckAndSendExplorers(){
 	// setTimeout(function(){CheckAndSendExplorers();}, 60*1000);
 }
 
-addToolsMenuItem("JZ TombRaiders Attack", AttackWhenReady);
-var AttackWhenReadysetTimeOut = null;
-function AttackWhenReady(){
-	var GhostType = 63;
-	var myGhost = null;
-	var SPECIALIST_TYPE = swmmo.getDefinitionByName("Enums::SPECIALIST_TYPE");
-	game.zone.GetSpecialists_vector().forEach(function(item){
-		if (SPECIALIST_TYPE.IsGeneral(item.GetType())
-			&& item.getPlayerID() == game.gi.mCurrentPlayer.GetPlayerId()
-			&& item.GetType() == GhostType) {
-				myGhost = item;
-				return;
-		}
-	});
-	if(myGhost == null){
-		game.showAlert("No Ghost yet");
-		AttackWhenReadysetTimeOut = setTimeout(function(){AttackWhenReady();}, 5*1000);
-	} else {
-		CheckAndAttack(myGhost);
-	}
-}
+// addJohnnyScriptsSubmenuItem("JZ TombRaiders Attack", AttackWhenReady);
+// var AttackWhenReadysetTimeOut = null;
+// function AttackWhenReady(){
+// 	var GhostType = 63;
+// 	var myGhost = null;
+// 	var SPECIALIST_TYPE = swmmo.getDefinitionByName("Enums::SPECIALIST_TYPE");
+// 	game.zone.GetSpecialists_vector().forEach(function(item){
+// 		if (SPECIALIST_TYPE.IsGeneral(item.GetType())
+// 			&& item.getPlayerID() == game.gi.mCurrentPlayer.GetPlayerId()
+// 			&& item.GetType() == GhostType) {
+// 				myGhost = item;
+// 				return;
+// 		}
+// 	});
+// 	if(myGhost == null){
+// 		game.showAlert("No Ghost yet");
+// 		AttackWhenReadysetTimeOut = setTimeout(function(){AttackWhenReady();}, 5*1000);
+// 	} else {
+// 		CheckAndAttack(myGhost);
+// 	}
+// }
 
-var CheckAndAttacksetTimeOut = null;
-function CheckAndAttack(spec){
-	if(spec.GetGeneralState() != 0){ // 0 - ready
-		game.showAlert("Ghost not ready to attack! state: "+spec.GetGeneralState());
-		CheckAndAttacksetTimeOut = setTimeout(function(){AttackWhenReady(spec);}, 5*1000);
-	} else {
-		SendGhostAttack(spec);
-	}
-}
 
-function SendGhostAttack(myGhost){
-	game.showAlert("Ghost ready to attack!");
-	var tombRaidersLiders = [2621, 2897, 2218, 2010]
-	tombRaidersLiders.forEach(function(item){
-		if(battlecheckCanAttack(myGhost.GetUniqueID().toKeyString(), item)){
-			game.showAlert("Attack sent to: "+item);
-			jzv2_battleSendGeneral(myGhost, 5, item);
-		}
-	});
-}
+
+
 
 function testingStuff(){
-	// air.Introspector.Console.log(swmmo.application.mGameInterface.mCurrentPlayerZone.GetResources(game.gi.mCurrentPlayer));
-	// air.Introspector.Console.log(swmmo.application.mGameInterface.mCurrentPlayerZone.GetResources(game.gi.mCurrentPlayer).GetFree());
-	// air.Introspector.Console.log(swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mBuildingContainer);
-	// air.Introspector.Console.log(getBarracksProductionQueue());
-	// air.Introspector.Console.log(getElitteBarracksProductionQueue());
+	// // air.introspector.Console.log(swmmo.application.mGameInterface.mCurrentPlayerZone.GetResources(game.gi.mCurrentPlayer));
+	// // air.introspector.Console.log(swmmo.application.mGameInterface.mCurrentPlayerZone.GetResources(game.gi.mCurrentPlayer).GetFree());
+	// // air.introspector.Console.log(swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mBuildingContainer);
+	// // air.introspector.Console.log(getBarracksProductionQueue());
+	// // air.introspector.Console.log(getElitteBarracksProductionQueue());
 	// EliteBarrack
 	// swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mBuildingContainer.forEach(function(item) {
 	// 	try {
@@ -842,22 +978,22 @@ function testingStuff(){
 	// game.zone.mStreetDataMap.GetBuildings_vector().forEach(function(item){
 	// 	try {
 	// 		if(item.GetBuildingName_string() == "ConcertHall"){
-	// 			air.Introspector.Console.log(item);
-	// 			air.Introspector.Console.log(item.getRemainingCooldown());
+	// 			// air.introspector.Console.log(item);
+	// 			// air.introspector.Console.log(item.getRemainingCooldown());
 
 	// 		}
 	// 	} catch (e) {}
 	// 	// item.GetSubType();
-	// 	// air.Introspector.Console.log(item);
+	// 	// // air.introspector.Console.log(item);
 	// });
 
 	var prodQueue = swmmo.application.mGameInterface.mCurrentPlayerZone.GetProductionQueue(37);
-	air.Introspector.Console.log(prodQueue.productionBuilding.GetBuildingName_string());
-	air.Introspector.Console.log(prodQueue);
-	air.Introspector.Console.log(prodQueue.productionBuilding.GetInfoPanelShortcutItem());
+	// air.introspector.Console.log(prodQueue.productionBuilding.GetBuildingName_string());
+	// air.introspector.Console.log(prodQueue);
+	// air.introspector.Console.log(prodQueue.productionBuilding.GetInfoPanelShortcutItem());
 	// var item = prodQueue.mTimedProductions_vector[0];
 	// var productionVO = item.GetProductionOrder().GetProductionVO();
-	// air.Introspector.Console.log(productionVO);
+	// // air.introspector.Console.log(productionVO);
 
 
 	// var dTimedProductionVO = swmmo.getDefinitionByName("Communication.VO::dTimedProductionVO");
@@ -885,13 +1021,9 @@ function specPosition(specId){
 			var task = item.GetTask();
 			var pathPos = task.GetPathPos();
 			var destinationPath = task.GetDestinationPath();
-			air.Introspector.Console.log(destinationPath.CalculateGridIdxForPathPos(pathPos));
+			// air.introspector.Console.log(destinationPath.CalculateGridIdxForPathPos(pathPos));
 		}
 	});
-}
-
-function x(){
-	globalFlash.gui.mTradeWindow.mAvailableOfferVector.forEach(function(item){air.Introspector.Console.log("costs: "+item.costsNameSort+" "+item.costsSort+" offer: "+item.offerNameSort+" "+item.offerSort);});
 }
 
 function sendTradesToTO(offerID1, offerAmount, costsUD1, costAmount, lots){
@@ -958,7 +1090,7 @@ function sendTradesToTO(offerID1, offerAmount, costsUD1, costAmount, lots){
 
 	_loc2_.slotType = slotType;
 	_loc2_.slotPos = slotPos;
-	air.Introspector.Console.log(_loc2_);
+	// air.introspector.Console.log(_loc2_);
 
 	const INITIATE_TRADE = 1049;
 	// game.gi.mClientMessages.SendMessagetoServer(INITIATE_TRADE,game.gi.mCurrentViewedZoneID,_loc2_);
@@ -972,7 +1104,7 @@ function FootballResToMayorxxxxxxxxxxxxxxxxxx(){
 	var dBuffVO = swmmo.getDefinitionByName("Communication.VO::dBuffVO");
 	var footbalResources = ["WMShoulderPad","WMShoe","WMBanana","WMShoulderPad","WMStuds","WMHelmet",
 		"WMRedColor","WMTelescope","WMWetGrass","WMFist","WMGrease","WMElasticSpring","WMDummy"];
-	game.gi.mCurrentPlayer.getAvailableBuffs_vector().forEach(function(item){air.Introspector.Console.log(item.GetResourceName_string()+" "+item.GetUniqueId().uniqueID1+" "+item.GetUniqueId().uniqueID2);});
+	// game.gi.mCurrentPlayer.getAvailableBuffs_vector().forEach(function(item){// air.introspector.Console.log(item.GetResourceName_string()+" "+item.GetUniqueId().uniqueID1+" "+item.GetUniqueId().uniqueID2);});
 	buffList.target_string = "Mayorhouse";
 	var APPLY_BUFF_LIST = 63; // server command id
 	var targetGrid = game.zone.mStreetDataMap.getBuildingByName("Mayorhouse").GetGrid();
@@ -992,6 +1124,12 @@ function swimmingBuff(){
 			var uID = item.GetUniqueId();
 			game.gi.SendServerAction(61, 0, 6603, 0, uID);
 		}
+	});
+}
+
+function jz_InvitePlayerToAdvBy(name){
+	globalFlash.gui.mFriendsList.GetFilteredFriends("WeeLassie", true).forEach(function(item){
+		globalFlash.gui.mAdventurePanel.AddInvitedPlayer(item);
 	});
 }
 
@@ -1018,7 +1156,7 @@ function swimmingBuff(){
 // 	showGameAlert(resPumpkins+": "+amount);
 // }
 
-addToolsMenuItem("Pumpkins count", getPumpkinsCount);
+addJohnnyScriptsSubmenuItem("Pumpkins count", getPumpkinsCount);
 function getPumpkinsCount(){
 	var resPumpkins = "HalloweenResource";
 	var amount = swmmo.application.mGameInterface.mCurrentPlayerZone.GetResourcesForPlayerID(game.player.GetPlayerId()).GetResource(resPumpkins).amount;
@@ -1027,7 +1165,7 @@ function getPumpkinsCount(){
 
 
 /*
-swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){if(item.getPlayerID() == '1770612'&&item.GetType()=='50'){air.Introspector.Console.log(item.GetAllActiveModifiers());}});
+swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){if(item.getPlayerID() == '1770612'&&item.GetType()=='50'){// air.introspector.Console.log(item.GetAllActiveModifiers());}});
 GetAllActiveModifiers
 */
 biggerSendArmyBack();
@@ -1037,7 +1175,16 @@ function biggerSendArmyBack(){
 	swmmo.application.GAMESTATE_ID_SPECIALIST_TRAVEL_PANEL.width = 1100;
 }
 
-addToolsMenuItem("OpenManyFiles", OpenManyFiles);
+function PlayersZones(){
+	swmmo.application.mGameInterface.GetPlayerList_vector().forEach(function(item){
+			var playerid = item.getPlayerID();
+			var name = game.gi.GetPlayerName_string(playerid);
+			var landingZoneId = item.mLandingZoneID;
+			alert("Player: "+name+" LandingZoneID: "+landingZoneId);
+	});
+}
+
+addJohnnyScriptsSubmenuItem("OpenManyFiles", OpenManyFiles);
 function OpenManyFiles(onComplete){
     if (typeof window === "undefined" || !window.runtime || typeof air === "undefined" || !air.File) {
         showGameAlert("File dialog is not available in this environment.");
@@ -1088,7 +1235,7 @@ function OpenManyFiles(onComplete){
                         }
                     }
                 } catch (fileErr) {
-                    air.Introspector.Console.log("Failed to load " + file.nativePath + ": " + fileErr);
+                    // air.introspector.Console.log("Failed to load " + file.nativePath + ": " + fileErr);
                 }
             });
             showGameAlert("Loaded " + loadedFiles.length + " file(s).");
@@ -1096,11 +1243,11 @@ function OpenManyFiles(onComplete){
                 try {
                     onComplete(loadedFiles, fileInfoList);
                 } catch (callbackErr) {
-                    air.Introspector.Console.log("OpenManyFiles callback error: " + callbackErr);
+                    // air.introspector.Console.log("OpenManyFiles callback error: " + callbackErr);
                 }
             }
         } catch (err) {
-            air.Introspector.Console.log("OpenManyFiles selection error: " + err);
+            // air.introspector.Console.log("OpenManyFiles selection error: " + err);
         }
     };
     handleCancel = function(){
@@ -1112,9 +1259,143 @@ function OpenManyFiles(onComplete){
         fileRoot.browseForOpenMultiple("Select text or JSON files", filters);
     } catch (browseErr) {
         cleanup();
-        air.Introspector.Console.log("OpenManyFiles browse error: " + browseErr);
+        // air.introspector.Console.log("OpenManyFiles browse error: " + browseErr);
         showGameAlert("Failed to open file chooser.");
     }
     return loadedFiles;
 }
 
+
+
+function plyersSectors(){
+	var playersNames = [];
+	swmmo.application.mGameInterface.GetPlayerList_vector().forEach(function(item){
+		playersNames[item.GetPlayerId()] = item.GetPlayerName_string();
+	});
+
+	game.gi.mCurrentPlayerZone.mSectorList_vector.forEach(function(item){
+		// air.introspector.Console.log(item, item.GetOwnerPlayerID());
+	});
+
+	game.gi.mCurrentPlayerZone.GetSectorOwnerPlayerID();
+}
+
+function createOverlayWindow() {
+		if(!user_fast_shortcut_settings.OverlayMonitoringSetting)
+		{
+			return;
+		}
+		try {
+			var initOptions = new air.NativeWindowInitOptions();
+			initOptions.systemChrome = "none";
+			initOptions.transparent = true;
+			initOptions.type = air.NativeWindowType.LIGHTWEIGHT;
+
+			overlayWindow = new air.NativeWindow(initOptions);
+			overlayWindow.title = "Overlay";
+			overlayWindow.width = 300;
+			overlayWindow.height = 70;
+
+			overlayWindow.alwaysInFront = true;
+
+			function positionOverlay() {
+				overlayWindow.x = window.nativeWindow.x + window.nativeWindow.width - overlayWindow.width - 12;
+				overlayWindow.y = window.nativeWindow.y + window.nativeWindow.height - overlayWindow.height - 120;
+			}
+
+			positionOverlay();
+			
+			window.nativeWindow.addEventListener(air.NativeWindowBoundsEvent.MOVE, positionOverlay);
+			window.nativeWindow.addEventListener(air.NativeWindowBoundsEvent.RESIZE, positionOverlay);
+			window.nativeWindow.addEventListener(air.NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGE, displayStateChangeEventHandler);
+			function displayStateChangeEventHandler() {
+				
+				switch (window.nativeWindow.displayState)
+				{
+					case "minimized":
+					overlayWindow.visible = false;
+					break;
+					case "normal":
+					overlayWindow.visible = true;
+					break;
+					case "maximized":
+					overlayWindow.visible = true;
+					break;
+				}
+			}
+			
+			window.nativeWindow.addEventListener(air.Event.ACTIVATE, onActivate);
+			window.nativeWindow.addEventListener(air.Event.DEACTIVATE, onDeactivate);
+
+			function onActivate(event) {
+				overlayWindow.visible = true;
+			}
+
+			function onDeactivate(event) {
+				overlayWindow.visible = false;
+			}
+			
+			window.nativeWindow.addEventListener(air.Event.CLOSE, function() {
+				removeOverlay(overlayWindow);
+				try {
+					window.runtime.flash.desktop.NativeApplication.nativeApplication.exit(0);
+				} catch (e) {}
+			});
+
+			var htmlLoader = air.HTMLLoader.createRootWindow(false, initOptions, false);
+			overlayWindow.stage.addChild(htmlLoader);
+
+			htmlLoader.width = overlayWindow.width;
+			htmlLoader.height = overlayWindow.height;
+
+			//htmlLoader.scaleX = 0.5;
+			//htmlLoader.scaleY = 0.5;
+
+			timer = new air.Timer(1000, 0);
+			timer.addEventListener(air.TimerEvent.TIMER, updateOverlayText);
+			timer.start();
+			
+			overlayWindow.visible = true;
+			overlayWindow.activate();
+			try{
+				setTimeout(function() {
+						htmlLoader.stage.frameRate = 120;
+						htmlLoader.stage.quality = "BEST";
+						//window.nativeWindow.stage.getChildAt(0).stage.frameRate = 60;
+						//window.nativeWindow.stage.getChildAt(0).stage.quality = "BEST";
+				}, 10000);
+			}catch(e){}
+		} catch (e) {
+    }
+}
+
+
+function myAdventuresIds(){
+	game.gi.mCurrentPlayer.getAvailableBuffs_vector().forEach(function(item){
+		if(item.sortKey.indexOf("2|filldeposit|halloweenresource") > -1 || 
+		   item.sortKey.indexOf("2|addresource|halloweenresource") > -1){
+			// air.introspector.Console.log(item.getName(), item.GetType(), item.GetUniqueId().uniqueID1, item.GetUniqueId().uniqueID2);
+		}
+	});
+}
+
+function getCategories(){
+	game.gi.mCurrentPlayer.getAvailableBuffs_vector().forEach(function (product) {
+		try {
+			// air.introspector.Console.log(product.CreateBuffVOFromBuff());
+		} catch (e) { }
+	});
+
+	game.gi.mCurrentPlayer.getBuffsSortedForStarMenu().forEach(function (product) {
+		try {
+			if(product.GetBuffDefinition().IsTradable(product.GetResourceName_string())){
+				// air.introspector.Console.log(product, product.GetResourceName_string(), product.getName(), product.GetType());
+			}
+		} catch (e) { }
+	});
+}
+
+/**
+ * get more emails
+ * globalFlash.gui.mMailWindow.getMPanel().mailPager.source.list.source
+ */

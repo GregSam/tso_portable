@@ -129,8 +129,8 @@ const _exudUserBuildingListSounds = [ "BuildingPlace", "BuildingDestroy", "Build
 
 _exudUserBuildingListSounds.sort();
 extendBaseLang(_exudUserBuildingListLang, 'exudUserBuildingListLang');
-addToolsMenuItem('JZ Building List' , _exudUserBuildingListMenuHandler);
-addToolsMenuItem('JZ Building Monitor' , _exudUserBuildingMonitorMenuHandler);
+// addToolsMenuItem('JZ Building List' , _exudUserBuildingListMenuHandler);
+// addToolsMenuItem('JZ Building Monitor' , _exudUserBuildingMonitorMenuHandler);
 
 var _exudUserBuildingListModalInitialized = false;
 var _exudUserBuildingMonitorModalInitialized = false;

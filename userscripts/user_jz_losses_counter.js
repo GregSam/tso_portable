@@ -1,7 +1,6 @@
 /* Lost units counter by JZ
 ** Script reads battle reports from mails and counts lost units.
 ** Currently player got to open mails with battle reports before running this script.
-** This allows to load battle report body into memory and process it by the script.
 */
 
 var battlesFromMail = {};
@@ -68,14 +67,10 @@ function luc_MenuHandler(event)
 	// Add footer buttons once
 	if($('#lucModal .lucLoadEmails').length === 0 && $('#lucModal .lucReloadModal').length === 0){
 		$("#lucModal .modal-footer").prepend([
-			$('<button>').attr({ "class": "btn btn-primary lucLoadEmails" }).text('Load battle mails'),
-			$('<button>').attr({ "class": "btn btn-default lucReloadModal" }).text('Reload counter')
+			$('<button>').attr({ "class": "btn btn-primary lucLoadEmails" }).text('Load battle mails')
 		]);
 		$('#lucModal .lucLoadEmails').click(function(){
 			try { getEmailsFromServer(); } catch(e) { }
-		});
-		$('#lucModal .lucReloadModal').click(function(){
-			luc_ReloadModal();
 		});
 	}
 }
@@ -286,7 +281,8 @@ var vdef = swmmo.getDefinitionByName("Communication.VO::dIntegerVO");
 function getEmailsFromServer(){
     battleReports = [];
     try {
-        var currentMails = globalFlash.gui.mMailWindow.mailTypeHeader.owner.dataProvider;
+        // var currentMails = globalFlash.gui.mMailWindow.mailTypeHeader.owner.dataProvider;
+        var currentMails = globalFlash.gui.mMailWindow.getMPanel().mailPager.source.list.source;
         var requested = 0;
         for(var i = 0; i < currentMails.length; i++){
             var mail = currentMails[i];

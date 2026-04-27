@@ -540,13 +540,14 @@ function jzv2_SelfDriveMakeModal()
 
     try{
         var out = '<div class="container-fluid">';
-		if(!delayExecutions.hasOwnProperty(selectedAdventure)) {
+        if(!delayExecutions.hasOwnProperty(selectedAdventure)) {
 			out += '<button id="autoexecutebtn" class="btn btn-primary d-inline disabled autoexecutebtn" style="width: 150px; max-width:150px;">Execute '+selectedAdventure+' '+step+'</button>';
 		} else {
 			out += '<button id="autoexecutebtn" class="btn btn-primary d-inline autoexecutebtn" style="width: 150px; max-width:150px;">Execute</button>';
 		}
 
-		out += utils.createTableRow([[4, "attack sequance"], [8, "some other table title"]], true);
+		var tableRows = [];
+		tableRows.push(utils.createTableRow([[4, "attack sequance"], [8, "some other table title"]], true));
 
 		attacksState = [];
 		for(var i = 1; i <= numberOfAttacks; i++) {
@@ -648,11 +649,15 @@ function jzv2_SelfDriveMakeModal()
 				generalIcons += '|';
 			}
 
-			var row = utils.createTableRow([
-				[9, attackId + ' ' + generalIcons],
-				[3, buttonsTemplate]]);
-			out += row;
+			var row = utils.createTableRow(
+				[
+					[9, attackId + ' ' + generalIcons],
+					[3, buttonsTemplate]
+				]
+			);
+			tableRows.push(row);
 		}
+		out += '<div class="table-responsive">' + tableRows.join('') + '</div>';
         return out + '</div>';
     }
     catch(e){
@@ -743,22 +748,6 @@ function jzv2_battleAttack(battlePackets)
 		battleTimedQueue.run();
 		showGameAlert('All attacks sent');
 	}
-}
-
-function jzv2_battleSendGeneral(spec, type, target)
-{
-	try {
-		game.gi.mCurrentCursor.mCurrentSpecialist = spec;
-		var stask = new armySpecTaskDef();
-		stask.uniqueID = spec.GetUniqueID();
-		stask.subTaskID = 0;
-		swmmo.application.mGameInterface.SendServerAction(95, type, target, 0, stask);
-        return true;
-	}
-	catch (error) {
-		alert(error);
-        return error;
-     }
 }
 
 function jzv2_armyGetSpecialistFromID(item)

@@ -3,44 +3,18 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////Version 12.09.2025 V1 - kompatibel mit TestBuild///////////////////////////////////////////
+/////////////////////////////////////Version 19.04.2026 V1 - kompatibel mit TestBuild///////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Funktionen:///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Direktes ausführen von Vorlagen Verknüpfungen mit überspringen von Fenstern///////////////////////////////////////////////////
-//direktsenden.txt für beladen und versenden ins AT mit einer Vorlage///////////////////////////////////////////////////////////
-//Semi Automatisierung für ATs, Vorlage anklicken, rest wird automatisch bis zur letzten Quest erledigt/////////////////////////
-//volle AT Automatik, von Heimatinsel bis zum AT durchspielen mit Rundenanzahl//////////////////////////////////////////////////
-//volle Szenario Automatik, von Heimatinsel bis zum Szenario durchspielen mit Rundenanzahl//////////////////////////////////////
-//Entdecker/Geologen/Buffs/Queste/Buchbinder/Ausbau/Minenbau Überwachung////////////////////////////////////////////////////////
-//Stern Söldner per Vorlage zuweisen////////////////////////////////////////////////////////////////////////////////////////////
-//Genes per Vorlagen nach Hause senden//////////////////////////////////////////////////////////////////////////////////////////
-//Semi Automatisierung per Vorlage stoppen//////////////////////////////////////////////////////////////////////////////////////
-//Sammeln triggern per Vorlage//////////////////////////////////////////////////////////////////////////////////////////////////
-//Zone Refresh triggern per Vorlage/////////////////////////////////////////////////////////////////////////////////////////////
-//Einstellungen der Features per UI/////////////////////////////////////////////////////////////////////////////////////////////
-//Gebäude Ausbau per Vorlagen/manuell oder Überwachung//////////////////////////////////////////////////////////////////////////
-//Minenbau per Vorlagen/manuell oder Überwachung////////////////////////////////////////////////////////////////////////////////
-//Zonen Buffs per Vorlagen/manuell oder Überwachung/////////////////////////////////////////////////////////////////////////////
-//Fernkampf per Vorlagen/manuell - nicht mehr Verfügbar - bitte das neue FK nutzen, direkt über Kriegsführung///////////////////
-//Buchbinder Produktion Überwachung/////////////////////////////////////////////////////////////////////////////////////////////
-//Gebäudebuffs auslösen Überwachung/////////////////////////////////////////////////////////////////////////////////////////////
-//Gebäudeproduktionen auslösen Überwachung//////////////////////////////////////////////////////////////////////////////////////
-//Speicherüberwachung (Mem) - Auto Client Neustart nach aktueller AutoAT Runde - AutoAT wird weitergespielt mit neuer Runde/////
-//Handel senden/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Handel senden für 1 Fisch - nützlich für Aussternen///////////////////////////////////////////////////////////////////////////
-//Handel/Nachrichten automatisch annehmen///////////////////////////////////////////////////////////////////////////////////////
-//Lootboxen verwalten und öffnen////////////////////////////////////////////////////////////////////////////////////////////////
-//Sternitems zum Lager transferieren////////////////////////////////////////////////////////////////////////////////////////////
-//Epische ShopItems automatisch kaufen//////////////////////////////////////////////////////////////////////////////////////////
-//Skript Online Update System///////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 //WICHTIG! Gilt für alle Funktionen! Es darf keine Partition in Partiton in Partition gebaut werden ---> immer Hauptpartition und dann müssen die Vorlagen folgen
 
 //--------------------------------------------------------Skript Interne Variablen/Methoden - Keine Änderungen nötig----------------------------------------------------------------------------
-var VersionUserFast = "12.09.2025 V1 by A-Calc Development (PiTi)";
+if (window.__userFastShortcutCleanup) {
+	try { window.__userFastShortcutCleanup(); } catch (e) {}
+}
+window.__userFastShortcutTimerState = {};
+
+var VersionUserFast = "19.04.2026 V1 by PiTi";
 
 var user_fast_shortcut_settings = {
 	ATAuswahl: '1001NightsWoodcutter',
@@ -134,7 +108,8 @@ var user_fast_shortcut_settings = {
 	NoGenesLanding: false,
 	UnloadAllTroops: false,
 	SafeMonitoring: false,
-	OverlayMonitoringSetting: false
+	OverlayMonitoringSetting: false,
+	Sequenzer: false
 };
 $.extend(user_fast_shortcut_settings, settings.read(null, "FastShortcut"));
 var onlyoncesetting = true;
@@ -329,7 +304,23 @@ var user_fast_shortcut_settings_BuildingProd = {
 	ProspectorSelector: 'n/a',
     ProspectorSelector2: 'n/a',
     ProspectorLimit: '10',
-    UeberwachungProspector: false
+    UeberwachungProspector: false,
+	WitchCovenSelector: 'n/a',
+    WitchCovenSelector2: 'n/a',
+    WitchCovenLimit: '1',
+    UeberwachungWitchCoven: false,
+	RetirementHomeSelector: 'n/a',
+    RetirementHomeSelector2: 'n/a',
+    RetirementHomeLimit: '1',
+    UeberwachungRetirementHome: false,
+	WeddingChapelSelector: 'n/a',
+    WeddingChapelSelector2: 'n/a',
+    WeddingChapelLimit: '1',
+    UeberwachungWeddingChapel: false,
+	FluffyLogisticsSelector: 'n/a',
+    FluffyLogisticsSelector2: 'n/a',
+    FluffyLogisticsLimit: '1',
+    UeberwachungFluffyLogistics: false
 };
 $.extend(user_fast_shortcut_settings_BuildingProd, settings.read(null, "FastShortcutBuildingProd"));
 var onlyoncesetting3 = true;
@@ -351,76 +342,133 @@ function extractVersionNumberFromFileContent(content) {
 }
 
 function CheckNewVersion() {
+    function finish() {
+        ToolingMenu();
+        if (!user_fast_shortcut_settings.PersonalTesting) {
+            VorlagenUeberwachungAutoStart();
+        }
+    }
+
     try {
+        var scriptFile = new air.File(air.File.applicationDirectory.resolvePath("userscripts/user_fast_shortcut.js").nativePath);
+        var fileStream;
+        var content;
         var localVersion = "";
         var onlineVersion = "";
 
-        air.File.applicationDirectory.resolvePath("userscripts").getDirectoryListing().forEach(function (item) {
-            if (item.name === "user_fast_shortcut.js") {
-                var fileStream = new air.FileStream();
-                fileStream.open(item, air.FileMode.READ);
-                var content = fileStream.readUTFBytes(item.size);
-                fileStream.close();
-                
-                localVersion = extractVersionNumberFromFileContent(content);
-            }
-        });
+        if (!scriptFile.exists) {
+            isUpdateAva = false;
+            showGameAlert(getText('SkriptUpdateError', 'SemiAutoATMenuLang'));
+            finish();
+            return;
+        }
 
-        $.get("https://a-calc.de/Download/user_fast_shortcut.js", function (data) {
-            onlineVersion = extractVersionNumberFromFileContent(data);
+        fileStream = new air.FileStream();
+        fileStream.open(scriptFile, air.FileMode.READ);
+        content = fileStream.readUTFBytes(scriptFile.size);
+        fileStream.close();
 
-            if (localVersion !== "Version nicht gefunden" && onlineVersion !== "Version nicht gefunden") {
-                if (localVersion !== onlineVersion) {
-                    showGameAlert(getText('SkriptUpdateAva', 'SemiAutoATMenuLang') + localVersion + ' Online Version: ' + onlineVersion);
-					isUpdateAva = true;
-					ToolingMenu();
-					if(!user_fast_shortcut_settings.PersonalTesting)
-					{VorlagenUeberwachungAutoStart();}
-                } else {
-					isUpdateAva = false;
-                    showGameAlert(getText('SkriptNoUpdate', 'SemiAutoATMenuLang') + localVersion);
-					ToolingMenu();
-					if(!user_fast_shortcut_settings.PersonalTesting)
-					{VorlagenUeberwachungAutoStart();}
+        localVersion = extractVersionNumberFromFileContent(content);
+
+        if (!localVersion || localVersion === "Version nicht gefunden") {
+            isUpdateAva = false;
+            showGameAlert(getText('SkriptUpdateError', 'SemiAutoATMenuLang'));
+            finish();
+            return;
+        }
+
+        $.ajax({
+            url: "https://pure-chaos.de/download/user_fast_shortcut.js",
+            type: "GET",
+            dataType: "text",
+            cache: false,
+            success: function (data) {
+                onlineVersion = extractVersionNumberFromFileContent(data);
+
+                if (!onlineVersion || onlineVersion === "Version nicht gefunden") {
+                    isUpdateAva = false;
+                    showGameAlert(getText('SkriptUpdateError', 'SemiAutoATMenuLang'));
+                    finish();
+                    return;
                 }
-            } else {
-                showGameAlert(getText('SkriptUpdateError', 'SemiAutoATMenuLang'));
-				isUpdateAva = false;
-				ToolingMenu();
-				if(!user_fast_shortcut_settings.PersonalTesting)
-				{VorlagenUeberwachungAutoStart();}
+
+                if (localVersion !== onlineVersion) {
+                    isUpdateAva = true;
+                    showGameAlert(
+                        getText('SkriptUpdateAva', 'SemiAutoATMenuLang') +
+                        localVersion +
+                        ' Online Version: ' +
+                        onlineVersion
+                    );
+                } else {
+                    isUpdateAva = false;
+                    showGameAlert(
+                        getText('SkriptNoUpdate', 'SemiAutoATMenuLang') +
+                        localVersion
+                    );
+                }
+
+                finish();
+            },
+            error: function () {
+                isUpdateAva = false;
+                showGameAlert(getText('SkriptUpdateCheckError', 'SemiAutoATMenuLang'));
+                finish();
             }
         });
 
     } catch (e) {
+        isUpdateAva = false;
         showGameAlert(getText('SkriptUpdateCheckError', 'SemiAutoATMenuLang'));
-		isUpdateAva = false;
-		ToolingMenu();
-		if(!user_fast_shortcut_settings.PersonalTesting)
-		{VorlagenUeberwachungAutoStart();}
+        finish();
     }
 }
 
 function GetNewVersion()
 {
-	try{
-	user_fast_shortcut_settings_AutoAT.Runde = 0;
-	AutoATsave();
-	user_fast_shortcut_settings_AutoSzenario.Runde = 0;
-	AutoSzenariosave();
-	$.get("https://a-calc.de/Download/user_fast_shortcut.js", function (data) {
-                var fileName = this.url.replace(/^.*[\\\/]/, '');
-                var file = new air.File(air.File.applicationDirectory.resolvePath("userscripts/" + fileName).nativePath);
-                fileStream = new air.FileStream();
-                fileStream.open(file, air.FileMode.WRITE);
-                fileStream.writeUTFBytes(data);
-                fileStream.close();
-				setTimeout(function() {
-					showGameAlert(getText('SkriptDownloadCorrect', 'SemiAutoATMenuLang'));
-					reloadScripts();
-				}, 5000);
-            });
-	}catch(e){showGameAlert(getText('SkriptDownloadError', 'SemiAutoATMenuLang'));}
+	try {
+		var url = "https://pure-chaos.de/download/user_fast_shortcut.js";
+		var fileName = "user_fast_shortcut.js";
+
+		user_fast_shortcut_settings_AutoAT.Runde = 0;
+		user_fast_shortcut_settings_AutoAT.CurrentATStepIndex = 0;
+		user_fast_shortcut_settings_AutoAT.WasRestarted = false;
+		AutoATsave();
+
+		user_fast_shortcut_settings_AutoSzenario.Runde = 0;
+		AutoSzenariosave();
+
+		$.ajax({
+			url: url,
+			type: "GET",
+			dataType: "text",
+			cache: false,
+			timeout: 15000,
+			success: function (data) {
+				try {
+                    var file = new air.File(air.File.applicationDirectory.resolvePath("userscripts/" + fileName).nativePath);
+					var fileStream = new air.FileStream();
+
+					fileStream.open(file, air.FileMode.WRITE);
+					fileStream.writeUTFBytes(data);
+					fileStream.close();
+
+					setTimeout(function () {
+						showGameAlert(getText('SkriptDownloadCorrect', 'SemiAutoATMenuLang'));
+						reloadScripts();
+					}, 5000);
+				} catch (e) {
+					showGameAlert(getText('SkriptDownloadError', 'SemiAutoATMenuLang'));
+				}
+			},
+			error: function () {
+				showGameAlert(getText('SkriptDownloadError', 'SemiAutoATMenuLang'));
+			}
+		});
+
+	} catch (e) {
+		showGameAlert(getText('SkriptDownloadError', 'SemiAutoATMenuLang'));
+	}
 }
 
 function getShortTimestamp() {
@@ -465,7 +513,9 @@ function duplicateSettingsWithTimestamp() {
 CheckNewVersion();
 
 var user_fast_shortcut_settings_AutoAT = {
-	Runde: '0'
+	Runde: '0',
+	CurrentATStepIndex: '0',
+	WasRestarted: false
 };
 $.extend(user_fast_shortcut_settings_AutoAT, settings.read(null, "FastShortcutAutoAT"));
 
@@ -514,6 +564,7 @@ var ATnochAktiv = false;
 var BuffnochAktiv = false;
 var GetQuestSemiStarten = false;
 var PathATAuslesen = false;
+var CurrentATStepIndex = 0;
 var ShortcutPathArrayVorlagenEnt = [];
 var ShortcutPathArrayVorlagenGeo = [];
 var ShortcutPathArrayVorlagenBuffs = [];
@@ -533,6 +584,9 @@ var Hufeisendelay = false;
 var PiTi = false;
 var BookbinderGridInt = 0;
 var forcegcIntervalId = null;
+var forcegcTimeoutId = null;
+var updateMemoryUsageTimeoutId = null;
+var onlineStatusIntervalId = null;
 var retrytrybattleload = 0;
 var retrytryRunningMethod = 0;
 var LaggyATID;
@@ -583,6 +637,46 @@ var ueberwachungTimeoutId = null;
 var ueberwachungBuffsTimeoutId = null;
 var ueberwachungProdTimeoutId = null;
 
+window.__userFastShortcutCleanup = function() {
+	var timerState = window.__userFastShortcutTimerState || {};
+	try {
+		if (timerState.updateMemoryUsageTimeoutId !== null && timerState.updateMemoryUsageTimeoutId !== undefined) {
+			clearTimeout(timerState.updateMemoryUsageTimeoutId);
+			timerState.updateMemoryUsageTimeoutId = null;
+		}
+		if (timerState.onlineStatusIntervalId !== null && timerState.onlineStatusIntervalId !== undefined) {
+			clearInterval(timerState.onlineStatusIntervalId);
+			timerState.onlineStatusIntervalId = null;
+		}
+		if (timerState.forcegcTimeoutId !== null && timerState.forcegcTimeoutId !== undefined) {
+			clearTimeout(timerState.forcegcTimeoutId);
+			timerState.forcegcTimeoutId = null;
+		}
+		timerState.forcegcActive = false;
+		updateMemoryUsageTimeoutId = null;
+		onlineStatusIntervalId = null;
+		forcegcTimeoutId = null;
+		forcegcIntervalId = null;
+		if (ueberwachungTimeoutId !== null) {
+			clearTimeout(ueberwachungTimeoutId);
+			ueberwachungTimeoutId = null;
+		}
+		if (ueberwachungBuffsTimeoutId !== null) {
+			clearTimeout(ueberwachungBuffsTimeoutId);
+			ueberwachungBuffsTimeoutId = null;
+		}
+		if (ueberwachungProdTimeoutId !== null) {
+			clearTimeout(ueberwachungProdTimeoutId);
+			ueberwachungProdTimeoutId = null;
+		}
+		if (timeWatcherInterval !== null) {
+			clearInterval(timeWatcherInterval);
+			timeWatcherInterval = null;
+		}
+		removeOverlay();
+	} catch (e) {}
+};
+
 var nextExecutionTimeVorlagen = 0;
 var nextExecutionTimeGebaeudeProd = 0;
 var nextExecutionTimeGebaeudeBuffs = 0;
@@ -590,7 +684,26 @@ var nextExecutionTimeTruppenProd = 0;
 removeOverlay(overlayWindow);
 var overlayWindow = null;
 var timer = null;
-var elapsedTimeOverlay = 0;
+var overlayMinimized = false;
+var overlaySettingsOpen = false;
+var overlayStageResizeHandler = null;
+var overlayValueFields = {};
+var overlayMarqueeRows = {};
+var overlayMainPanel = null;
+var overlaySettingsPanel = null;
+var overlayMarqueeTimer = null;
+var overlayLabelOnlyFields = {};
+var cachedAutoATRundenanzahlLabel = "AutoAT Runden: n/a";
+var cachedMem = "Mem: n/a";
+var cachedOnline = "Online: n/a";
+var cachedLagHammer = "HM : 0 | " + "LM : 0 | " + "LA : 0 | " + "LL : 0";
+var cachedLoadingScreen = "-";
+var cachedLoadingScreenBool = true;
+var cachedATName = "";
+var cachedATNameAmount = "";
+var cachedATNameRaw = "";
+var OverlayNeustart = false;
+var OverlayAutoATNeustart = false;
 var FastData = null;
 
 var RundenanzahlCounterSzenario = 0;
@@ -608,6 +721,7 @@ var _exudMissions_Last_SecureBuffMinimalInfo = null;
 var _exudMissions_Last_SecureBuffMinimalInfo_time = 0;
 
 var _FastShortcutSettingsViewerModalInitialized = false;
+var _FastShortcutSettingsATViewerModalInitialized = false;
 var searchStringZB2 = '';
 var zoneBuffArray2 = [];
 var zoneBuffArraySave2 = [];
@@ -686,10 +800,9 @@ BookbinderGrid();
 
 clearAll();
 function clearAll() {
-  for (var i = setTimeout(function() {}, 0); i > 0; i--) {
-    clearInterval(i);
-    clearTimeout(i);
-  }
+	if (window.__userFastShortcutCleanup) {
+		try { window.__userFastShortcutCleanup(); } catch (e) {}
+	}
 }
 
 function AutoATsave()
@@ -698,16 +811,17 @@ function AutoATsave()
 	settings.store(user_fast_shortcut_settings_AutoAT, "FastShortcutAutoAT");
 }
 
-CheckAutoAT()
+CheckAutoAT();
 function CheckAutoAT()
 {
-	if(user_fast_shortcut_settings.MemUeberwachung && user_fast_shortcut_settings_AutoAT.Runde != 0)
+	if(user_fast_shortcut_settings.MemUeberwachung && user_fast_shortcut_settings_AutoAT.WasRestarted)
 	{
 		ToolingMenuUpdate(true);
 		ToolingMenuUpdateSzenaMenu(false);
 		ToolingMenuUpdateSzenaStoppen(false);
 		ToolingMenuUpdateSzenaStarten(false);
 		ToolingMenuUpdateMainMenu(false);
+		ToolingMenuUpdateMainMenu2(false);
 		setTimeout(function() {
 			showGameAlert(getText('CheckRound', 'SemiAutoATMenuLang'));
 		}, 130000);
@@ -757,15 +871,17 @@ function LoadBuffModalFastExt(){
 
 const SemiAutoATMenuLang = {
     "en-uk": {
-        "Title": "SemiAdv | AutoAdv | Tools - Settings",
+        "Title": "Monitoring | Tools - Settings",
+		"ATSettings": "SemiAdv | AutoAdv - Settings",
         "DirectShortcutON": "Direct shortcut execution - enable",
         "SemiAutomationON": "Semi Automation - enable",
         "AutoATStartON": "Auto Adv Start - enable",
 		"DirectShortcutOFF": "Direct shortcut execution - disable",
         "SemiAutomationOFF": "Semi Automation - disable",
         "AutoATStartOFF": "Auto Adv Start - disable",
-        "StopAfterCurrentRound": "Auto Adv | Scenario - Stop after current round",
-        "RefreshFunctions": "***Refresh Functions | others***",
+        "StopAfterCurrentRound": "Auto Adv - Stop after current round",
+		"StopAfterCurrentRoundSzena": "Scenario - Stop after current round",
+        "RefreshFunctions": "***Refresh Functions***",
 		"SzenarioFunctions": "***Scenario***",
 		"SzenarioManage": "Scenario - manage",
 		"SzenarioStart": "Scenario - start",
@@ -863,14 +979,14 @@ const SemiAutoATMenuLang = {
 		"Debug": "-------------------------------DEBUG | Hands off! If you have no idea!------------------------------",
 		"QuestAutomationHomeIsland": "Collective quest Automation (Home Island)",
 		"BuildingLootCollecting": "Collect Building Loot * (only on Client Start)",
-		"SpecialBuildings": "* Celebrative Lookout, Christmas Tree Gifts, Ghost Ship, Balloon Market Tribute",
+		"SpecialBuildings": "* Celebrative Lookout, Christmas Tree Gifts, Ghost Ship, Balloon Market Tribute, ...",
 		"OpenBuildingLootboxes": "Open Building Lootboxes immediately after collecting (only on Client Start)",
 		"OpenBuildingLootboxesInTime": "Collect Building Loot (every x minutes)",
 		"BookbinderAutomation": "Bookbinder Automation (on Client Start and every x minutes)",
 		"BookbinderProduction": "Which book should be produced",
 		"SendStarItemsToStorage": "Send star items to storage automation (on Client Start and every x minutes)",
 		"ShopItemsBuying": "Shop items buying automation (on Client Start and every x minutes)",
-		"Anleitung2": "Observe user manual https://a-calc.de/dsoinfo.html",
+		"Anleitung2": "Observe user manual https://pure-chaos.de/dsoinfo.html",
 		"RecruitsChoice": "Which Hiring troops should be used",
 		"EnableAutoTradeOnClientStart": "Enable auto accept trade/messages on client start",
 		"ShowGridAndGenesIDsInMenu": "Show grid positions & genes IDs in menu header",
@@ -941,6 +1057,10 @@ const SemiAutoATMenuLang = {
 		"SteindepotAutomation": "Stone Depot Automation (on client start and x minutes)",
 		"JewelcrafterAutomation": "Jewelcrafter Automation (on client start and x minutes)",
 		"ProspectorAutomation": "Prospector Automation (on client start and x minutes)",
+		"WitchCovenAutomation": "Witch Coven Automation (on client start and x minutes)",
+		"RetirementHomeAutomation": "Retirement Home Automation (on client start and x minutes)",
+		"WeddingChapelAutomation": "WeddingChapel Automation (on client start and x minutes)",
+		"FluffyLogisticsAutomation": "Fluffy Logistics Automation (on client start and x minutes)",
 		"SuessigkeitenfabrikAutomation": "Candy Factory Automation (on client start and x minutes)",
 		"WerkmeisterstubeAutomation": "Artificer Study Automation (on client start and x minutes)",
 		"Produktionswarteschlange": "If the current production queue is > limit, nothing is added",
@@ -1000,13 +1120,13 @@ const SemiAutoATMenuLang = {
 		"ATNotFound": "Adv already running or buff not found in star",
 		"ErrorATSTartBuff": "No Adv started or found in star after 2 min - Semi/AutoAdv deactivated!",
 		"SettingsSave": "Options saved",
-		"WrongShortcut": "Incorrect shortcut arrangement - Refer to https://a-calc.de/dsoinfo.html!",
-		"ErrorPartEnt": "Partition in partition detected with explorers - Refer to https://a-calc.de/dsoinfo.html!",
-		"ErrorPartGeo": "Partition in partition detected with geologists - Refer to https://a-calc.de/dsoinfo.html!",
-		"ErrorPartBuffs": "Partition in partition detected with buffs - Refer to https://a-calc.de/dsoinfo.html!",
-		"ErrorPartBuildingExp": "Partition in partition detected with building expansion - Refer to https://a-calc.de/dsoinfo.html!",
-		"ErrorPartZoneBuffs": "Partition in partition detected with zone buffs - Refer to https://a-calc.de/dsoinfo.html!",
-		"ErrorPartMineBuild": "Partition in partition detected with mine construction - Refer to https://a-calc.de/dsoinfo.html!",
+		"WrongShortcut": "Incorrect shortcut arrangement - Refer to https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartEnt": "Partition in partition detected with explorers - Refer to https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartGeo": "Partition in partition detected with geologists - Refer to https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartBuffs": "Partition in partition detected with buffs - Refer to https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartBuildingExp": "Partition in partition detected with building expansion - Refer to https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartZoneBuffs": "Partition in partition detected with zone buffs - Refer to https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartMineBuild": "Partition in partition detected with mine construction - Refer to https://pure-chaos.de/dsoinfo.html!",
 		"ZoneBuffListEmpty": "Zone buff list is empty",
 		"BookbinderGridError": "Could not read bookbinder grid!",
 		"BookNotReady": "Bookbinder book production - not yet finished!",
@@ -1102,7 +1222,7 @@ const SemiAutoATMenuLang = {
 		"ToHome": "Heading home",
 		"MemInAT": "Memory (Mem) limit reached - AutoAdv | Scenario mode ",
 		"MemInAT2": " - Client restart in 2 minutes!",
-		"UpdateFoundMenu": "New Skript Version Found - Click for Update",
+		"UpdateFoundMenu": "● New Skript Version Found - Click for Update",
 		"SendStarToStorage": "Send StarItems to Storage: ",
 		"SendStarToStorage2": " Quantity: ",
 		"SendStarToStorageError": "Error:(",
@@ -1147,18 +1267,27 @@ const SemiAutoATMenuLang = {
 		"YoutubeCry": "---> My other project Youtube Channel - Crypto Webminer <---",
 		"TimeWatcher": "Timebased restart: ",
 		"TimeWatcherBool": "Active",
-		"TimeWatcherBool2": "Not active"
+		"TimeWatcherBool2": "Not active",
+		"Info": "***Information***",
+		"Building": "***Manage buildings***",
+		"Trading": "***Trading functions***",
+		"Lootboxes": "***Lootboxes***",
+		"Shopitems": "***Shopitems***",
+		"Staritems": "***Staritems***",
+		"AdvFunctions": "***Adventures***"
     },
 	"en-us": {
-        "Title": "SemiAdv | AutoAdv | Tools - Settings",
+        "Title": "Monitoring | Tools - Settings",
+		"ATSettings": "SemiAdv | AutoAdv - Settings",
         "DirectShortcutON": "Direct shortcut execution - enable",
         "SemiAutomationON": "Semi Automation - enable",
         "AutoATStartON": "Auto Adv Start - enable",
 		"DirectShortcutOFF": "Direct shortcut execution - disable",
         "SemiAutomationOFF": "Semi Automation - disable",
         "AutoATStartOFF": "Auto Adv Start - disable",
-        "StopAfterCurrentRound": "Auto Adv | Scenario - Stop after current round",
-        "RefreshFunctions": "***Refresh Functions | others***",
+        "StopAfterCurrentRound": "Auto Adv - Stop after current round",
+		"StopAfterCurrentRoundSzena": "Scenario - Stop after current round",
+        "RefreshFunctions": "***Refresh Functions***",
 		"SzenarioFunctions": "***Scenario***",
 		"SzenarioManage": "Scenario - manage",
 		"SzenarioStart": "Scenario - start",
@@ -1256,14 +1385,14 @@ const SemiAutoATMenuLang = {
 		"Debug": "-------------------------------DEBUG | Hands off! If you have no idea!------------------------------",
 		"QuestAutomationHomeIsland": "Collective quest Automation (Home Island)",
 		"BuildingLootCollecting": "Collect Building Loot * (only on Client Start)",
-		"SpecialBuildings": "* Celebrative Lookout, Christmas Tree Gifts, Ghost Ship, Balloon Market Tribute",
+		"SpecialBuildings": "* Celebrative Lookout, Christmas Tree Gifts, Ghost Ship, Balloon Market Tribute, ...",
 		"OpenBuildingLootboxes": "Open Building Lootboxes immediately after collecting (only on Client Start)",
 		"OpenBuildingLootboxesInTime": "Collect Building Loot (every x minutes)",
 		"BookbinderAutomation": "Bookbinder Automation (on Client Start and every x minutes)",
 		"BookbinderProduction": "Which book should be produced",
 		"SendStarItemsToStorage": "Send star items to storage automation (on Client Start and every x minutes)",
 		"ShopItemsBuying": "Shop items buying automation (on Client Start and every x minutes)",
-		"Anleitung2": "Observe user manual https://a-calc.de/dsoinfo.html",
+		"Anleitung2": "Observe user manual https://pure-chaos.de/dsoinfo.html",
 		"RecruitsChoice": "Which Hiring troops should be used",
 		"EnableAutoTradeOnClientStart": "Enable auto accept trade/messages on client start",
 		"ShowGridAndGenesIDsInMenu": "Show grid positions & genes IDs in menu header",
@@ -1334,6 +1463,10 @@ const SemiAutoATMenuLang = {
 		"SteindepotAutomation": "Stone Depot Automation (on client start and x minutes)",
 		"JewelcrafterAutomation": "Jewelcrafter Automation (on client start and x minutes)",
 		"ProspectorAutomation": "Prospector Automation (on client start and x minutes)",
+		"WitchCovenAutomation": "Witch Coven Automation (on client start and x minutes)",
+		"RetirementHomeAutomation": "Retirement Home Automation (on client start and x minutes)",
+		"WeddingChapelAutomation": "WeddingChapel Automation (on client start and x minutes)",
+		"FluffyLogisticsAutomation": "Fluffy Logistics Automation (on client start and x minutes)",
 		"SuessigkeitenfabrikAutomation": "Candy Factory Automation (on client start and x minutes)",
 		"WerkmeisterstubeAutomation": "Artificer Study Automation (on client start and x minutes)",
 		"Produktionswarteschlange": "If the current production queue is > limit, nothing is added",
@@ -1393,13 +1526,13 @@ const SemiAutoATMenuLang = {
 		"ATNotFound": "Adv already running or buff not found in star",
 		"ErrorATSTartBuff": "No Adv started or found in star after 2 min - Semi/AutoAdv deactivated!",
 		"SettingsSave": "Options saved",
-		"WrongShortcut": "Incorrect shortcut arrangement - Refer to https://a-calc.de/dsoinfo.html!",
-		"ErrorPartEnt": "Partition in partition detected with explorers - Refer to https://a-calc.de/dsoinfo.html!",
-		"ErrorPartGeo": "Partition in partition detected with geologists - Refer to https://a-calc.de/dsoinfo.html!",
-		"ErrorPartBuffs": "Partition in partition detected with buffs - Refer to https://a-calc.de/dsoinfo.html!",
-		"ErrorPartBuildingExp": "Partition in partition detected with building expansion - Refer to https://a-calc.de/dsoinfo.html!",
-		"ErrorPartZoneBuffs": "Partition in partition detected with zone buffs - Refer to https://a-calc.de/dsoinfo.html!",
-		"ErrorPartMineBuild": "Partition in partition detected with mine construction - Refer to https://a-calc.de/dsoinfo.html!",
+		"WrongShortcut": "Incorrect shortcut arrangement - Refer to https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartEnt": "Partition in partition detected with explorers - Refer to https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartGeo": "Partition in partition detected with geologists - Refer to https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartBuffs": "Partition in partition detected with buffs - Refer to https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartBuildingExp": "Partition in partition detected with building expansion - Refer to https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartZoneBuffs": "Partition in partition detected with zone buffs - Refer to https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartMineBuild": "Partition in partition detected with mine construction - Refer to https://pure-chaos.de/dsoinfo.html!",
 		"ZoneBuffListEmpty": "Zone buff list is empty",
 		"BookbinderGridError": "Could not read bookbinder grid!",
 		"BookNotReady": "Bookbinder book production - not yet finished!",
@@ -1495,7 +1628,7 @@ const SemiAutoATMenuLang = {
 		"ToHome": "Heading home",
 		"MemInAT": "Memory (Mem) limit reached - AutoAdv | Scenario mode ",
 		"MemInAT2": " - Client restart in 2 minutes!",
-		"UpdateFoundMenu": "New Skript Version Found - Click for Update",
+		"UpdateFoundMenu": "● New Skript Version Found - Click for Update",
 		"SendStarToStorage": "Send StarItems to Storage: ",
 		"SendStarToStorage2": " Quantity: ",
 		"SendStarToStorageError": "Error:(",
@@ -1540,18 +1673,27 @@ const SemiAutoATMenuLang = {
 		"YoutubeCry": "---> My other project Youtube Channel - Crypto Webminer <---",
 		"TimeWatcher": "Timebased restart: ",
 		"TimeWatcherBool": "Active",
-		"TimeWatcherBool2": "Not active"
+		"TimeWatcherBool2": "Not active",
+		"Info": "***Information***",
+		"Building": "***Manage buildings***",
+		"Trading": "***Trading functions***",
+		"Lootboxes": "***Lootboxes***",
+		"Shopitems": "***Shopitems***",
+		"Staritems": "***Staritems***",
+		"AdvFunctions": "***Adventures***"
     },
 	"de-de": {
-        "Title": "SemiAT | AutoAT | Tools - Einstellungen",
+        "Title": "Überwachungen | Tools - Einstellungen",
+		"ATSettings": "SemiAT | AutoAT - Einstellungen",
         "DirectShortcutON": "Verknüpfung direkt ausführen - aktivieren",
         "SemiAutomationON": "Semi Automatisierung - aktivieren",
         "AutoATStartON": "Auto AT Start - aktivieren",
 		"DirectShortcutOFF": "Verknüpfung direkt ausführen - deaktivieren",
         "SemiAutomationOFF": "Semi Automatisierung - deaktivieren",
         "AutoATStartOFF": "Auto AT Start - deaktivieren",
-        "StopAfterCurrentRound": "Auto AT | Szenario - Stoppen nach aktuelle Runde",
-        "RefreshFunctions": "***Refresh Funktionen | anderes***",
+        "StopAfterCurrentRound": "Auto AT - Stoppen nach aktuelle Runde",
+		"StopAfterCurrentRoundSzena": "Szenario - Stoppen nach aktuelle Runde",
+        "RefreshFunctions": "***Refresh Funktionen***",
 		"SzenarioFunctions": "***Szenario***",
 		"SzenarioManage": "Szenario - verwalten",
 		"SzenarioStart": "Szenario - starten",
@@ -1649,14 +1791,14 @@ const SemiAutoATMenuLang = {
 		"Debug": "-----------------------------DEBUG | Finger weg! Wenn keine Ahnung!----------------------------",
 		"QuestAutomationHomeIsland": "Sammelquest Automatisierung (Heimatinsel)",
 		"BuildingLootCollecting": "Gebäude Loot einsammeln * (nur bei Client Start)",
-		"SpecialBuildings": "* Festtags-Ausguck, Geschenke Weihnachtsbaum, Geisterschiff, Ballonmarkt-Tribut",
+		"SpecialBuildings": "* Festtags-Ausguck, Geschenke Weihnachtsbaum, Geisterschiff, Ballonmarkt-Tribut, ...",
 		"OpenBuildingLootboxes": "Gebäude Lootboxen gleich öffnen nachdem einsammeln (nur bei Client Start)",
 		"OpenBuildingLootboxesInTime": "Gebäude Loot einsammeln (Alle x Minuten mit Überwachung zusammen)",
 		"BookbinderAutomation": "Buchbinder Automatisierung (bei Client Start und x Minuten)",
 		"BookbinderProduction": "Welches Buch soll produziert werden",
 		"SendStarItemsToStorage": "Sternitems zum Lager senden Automatisierung (bei Client Start und x Minuten)",
 		"ShopItemsBuying": "Shopitems kaufen Automatisierung (bei Client Start und x Minuten)",
-		"Anleitung2": "Anleitung https://a-calc.de/dsoinfo.html beachten!",
+		"Anleitung2": "Anleitung https://pure-chaos.de/dsoinfo.html beachten!",
 		"RecruitsChoice": "Welche Söldner soll verwendet werden",
 		"EnableAutoTradeOnClientStart": "Handel/Nachrichten annehmen beim Client Start aktivieren",
 		"ShowGridAndGenesIDsInMenu": "Grid Pos & Genes IDs rausfinden als Anzeige im Menü Kopfbereich",
@@ -1727,6 +1869,10 @@ const SemiAutoATMenuLang = {
 		"SteindepotAutomation": "Steindepot Automatisierung (bei Client Start und x Minuten)",
 		"JewelcrafterAutomation": "Juwelenschleifer Automatisierung (bei Client Start und x Minuten)",
 		"ProspectorAutomation": "Schürferwerkstatt Automatisierung (bei Client Start und x Minuten)",
+		"WitchCovenAutomation": "Hexenzirkel Automatisierung (bei Client Start und x Minuten)",
+		"RetirementHomeAutomation": "Seniorenresidenz Automatisierung (bei Client Start und x Minuten)",
+		"WeddingChapelAutomation": "Hochzeitskapelle Automatisierung (bei Client Start und x Minuten)",
+		"FluffyLogisticsAutomation": "Puscheliges Logistikbüro Automatisierung (bei Client Start und x Minuten)",
 		"SuessigkeitenfabrikAutomation": "Süßigkeitenfabrik Automatisierung (bei Client Start und x Minuten)",
 		"WerkmeisterstubeAutomation": "Werkmeisterstube Automatisierung (bei Client Start und x Minuten)",
 		"Produktionswarteschlange": "Sollte aktuelle Produktionswarteschlange > Limit sein, wird nichts hinzugefügt",
@@ -1786,13 +1932,13 @@ const SemiAutoATMenuLang = {
 		"ATNotFound": "AT läuft bereits oder Buff nicht gefunden im Stern",
 		"ErrorATSTartBuff": "Kein AT gestartet oder im Stern gefunden nach 2 min - Semi/AutoAT deaktiviert!",
 		"SettingsSave": "Optionen gespeichert",
-		"WrongShortcut": "Falsche Verknüpfungsanordnung - https://a-calc.de/dsoinfo.html beachten!",
-		"ErrorPartEnt": "Partition in Partition bei Entdecker erkannt - https://a-calc.de/dsoinfo.html beachten!",
-		"ErrorPartGeo": "Partition in Partition bei Geologen erkannt - https://a-calc.de/dsoinfo.html beachten!",
-		"ErrorPartBuffs": "Partition in Partition bei Buffs erkannt - https://a-calc.de/dsoinfo.html beachten!",
-		"ErrorPartBuildingExp": "Partition in Partition bei Gebäudeausbau erkannt - https://a-calc.de/dsoinfo.html beachten!",
-		"ErrorPartZoneBuffs": "Partition in Partition bei ZonenBuffs erkannt - https://a-calc.de/dsoinfo.html beachten!",
-		"ErrorPartMineBuild": "Partition in Partition bei Minenbau erkannt - https://a-calc.de/dsoinfo.html beachten!",
+		"WrongShortcut": "Falsche Verknüpfungsanordnung - https://pure-chaos.de/dsoinfo.html beachten!",
+		"ErrorPartEnt": "Partition in Partition bei Entdecker erkannt - https://pure-chaos.de/dsoinfo.html beachten!",
+		"ErrorPartGeo": "Partition in Partition bei Geologen erkannt - https://pure-chaos.de/dsoinfo.html beachten!",
+		"ErrorPartBuffs": "Partition in Partition bei Buffs erkannt - https://pure-chaos.de/dsoinfo.html beachten!",
+		"ErrorPartBuildingExp": "Partition in Partition bei Gebäudeausbau erkannt - https://pure-chaos.de/dsoinfo.html beachten!",
+		"ErrorPartZoneBuffs": "Partition in Partition bei ZonenBuffs erkannt - https://pure-chaos.de/dsoinfo.html beachten!",
+		"ErrorPartMineBuild": "Partition in Partition bei Minenbau erkannt - https://pure-chaos.de/dsoinfo.html beachten!",
 		"ZoneBuffListEmpty": "Zonenbuffliste ist leer",
 		"BookbinderGridError": "Konnte Buchbinder Grid nicht auslesen!",
 		"BookNotReady": "Buchbinder Buch Produktion - noch nicht fertig!",
@@ -1888,7 +2034,7 @@ const SemiAutoATMenuLang = {
 		"ToHome": "Ab nach Hause",
 		"MemInAT": "Speicher (Mem) Limit erreicht - AutoAT | Szenario Modus ",
 		"MemInAT2": " - Client Neustart in 2 min!",
-		"UpdateFoundMenu": "Neue Skript Version verfügbar - Klick für Update",
+		"UpdateFoundMenu": "● Neue Skript Version verfügbar - Klick für Update",
 		"SendStarToStorage": "Sende SternItems zum Lager: ",
 		"SendStarToStorage2": " Anzahl: ",
 		"SendStarToStorageError": "Fehler:(",
@@ -1933,18 +2079,27 @@ const SemiAutoATMenuLang = {
 		"YoutubeCry": "---> Andere Projekte Youtube Kanal - Crypto Webminer <---",
 		"TimeWatcher": "Neustart nach Uhrzeit: ",
 		"TimeWatcherBool": "Aktiv",
-		"TimeWatcherBool2": "Inaktiv"
+		"TimeWatcherBool2": "Inaktiv",
+		"Info": "***Informationen***",
+		"Building": "***Gebäude verwalten***",
+		"Trading": "***Handelsfunktionen***",
+		"Lootboxes": "***Lootboxen***",
+		"Shopitems": "***Shop-Artikel***",
+		"Staritems": "***Stern-Items***",
+		"AdvFunctions": "***Abenteuer***"
 	},
 	"pl-pl": {
-        "Title": "SemiAdv | AutoAT | Narzędzia - USTAWIENIA",
+		"Title": "Monitorowanie | Narzędzia - Ustawienia",
+		"ATSettings": "SemiAT | AutoAT - Ustawienia",
         "DirectShortcutON": "Bezpośrednie wykonanie skrótu - WŁĄCZ",
         "SemiAutomationON": "Półautomatyczne - WŁĄCZ",
         "AutoATStartON": "Automatyczne - WŁĄCZ",
 		"DirectShortcutOFF": "Bezpośrednie wykonanie skrótu - WYŁĄCZ",
         "SemiAutomationOFF": "Półautomatyczne wykonanie skrótu - WYŁĄCZ",
         "AutoATStartOFF": "Automatyczny start - WYŁĄCZ",
-        "StopAfterCurrentRound": "Auto Przygody | Scenariusz - Zatrzymaj po bieżącej rundzie",
-        "RefreshFunctions": "***Odśwież funkcje | inne***",
+        "StopAfterCurrentRound": "Auto Przygody - Zatrzymaj po bieżącej rundzie",
+		"StopAfterCurrentRoundSzena": "Scenariusz - Zatrzymaj po bieżącej rundzie",
+        "RefreshFunctions": "***Odśwież funkcje***",
 		"SzenarioFunctions": "***Scenariusz***",
 		"SzenarioManage": "Scenariusz - zarządzanie",
 		"SzenarioStart": "Scenariusz - start",
@@ -2042,14 +2197,14 @@ const SemiAutoATMenuLang = {
 		"Debug": "-----------------------------DEBUG | Ręce precz! Jeśli nie masz pojęcia!----------------------------",
 		"QuestAutomationHomeIsland": "Zbieranie kolekcji na wyspie",
 		"BuildingLootCollecting": "Zbieranie produkcji z budynków przy starcie klienta",
-		"SpecialBuildings": "* Świąteczne znalezisko, Choinka Bożonarodzeniowa, Statek widmo, Rynek z balonami",
+		"SpecialBuildings": "* Świąteczne znalezisko, Choinka Bożonarodzeniowa, Statek widmo, Rynek z balonami, ...",
 		"OpenBuildingLootboxes": "Otwórz pudełka z budynków (po starcie klienta)",
 		"OpenBuildingLootboxesInTime": "Zbieraj łupy z budynków (przez x minut)",
 		"BookbinderAutomation": "Introligator AUTOMATYZACJA WŁ/WYŁ",
 		"BookbinderProduction": "Rodzaj podręcznika",
 		"SendStarItemsToStorage": "Przesłanie towarów gwiazda ---> magazyn",
 		"ShopItemsBuying": "Zakup przedmiotów ze sklepu",
-		"Anleitung2": "Podręcznik użytkownika https://a-calc.de/dsoinfo.html",
+		"Anleitung2": "Podręcznik użytkownika https://pure-chaos.de/dsoinfo.html",
 		"RecruitsChoice": "Rodzaj najemników",
 		"EnableAutoTradeOnClientStart": "Automatyczna akceptacja zakupów/wiadomości przy starcie klienta",
 		"ShowGridAndGenesIDsInMenu": "Pozycja kursora i generałów (górna belka)",
@@ -2120,6 +2275,10 @@ const SemiAutoATMenuLang = {
 		"SteindepotAutomation": "Skład kamienia - AUTOMATYZACJA Wł/WYŁ",
 		"JewelcrafterAutomation": "Jewelcrafter- AUTOMATYZACJA Wł/WYŁ",
 		"ProspectorAutomation": "- Warsztatu Prospector - AUTOMATYZACJA Wł/WYŁ",
+		"WitchCovenAutomation": "- Sabat czarownic - AUTOMATYZACJA Wł/WYŁ",
+		"RetirementHomeAutomation": "- Dom spokojnej starości - AUTOMATYZACJA Wł/WYŁ",
+		"WeddingChapelAutomation": "- kaplica ślubna - AUTOMATYZACJA Wł/WYŁ",
+		"FluffyLogisticsAutomation": "- Puszyste biuro logistyczne - AUTOMATYZACJA Wł/WYŁ",
 		"SuessigkeitenfabrikAutomation": "Fabryka cukierków - AUTOMATYZACJA Wł/WYŁ",
 		"WerkmeisterstubeAutomation": "Pokój mistrza rzemieślniczego - AUTOMATYZACJA Wł/WYŁ",
 		"Produktionswarteschlange": "Nie dodaje do produkcji powyżej limitu",
@@ -2179,13 +2338,13 @@ const SemiAutoATMenuLang = {
 		"ATNotFound": "Adv już działa lub nie znaleziono wzmocnienia w gwiazdce",
 		"ErrorATSTartBuff": "Nie uruchomiono żadnego AT ani nie znaleziono go w gwieździe po 2 minutach – Semi/AutoAT dezaktywowane!",
 		"SettingsSave": "Opcje zapisane",
-		"WrongShortcut": "Nieprawidłowy układ skrótów – patrz https://a-calc.de/dsoinfo.html!",
-		"ErrorPartEnt": "Partycja w partycji wykryta za pomocą eksploratorów – patrz https://a-calc.de/dsoinfo.html!",
-		"ErrorPartGeo": "Partycja w partycji wykryta przez geologów – patrz https://a-calc.de/dsoinfo.html!",
-		"ErrorPartBuffs": "Partycja w partycji wykryta przez premiowanie - patrz https://a-calc.de/dsoinfo.html!",
-		"ErrorPartBuildingExp": "Partycja w partycji wykryta przez rozbudowe budynów - patrz https://a-calc.de/dsoinfo.html!",
-		"ErrorPartZoneBuffs": "Partycja w partycji wykryta w premiach strefowych - patrz https://a-calc.de/dsoinfo.html!",
-		"ErrorPartMineBuild": "Partycja w pratycji wykryta w budowie kopalni - patrz https://a-calc.de/dsoinfo.html!",
+		"WrongShortcut": "Nieprawidłowy układ skrótów – patrz https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartEnt": "Partycja w partycji wykryta za pomocą eksploratorów – patrz https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartGeo": "Partycja w partycji wykryta przez geologów – patrz https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartBuffs": "Partycja w partycji wykryta przez premiowanie - patrz https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartBuildingExp": "Partycja w partycji wykryta przez rozbudowe budynów - patrz https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartZoneBuffs": "Partycja w partycji wykryta w premiach strefowych - patrz https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartMineBuild": "Partycja w pratycji wykryta w budowie kopalni - patrz https://pure-chaos.de/dsoinfo.html!",
 		"ZoneBuffListEmpty": "Lista wzmocnień stref jest pusta",
 		"BookbinderGridError": "Nie można odczytać siatki introligatora!",
 		"BookNotReady": "Introligator NIE zakończył produkcji!",
@@ -2281,7 +2440,7 @@ const SemiAutoATMenuLang = {
 		"ToHome": "Kieruję się do domu",
 		"MemInAT": "Osiągnięto limit pamięci (Mem) – tryb AutoAT | Scenariusz",
 		"MemInAT2": " - Klient restartuje za 2min!",
-		"UpdateFoundMenu": "Znaleziono nową wersję Skryptu — kliknij, aby zaktualizować",
+		"UpdateFoundMenu": "● Znaleziono nową wersję Skryptu — kliknij, aby zaktualizować",
 		"SendStarToStorage": "Przesłanie z gwiazdy do magazynu: ",
 		"SendStarToStorage2": " Ilość: ",
 		"SendStarToStorageError": "Błąd:(",
@@ -2326,18 +2485,27 @@ const SemiAutoATMenuLang = {
 		"YoutubeCry": "---> Inne projekty Kanał Youtube - Crypto Webminer <---",
 		"TimeWatcher": "Restart czasowy: ",
 		"TimeWatcherBool": "Aktywny",
-		"TimeWatcherBool": "Nieaktywny"
+		"TimeWatcherBool": "Nieaktywny",
+		"Info": "***Informacje***",
+		"Building": "***Zarządzanie budynkami***",
+		"Trading": "***Funkcje handlu***",
+		"Lootboxes": "***Skrzynki z łupami***",
+		"Shopitems": "***Przedmioty sklepu***",
+		"Staritems": "***Przedmioty gwiezdne***",
+		"AdvFunctions": "***Przygody***"
     },
 	"es-es": {
-        "Title": "SemiAdv | AutoAdv | Herramientas - Configuración",
+		"Title": "Supervisión | Herramientas - Configuración",
+		"Title2": "SemiAT | AutoAT - Configuración",
         "DirectShortcutON": "Activar ejecución directa de los atajos",
         "SemiAutomationON": "Activar semiautomatización",
         "AutoATStartON": "Activar aventuras automáticas",
 		"DirectShortcutOFF": "Desctivar ejecución directa de los atajos",
         "SemiAutomationOFF": "Desactivar semiautomatización",
         "AutoATStartOFF": "Desactivar aventuras automáticas",
-        "StopAfterCurrentRound": "Aventuras automáticas | Escenario - Detener después de la ronda actual",
-        "RefreshFunctions": "***Actualizar funciones | otros***",
+        "StopAfterCurrentRound": "Aventuras automáticas - Detener después de la ronda actual",
+		"StopAfterCurrentRoundSzena": "Escenario - Detener después de la ronda actual",
+        "RefreshFunctions": "***Actualizar funciones***",
 		"SzenarioFunctions": "***Escenario***",
 		"SzenarioManage": "Escenario - Gestione",
 		"SzenarioStart": "Escenario - iniciar",
@@ -2435,14 +2603,14 @@ const SemiAutoATMenuLang = {
 		"Debug": "-------------------------------DEPURAR | ¡No toques si no tienes ni idea!------------------------------",
 		"QuestAutomationHomeIsland": "Recolección automática de coleccionables (Isla Principal)",
 		"BuildingLootCollecting": "Recoger Botín de Edificios * (solo al Iniciar el Cliente)",
-		"SpecialBuildings": "*Atalaya, Regalos del Árbol de Navidad, Barco Fantasma, Tributo del Mercado de Globos",
+		"SpecialBuildings": "*Atalaya, Regalos del Árbol de Navidad, Barco Fantasma, Tributo del Mercado de Globos, ...",
 		"OpenBuildingLootboxes": "Abrir cajas de botín de edificios inmediatamente después de recoger (solo al iniciar el cliente)",
 		"OpenBuildingLootboxesInTime": "Recoger Botín de Edificios (cada x minutos)",
         "BookbinderAutomation": "Automatización del Encuadernador (al Iniciar el Cliente y cada x minutos)",
 		"BookbinderProduction": "¿Qué libro debería producirse?",
 		"SendStarItemsToStorage": "Automatización de envío de objetos: estrella -> almacén (al Iniciar el Cliente y cada x minutos)",
 		"ShopItemsBuying": "Automatización de compra de artículos de la tienda (al Iniciar el Cliente y cada x minutos)",
-		"Anleitung2": "Lee el manual de usuario https://a-calc.de/dsoinfo.html",
+		"Anleitung2": "Lee el manual de usuario https://pure-chaos.de/dsoinfo.html",
 		"RecruitsChoice": "¿Qué mercenarios se deben usar?",
 		"EnableAutoTradeOnClientStart": "Activar la aceptación automática de intercambios/mensajes al iniciar el cliente",
 		"ShowGridAndGenesIDsInMenu": "Mostrar posiciones de la cuadrícula y IDs de generales en el encabezado del menú",
@@ -2513,6 +2681,10 @@ const SemiAutoATMenuLang = {
 		"SteindepotAutomation": "Automatización de la cantera (al iniciar el cliente y cada X minutos)",
 		"JewelcrafterAutomation": "Automatización de Jewelcrafter (al inicio del cliente y x minutos)",
 		"ProspectorAutomation": "Automatización del taller Prospector (al inicio del cliente y x minutos)",
+		"WitchCovenAutomation": "Automatización del Coven de brujas (al inicio del cliente y x minutos)",
+		"RetirementHomeAutomation": "Automatización del residencia de ancianos (al inicio del cliente y x minutos)",
+		"WeddingChapelAutomation": "Automatización del capilla para bodas (al inicio del cliente y x minutos)",
+		"FluffyLogisticsAutomation": "Automatización Oficina de logística peluda (al inicio del cliente y x minutos)",
 		"SuessigkeitenfabrikAutomation": "Automatización de la Fábrica de Dulces (al iniciar el cliente y cada X minutos)",
 		"WerkmeisterstubeAutomation": "Automatización del Estudio del Artífice (al iniciar el cliente y cada X minutos)",
 		"Produktionswarteschlange": "Si la cola de producción actual es mayor que el límite, no se añade nada",
@@ -2572,13 +2744,13 @@ const SemiAutoATMenuLang = {
 		"ATNotFound": "Aventura ya en curso o no encontrada en la estrella",
 		"ErrorATSTartBuff": "No se ha iniciado ni encontrado la aventura en la estrella después de 2 minutos - ¡Semi/AutoAdv desactivado!",
 		"SettingsSave": "Opciones guardadas",
-		"WrongShortcut": "Organización de accesos directos incorrecta - Consulta https://a-calc.de/dsoinfo.html!",
-		"ErrorPartEnt": "Partición dentro de la partición detectada con exploradores - Consulta https://a-calc.de/dsoinfo.html!",
-		"ErrorPartGeo": "Partición dentro de la partición detectada con geólogos - Consulta https://a-calc.de/dsoinfo.html!",
-		"ErrorPartBuffs": "Partición dentro de la partición detectada con potenciadores - Consulta https://a-calc.de/dsoinfo.html!",
-		"ErrorPartBuildingExp": "Partición dentro de la partición detectada con expansión de construcción - Consulta https://a-calc.de/dsoinfo.html!",
-		"ErrorPartZoneBuffs": "Partición dentro de la partición detectada con potenciadores de zona - Consulta https://a-calc.de/dsoinfo.html!",
-		"ErrorPartMineBuild": "Partición dentro de la partición detectada con construcción de mina - Consulta https://a-calc.de/dsoinfo.html!",
+		"WrongShortcut": "Organización de accesos directos incorrecta - Consulta https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartEnt": "Partición dentro de la partición detectada con exploradores - Consulta https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartGeo": "Partición dentro de la partición detectada con geólogos - Consulta https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartBuffs": "Partición dentro de la partición detectada con potenciadores - Consulta https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartBuildingExp": "Partición dentro de la partición detectada con expansión de construcción - Consulta https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartZoneBuffs": "Partición dentro de la partición detectada con potenciadores de zona - Consulta https://pure-chaos.de/dsoinfo.html!",
+		"ErrorPartMineBuild": "Partición dentro de la partición detectada con construcción de mina - Consulta https://pure-chaos.de/dsoinfo.html!",
 		"ZoneBuffListEmpty": "La lista de potenciadores de zona está vacía",
 		"BookbinderGridError": "¡No se pudo leer la cuadrícula del encuadernador!",
 		"BookNotReady": "Producción del encaudernador aún no terminada!",
@@ -2674,7 +2846,7 @@ const SemiAutoATMenuLang = {
 		"ToHome": "Volviendo a casa",
 		"MemInAT": "Límite de memoria (Mem) alcanzado - Modo AutoAdv | Escenario",
 		"MemInAT2": " - ¡El cliente se reiniciará en 2 minutos!",
-		"UpdateFoundMenu": "Nueva versión de Script encontrada - Haga clic para actualizar",
+		"UpdateFoundMenu": "● Nueva versión de Script encontrada - Haga clic para actualizar",
 		"SendStarToStorage": "Enviar Items: Estrella -> Almacenamiento: ",
 		"SendStarToStorage2": " Cantidad: ",
 		"SendStarToStorageError": "Error:(",
@@ -2719,7 +2891,14 @@ const SemiAutoATMenuLang = {
 		"YoutubeCry": "---> Otros proyectos Canal Youtube - Crypto Webminer <---",
 		"TimeWatcher": "Reinicio por tiempo: ",
 		"TimeWatcherBool": "Activo",
-		"TimeWatcherBool": "No activo"
+		"TimeWatcherBool": "No activo",
+		"Info": "***Información***",
+		"Building": "***Gestionar edificios***",
+		"Trading": "***Funciones de comercio***",
+		"Lootboxes": "***Cajas de botín***",
+		"Shopitems": "***Artículos de la tienda***",
+		"Staritems": "***Objetos estelares***",
+		"AdvFunctions": "***Aventuras***"
 		
 	}
 }
@@ -2736,6 +2915,19 @@ extendBaseLang(SemiAutoATMenuLang, 'SemiAutoATMenuLang');
 	return searchPath[id] ? searchPath[id] : backupPath[id];
 }
  */
+ function findAndSetItemEnabled(menu, itemName, enableStatus) {
+    menu.items.forEach(function(item) {
+        if (!item) return;
+
+        if (item.name === itemName) {
+            item.enabled = enableStatus;
+        }
+
+        if (item.submenu) {
+            findAndSetItemEnabled(item.submenu, itemName, enableStatus);
+        }
+    });
+}
 function ToolingMenuUpdateAllMainMenu(enableStatus)
 {
 	if(!BPro2())
@@ -2761,64 +2953,92 @@ function ToolingMenuUpdateMainMenu(enableStatus)
     });
 	}catch(e){}
 }
+function ToolingMenuUpdateMainMenu2(enableStatus)
+{
+	try {
+        var submenu = menu.nativeMenu.getItemByName("AutoTools").submenu;
+        findAndSetItemEnabled(submenu, "MainMenu2", enableStatus);
+    } catch(e) {}
+}
 function ToolingMenuUpdateSzenaStarten(enableStatus)
 {
-	try{
-	var submenu = menu.nativeMenu.getItemByName("AutoTools").submenu;
-
-    submenu.items.forEach(function(item) {
-        if (!item || !item.name) return;
-
-        if (item.name === "SzenarioStarten") {
-            item.enabled = enableStatus;
-        }
-    });
-	}catch(e){}
+	try {
+        var submenu = menu.nativeMenu.getItemByName("AutoTools").submenu;
+        findAndSetItemEnabled(submenu, "SzenarioStarten", enableStatus);
+    } catch(e) {}
 }
 function ToolingMenuUpdateSzenaStoppen(enableStatus)
 {
-	try{
-	var submenu = menu.nativeMenu.getItemByName("AutoTools").submenu;
-
-    submenu.items.forEach(function(item) {
-        if (!item || !item.name) return;
-
-        if (item.name === "SzenarioStoppen") {
-            item.enabled = enableStatus;
-        }
-    });
-	}catch(e){}
+	try {
+        var submenu = menu.nativeMenu.getItemByName("AutoTools").submenu;
+        findAndSetItemEnabled(submenu, "SzenarioStoppen", enableStatus);
+    } catch(e) {}
 }
 function ToolingMenuUpdateSzenaMenu(enableStatus)
 {
-	try{
-	var submenu = menu.nativeMenu.getItemByName("AutoTools").submenu;
-
-    submenu.items.forEach(function(item) {
-        if (!item || !item.name) return;
-
-        if (item.name === "FastShortcutSzenarioHandler") {
-            item.enabled = enableStatus;
-        }
-    });
-	}catch(e){}
+	try {
+        var submenu = menu.nativeMenu.getItemByName("AutoTools").submenu;
+        findAndSetItemEnabled(submenu, "FastShortcutSzenarioHandler", enableStatus);
+    } catch(e) {}
 }
-function ToolingMenuUpdate(enableStatus)
+function ToolingMenuUpdate(enableStatus) {
+    try {
+        var submenu = menu.nativeMenu.getItemByName("AutoTools").submenu;
+
+        ["Verknüpfung direkt ausführen ist AUS Short",
+         "Semi Automatisierung ist AUS Short",
+         "Auto AT Start ist AUS Short"].forEach(function(name) {
+            findAndSetItemEnabled(submenu, name, enableStatus);
+        });
+
+    } catch(e) {}
+}
+function BuildNativeMenuFromFlatArray(targetMenu, dataArray)
 {
-	try{
-	var submenu = menu.nativeMenu.getItemByName("AutoTools").submenu;
+	var currentSubMenu = null;
 
-    submenu.items.forEach(function(item) {
-        if (!item || !item.name) return;
+	for (var i = 0; i < dataArray.length; i++)
+	{
+		var entry = dataArray[i];
 
-        if (item.name === "Verknüpfung direkt ausführen ist AUS Short" ||
-            item.name === "Semi Automatisierung ist AUS Short" ||
-            item.name === "Auto AT Start ist AUS Short") {
-            item.enabled = enableStatus;
-        }
-    });
-	}catch(e){}
+		if (entry.type === "separator") {
+			(currentSubMenu || targetMenu)
+				.addItem(new air.NativeMenuItem("", true));
+			continue;
+		}
+				
+		if (entry.type === "submenuEnd") {
+			currentSubMenu = null;
+			continue;
+		}
+
+		if (entry.label && entry.label.indexOf("***") === 0) {
+			var subItem = new air.NativeMenuItem(
+				entry.label.replace(/\*/g, "")
+			);
+			subItem.submenu = new air.NativeMenu();
+			targetMenu.addItem(subItem);
+			currentSubMenu = subItem.submenu;
+			continue;
+		}
+
+		var item = new air.NativeMenuItem(entry.label);
+		if (entry.name) {
+		  item.name = entry.name;
+		}
+		item.enabled = (entry.enabled !== false);
+
+		if (entry.onSelect) {
+			item.addEventListener(
+				air.Event.SELECT,
+				entry.onSelect
+			);
+		}
+
+		(currentSubMenu || targetMenu).addItem(item);
+	}
 }
+
 function ToolingMenu()
 {
 	try
@@ -2835,57 +3055,89 @@ function ToolingMenu()
 		
 		MenuItemAutoTools = new air.NativeMenuItem("SemiAT | AutoAT | Tools");
 		MenuItemAutoTools.name = "AutoTools";
+		MenuItemAutoTools.submenu = new air.NativeMenu();
 		window.nativeWindow.menu.addItem(MenuItemAutoTools);
+
+		var AutoToolsMenu = MenuItemAutoTools.submenu;
+
 		var LoadAutoTools = [
 			{ label: VersionUserFast, mnemonicIndex: 0, enabled: false },
 			{ type: 'separator' },
 			{ label: getText('Title', 'SemiAutoATMenuLang'), name: 'MainMenu', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandler },
 			{ type: 'separator' },
-			{ label: '***Semi / AutoAT***', mnemonicIndex: 0, enabled: false },
+			{ label: getText('DirectShortcutON', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
+			{ type: 'separator' },
+			{ label: getText('AdvFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
+			{ label: getText('ATSettings', 'SemiAutoATMenuLang'), name: 'MainMenu2', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandlerAT },
+			{ type: 'separator' },
 			{ label: getText('DirectShortcutON', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ label: getText('SemiAutomationON', 'SemiAutoATMenuLang'), name: 'Semi Automatisierung ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ label: getText('AutoATStartON', 'SemiAutoATMenuLang'), name: 'Auto AT Start ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ type: 'separator' },
 			{ label: getText('StopAfterCurrentRound', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTrigger },
 			{ type: 'separator' },
+			{ type: "submenuEnd" },
 			{ label: getText('SzenarioFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
 			{ label: getText('SzenarioManage', 'SemiAutoATMenuLang'), name: 'FastShortcutSzenarioHandler', mnemonicIndex: 0, enabled: stopScenario ? true : false, onSelect: FastShortcutSzenarioHandler },
+			{ type: 'separator' },
 			{ label: getText('SzenarioStart', 'SemiAutoATMenuLang'), name: 'SzenarioStarten', mnemonicIndex: 0, enabled: stopScenario ? true : false, onSelect: SzenarioStart },
 			{ label: getText('SzenarioStop', 'SemiAutoATMenuLang'), name: 'SzenarioStoppen', mnemonicIndex: 0, enabled: stopScenario ? false : true, onSelect: SzenarioStoppen },
 			{ type: 'separator' },
-			{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('StopAfterCurrentRoundSzena', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTriggerSzena },
+			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ForceBackup', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: duplicateSettingsWithTimestamp },
 			{ label: getText('ForceOnlineUpdate', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion },
-			{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
-			{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
-			{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },
+			{ type: 'separator' },
 			{ label: getText('RestartClient', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DoARestart },
 			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
+			{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
+			{ type: 'separator' },
+			{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },	
+			{ type: 'separator' },			
+			{ type: "submenuEnd" },
 			{ label: getText('ToolsExtra', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('DailyLogin', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DailyLoginCheck },
-			{ type: 'separator' },
-			{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: "submenuEnd" },
 			{ label: getText('QuestSystem', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uQUESTSYSTEM_MainWindow },
 			{ label: getText('ArmyProd', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RebuildLossesFast },
+			{ type: "submenuEnd" },
+			{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Building', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingBuffsHandler },
 			{ label: getText('ExecuteBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiBuffsAktionMan },
 			{ label: getText('ManageBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingProdHandler },
 			{ label: getText('ExecuteBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiProdAktionMan },
-			{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
 			{ label: loca.GetText("ALT","UpgradeBuilding"), mnemonicIndex: 0, onSelect: SearchArchitecturesHandler2 },
 			{ label: loca.GetText("QUL", "TutBronzeMine") + " " + loca.GetText("QUL", "CQ2S1_Reconstitution_Tcl5"), mnemonicIndex: 0, onSelect: DepositDepletedMenuHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Trading', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('AcceptTrades', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _usAcceptTradesMenuHandler },
 			{ label: getText('SendTradeForFish', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: exudSaveResourcestMenuHandler },
 			{ label: getText('SendTrade', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTrades_MainWindow },
 			{ label: getText('SendTradepost', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTradepost_MainWindow },
+			{ type: "submenuEnd" },
+			{ label: getText('Lootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_MainWindow },
 			{ label: getText('OpenLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_OpenBox },
 			{ label: getText('CollectBuildingLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiCollectAktionMan },
+			{ type: "submenuEnd" },
+			{ label: getText('Staritems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARTOSTORE_MainWindow },
 			{ label: getText('ExecuteStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: SendStarItemToStore },
+			{ type: "submenuEnd" },
+			{ label: getText('Shopitems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSHOPITEMS_MainWindow },
 			{ label: getText('BuyShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: ShopItemsBuying },
-			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('Info', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('DonateMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateHandler },
 			{ label: getText('AmazonAffLink', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateAmaHandler },
 			{ label: getText('HelpMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openInfoHandler },
@@ -2898,8 +3150,8 @@ function ToolingMenu()
 					LoadAutoTools.splice(1, 0, { label: getText('UpdateFoundMenu', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion });
 				}
 			}catch(e){}
-		menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(LoadAutoTools);			
-				
+		//menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(LoadAutoTools);			
+			BuildNativeMenuFromFlatArray(AutoToolsMenu, LoadAutoTools);	
 		if(BPro2())
 		{
 			var existingAutoToolsHidden = window.nativeWindow.menu.getItemByName("AutoToolsHidden");
@@ -2932,10 +3184,11 @@ function ToolingMenu()
 		menu.nativeMenu.getItemByName("existingProgress").label = "Überwachungen werden geladen: 0 %";
 		menu.nativeMenu.getItemByName("existingProgress").enabled = false;
 
-		MenuItemAutoATRundenanzahl = new air.NativeMenuItem("AutoAT Runde :");
+		MenuItemAutoATRundenanzahl = new air.NativeMenuItem("AutoAT Runden:");
         MenuItemAutoATRundenanzahl.name = "AutoATRundenanzahl";
         window.nativeWindow.menu.addItem(MenuItemAutoATRundenanzahl);
-        menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "AutoAT Runde : n/a";
+		cachedAutoATRundenanzahlLabel = "AutoAT Runden: n/a";
+        menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "AutoAT Runden: n/a";
         menu.nativeMenu.getItemByName("AutoATRundenanzahl").enabled = false;
 	} 
 	catch(e) 
@@ -2995,9 +3248,12 @@ function ToolingMenu()
 		var zoomfactor = swmmo.getDefinitionByName("nLib::cZoom");
 		
 		if(user_fast_shortcut_settings.TweaksmessageHistory){globalFlash.gui.mChatPanel.getViewComponent().messageHistory.maxEntries = 100;}else{globalFlash.gui.mChatPanel.getViewComponent().messageHistory.maxEntries = 300;}
-		if(user_fast_shortcut_settings.TweakstradeMaxAdventureAmount){Glob.tradeMaxAdventureAmount = 100;}else{Glob.tradeMaxAdventureAmount = 10;}
-		if(user_fast_shortcut_settings.TweakstradeMaxBuildingAmount){Glob.tradeMaxBuildingAmount = 100;}else{Glob.tradeMaxBuildingAmount = 10;}
-		if(user_fast_shortcut_settings.TweakstradeMaxBuffAmount){Glob.tradeMaxBuffAmount = 10000;}else{Glob.tradeMaxBuffAmount = 1000;}
+		if(BPro2())
+		{
+			if(user_fast_shortcut_settings.TweakstradeMaxAdventureAmount){Glob.tradeMaxAdventureAmount = 100;}else{Glob.tradeMaxAdventureAmount = 10;}
+			if(user_fast_shortcut_settings.TweakstradeMaxBuildingAmount){Glob.tradeMaxBuildingAmount = 100;}else{Glob.tradeMaxBuildingAmount = 10;}
+			if(user_fast_shortcut_settings.TweakstradeMaxBuffAmount){Glob.tradeMaxBuffAmount = 10000;}else{Glob.tradeMaxBuffAmount = 1000;}
+		}
 		if(user_fast_shortcut_settings.TweakstradeRefreshInterval){Glob.tradeRefreshInterval = 10;}else{Glob.tradeRefreshInterval = 30;}
 		if(user_fast_shortcut_settings.TweaksmaxAnimalsOnMap){Glob.maxAnimalsOnMap = 50;}else{Glob.maxAnimalsOnMap = 100;}
 		if(user_fast_shortcut_settings.TweaksmailboxPageSize){Glob.mailboxPageSize = 100;}else{Glob.mailboxPageSize = 50;}
@@ -3038,27 +3294,63 @@ function ToolingMenu()
 
 $.extend(mainSettings, settings.read());
 function updateMemoryUsage() {
+	var timerState = window.__userFastShortcutTimerState || (window.__userFastShortcutTimerState = {});
+	cachedMem = 'Memory (Speicher): ' + humanMemorySize(air.System.privateMemory, 1);
     menu.nativeMenu.getItemByName("memusage").label = 'Mem: ' + humanMemorySize(air.System.privateMemory, 1);
-    setTimeout(updateMemoryUsage, 60000);
+    if (timerState.updateMemoryUsageTimeoutId !== null && timerState.updateMemoryUsageTimeoutId !== undefined) {
+        clearTimeout(timerState.updateMemoryUsageTimeoutId);
+    }
+    timerState.updateMemoryUsageTimeoutId = setTimeout(updateMemoryUsage, 60000);
+	updateMemoryUsageTimeoutId = timerState.updateMemoryUsageTimeoutId;
 }
 updateMemoryUsage();
+
+function OnlineStatus() {
+	var timerState = window.__userFastShortcutTimerState || (window.__userFastShortcutTimerState = {});
+	if (timerState.onlineStatusIntervalId !== null && timerState.onlineStatusIntervalId !== undefined) {
+		clearInterval(timerState.onlineStatusIntervalId);
+	}
+	timerState.onlineStatusIntervalId = setInterval(function() { 
+		try {
+			var conn = swmmo.application.blueFireComponent.getFacade().retrieveMediator("XIFFConnectionMediator").getViewComponent();
+			if(!conn.isLoggedIn()) { return; }
+			var br = new(game.def("org.igniterealtime.xiff.core::Browser"))(conn);
+			br.getServiceInfo(new(game.def("org.igniterealtime.xiff.core::EscapedJID"))("help@conference."+conn.server), function(result_iq) {
+				try {
+					var online = result_iq.getExtension("query").getNode().childNodes.filter(function(x) { return x.nodeName == "x" })[0].childNodes.filter(function(x) { return x.attributes["var"] == "muc#roominfo_occupants"; })[0].lastChild.lastChild.toString();
+					cachedOnline = 'Online: ' + online;
+					menu.nativeMenu.getItemByName("online").label = 'Online: ' + online;
+				} catch (ex) { }
+			});
+		} catch(e) { }
+	}, 60000);
+	onlineStatusIntervalId = timerState.onlineStatusIntervalId;
+}
+OnlineStatus();
 
 if(mainSettings.forcegc) { toggleForceGC(); }
 
 function toggleForceGC() {
+	var timerState = window.__userFastShortcutTimerState || (window.__userFastShortcutTimerState = {});
     function forceGC() {
 		if(game.gi.isOnHomzone() == true)
 		{
 			window.runtime.flash.system.System.gc();
 		}
-        forcegcTimeoutId = setTimeout(forceGC, 60000);
+        timerState.forcegcTimeoutId = setTimeout(forceGC, 60000);
+        forcegcTimeoutId = timerState.forcegcTimeoutId;
     }
 
-    if (!forcegcIntervalId) {
+    if (!timerState.forcegcActive) {
+        timerState.forcegcActive = true;
+        forcegcIntervalId = true;
         forceGC();
     } else {
-        clearTimeout(forcegcTimeoutId);
+        clearTimeout(timerState.forcegcTimeoutId);
+        timerState.forcegcTimeoutId = null;
+        forcegcTimeoutId = null;
         forcegcIntervalId = null;
+        timerState.forcegcActive = false;
     }
 }
 
@@ -3174,51 +3466,79 @@ function shortcutsAutoFunc(event)
 			{ type: 'separator' },
 			{ label: getText('Title', 'SemiAutoATMenuLang'), name: 'MainMenu', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandler },
 			{ type: 'separator' },
-			{ label: '***Semi / AutoAT***', mnemonicIndex: 0, enabled: false },
+			{ label: getText('DirectShortcutOFF', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
+			{ type: 'separator' },
+			{ label: getText('AdvFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
+			{ label: getText('ATSettings', 'SemiAutoATMenuLang'), name: 'MainMenu2', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandlerAT },
+			{ type: 'separator' },
 			{ label: getText('DirectShortcutOFF', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ label: getText('SemiAutomationON', 'SemiAutoATMenuLang'), name: 'Semi Automatisierung ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ label: getText('AutoATStartON', 'SemiAutoATMenuLang'), name: 'Auto AT Start ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ type: 'separator' },
 			{ label: getText('StopAfterCurrentRound', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTrigger },
 			{ type: 'separator' },
+			{ type: "submenuEnd" },
 			{ label: getText('SzenarioFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
 			{ label: getText('SzenarioManage', 'SemiAutoATMenuLang'), name: 'FastShortcutSzenarioHandler', mnemonicIndex: 0, enabled: false, onSelect: FastShortcutSzenarioHandler },
+			{ type: 'separator' },
 			{ label: getText('SzenarioStart', 'SemiAutoATMenuLang'), name: 'SzenarioStarten', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStart },
 			{ label: getText('SzenarioStop', 'SemiAutoATMenuLang'), name: 'SzenarioStoppen', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStoppen },
 			{ type: 'separator' },
-			{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('StopAfterCurrentRoundSzena', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTriggerSzena },
+			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ForceBackup', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: duplicateSettingsWithTimestamp },
 			{ label: getText('ForceOnlineUpdate', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion },
-			{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
-			{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
-			{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },
+			{ type: 'separator' },
 			{ label: getText('RestartClient', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DoARestart },
 			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
+			{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
+			{ type: 'separator' },
+			{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },	
+			{ type: 'separator' },			
+			{ type: "submenuEnd" },
 			{ label: getText('ToolsExtra', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('DailyLogin', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DailyLoginCheck },
-			{ type: 'separator' },
-			{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: "submenuEnd" },
 			{ label: getText('QuestSystem', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uQUESTSYSTEM_MainWindow },
 			{ label: getText('ArmyProd', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RebuildLossesFast },
+			{ type: "submenuEnd" },
+			{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Building', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingBuffsHandler },
 			{ label: getText('ExecuteBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiBuffsAktionMan },
 			{ label: getText('ManageBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingProdHandler },
 			{ label: getText('ExecuteBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiProdAktionMan },
-			{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
 			{ label: loca.GetText("ALT","UpgradeBuilding"), mnemonicIndex: 0, onSelect: SearchArchitecturesHandler2 },
 			{ label: loca.GetText("QUL", "TutBronzeMine") + " " + loca.GetText("QUL", "CQ2S1_Reconstitution_Tcl5"), mnemonicIndex: 0, onSelect: DepositDepletedMenuHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Trading', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('AcceptTrades', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _usAcceptTradesMenuHandler },
 			{ label: getText('SendTradeForFish', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: exudSaveResourcestMenuHandler },
 			{ label: getText('SendTrade', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTrades_MainWindow },
 			{ label: getText('SendTradepost', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTradepost_MainWindow },
+			{ type: "submenuEnd" },
+			{ label: getText('Lootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_MainWindow },
 			{ label: getText('OpenLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_OpenBox },
 			{ label: getText('CollectBuildingLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiCollectAktionMan },
+			{ type: "submenuEnd" },
+			{ label: getText('Staritems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARTOSTORE_MainWindow },
 			{ label: getText('ExecuteStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: SendStarItemToStore },
+			{ type: "submenuEnd" },
+			{ label: getText('Shopitems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSHOPITEMS_MainWindow },
 			{ label: getText('BuyShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: ShopItemsBuying },
-			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('Info', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('DonateMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateHandler },
 			{ label: getText('AmazonAffLink', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateAmaHandler },
 			{ label: getText('HelpMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openInfoHandler },
@@ -3231,8 +3551,13 @@ function shortcutsAutoFunc(event)
 					LoadAutoTools.splice(1, 0, { label: getText('UpdateFoundMenu', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion });
 				}
 			}catch(e){}
-		menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(mm);
+		//menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(mm);
+		var autoToolsItem = menu.nativeMenu.getItemByName("AutoTools");
+
+		autoToolsItem.submenu = new air.NativeMenu();
+		BuildNativeMenuFromFlatArray(autoToolsItem.submenu, mm);
 		ToolingMenuUpdateMainMenu(false);
+		ToolingMenuUpdateMainMenu2(false);
 	}
 	else if(event.target.name == getText('DirectShortcutOFF', 'SemiAutoATMenuLang') || event.target.name == 'Verknüpfung direkt ausführen ist AN Short')
 	{
@@ -3249,6 +3574,8 @@ function shortcutsAutoFunc(event)
 		PathATAuslesen = false;
 		timeoutAlreadySet = false;
 		user_fast_shortcut_settings_AutoAT.Runde = 0;
+		user_fast_shortcut_settings_AutoAT.CurrentATStepIndex = 0;
+		user_fast_shortcut_settings_AutoAT.WasRestarted = false;
 		AutoATsave();
 
 		
@@ -3272,51 +3599,79 @@ function shortcutsAutoFunc(event)
 			{ type: 'separator' },
 			{ label: getText('Title', 'SemiAutoATMenuLang'), name: 'MainMenu', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandler },
 			{ type: 'separator' },
-			{ label: '***Semi / AutoAT***', mnemonicIndex: 0, enabled: false },
+			{ label: getText('DirectShortcutON', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
+			{ type: 'separator' },
+			{ label: getText('AdvFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
+			{ label: getText('ATSettings', 'SemiAutoATMenuLang'), name: 'MainMenu2', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandlerAT },
+			{ type: 'separator' },
 			{ label: getText('DirectShortcutON', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ label: getText('SemiAutomationON', 'SemiAutoATMenuLang'), name: 'Semi Automatisierung ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ label: getText('AutoATStartON', 'SemiAutoATMenuLang'), name: 'Auto AT Start ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ type: 'separator' },
 			{ label: getText('StopAfterCurrentRound', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTrigger },
 			{ type: 'separator' },
+			{ type: "submenuEnd" },
 			{ label: getText('SzenarioFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
 			{ label: getText('SzenarioManage', 'SemiAutoATMenuLang'), name: 'FastShortcutSzenarioHandler', mnemonicIndex: 0, enabled: true, onSelect: FastShortcutSzenarioHandler },
+			{ type: 'separator' },
 			{ label: getText('SzenarioStart', 'SemiAutoATMenuLang'), name: 'SzenarioStarten', mnemonicIndex: 0, enabled: true, onSelect: SzenarioStart },
 			{ label: getText('SzenarioStop', 'SemiAutoATMenuLang'), name: 'SzenarioStoppen', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStoppen },
 			{ type: 'separator' },
-			{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('StopAfterCurrentRoundSzena', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTriggerSzena },
+			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ForceBackup', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: duplicateSettingsWithTimestamp },
 			{ label: getText('ForceOnlineUpdate', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion },
-			{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
-			{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
-			{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },
+			{ type: 'separator' },
 			{ label: getText('RestartClient', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DoARestart },
 			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
+			{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
+			{ type: 'separator' },
+			{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },	
+			{ type: 'separator' },			
+			{ type: "submenuEnd" },
 			{ label: getText('ToolsExtra', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('DailyLogin', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DailyLoginCheck },
-			{ type: 'separator' },
-			{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: "submenuEnd" },
 			{ label: getText('QuestSystem', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uQUESTSYSTEM_MainWindow },
 			{ label: getText('ArmyProd', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RebuildLossesFast },
+			{ type: "submenuEnd" },
+			{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Building', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingBuffsHandler },
 			{ label: getText('ExecuteBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiBuffsAktionMan },
 			{ label: getText('ManageBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingProdHandler },
 			{ label: getText('ExecuteBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiProdAktionMan },
-			{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
 			{ label: loca.GetText("ALT","UpgradeBuilding"), mnemonicIndex: 0, onSelect: SearchArchitecturesHandler2 },
 			{ label: loca.GetText("QUL", "TutBronzeMine") + " " + loca.GetText("QUL", "CQ2S1_Reconstitution_Tcl5"), mnemonicIndex: 0, onSelect: DepositDepletedMenuHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Trading', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('AcceptTrades', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _usAcceptTradesMenuHandler },
 			{ label: getText('SendTradeForFish', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: exudSaveResourcestMenuHandler },
 			{ label: getText('SendTrade', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTrades_MainWindow },
 			{ label: getText('SendTradepost', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTradepost_MainWindow },
+			{ type: "submenuEnd" },
+			{ label: getText('Lootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_MainWindow },
 			{ label: getText('OpenLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_OpenBox },
 			{ label: getText('CollectBuildingLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiCollectAktionMan },
+			{ type: "submenuEnd" },
+			{ label: getText('Staritems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARTOSTORE_MainWindow },
 			{ label: getText('ExecuteStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: SendStarItemToStore },
+			{ type: "submenuEnd" },
+			{ label: getText('Shopitems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSHOPITEMS_MainWindow },
 			{ label: getText('BuyShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: ShopItemsBuying },
-			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('Info', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('DonateMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateHandler },
 			{ label: getText('AmazonAffLink', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateAmaHandler },
 			{ label: getText('HelpMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openInfoHandler },
@@ -3329,8 +3684,13 @@ function shortcutsAutoFunc(event)
 					LoadAutoTools.splice(1, 0, { label: getText('UpdateFoundMenu', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion });
 				}
 			}catch(e){}
-		menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(mm);
+		//menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(mm);
+		var autoToolsItem = menu.nativeMenu.getItemByName("AutoTools");
+
+		autoToolsItem.submenu = new air.NativeMenu();
+		BuildNativeMenuFromFlatArray(autoToolsItem.submenu, mm);
 		ToolingMenuUpdateMainMenu(true);
+		ToolingMenuUpdateMainMenu2(true);
 	}
 	if(event.target.name == getText('SemiAutomationON', 'SemiAutoATMenuLang') || event.target.name == 'Semi Automatisierung ist AUS Short')
 	{
@@ -3345,51 +3705,79 @@ function shortcutsAutoFunc(event)
 			{ type: 'separator' },
 			{ label: getText('Title', 'SemiAutoATMenuLang'), name: 'MainMenu', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandler },
 			{ type: 'separator' },
-			{ label: '***Semi / AutoAT***', mnemonicIndex: 0, enabled: false },
+			{ label: getText('DirectShortcutOFF', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
+			{ type: 'separator' },
+			{ label: getText('AdvFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
+			{ label: getText('ATSettings', 'SemiAutoATMenuLang'), name: 'MainMenu2', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandlerAT },
+			{ type: 'separator' },
 			{ label: getText('DirectShortcutOFF', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ label: getText('SemiAutomationOFF', 'SemiAutoATMenuLang'), name: 'Semi Automatisierung ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ label: getText('AutoATStartON', 'SemiAutoATMenuLang'), name: 'Auto AT Start ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ type: 'separator' },
 			{ label: getText('StopAfterCurrentRound', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTrigger },
 			{ type: 'separator' },
+			{ type: "submenuEnd" },
 			{ label: getText('SzenarioFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
 			{ label: getText('SzenarioManage', 'SemiAutoATMenuLang'), name: 'FastShortcutSzenarioHandler', mnemonicIndex: 0, enabled: false, onSelect: FastShortcutSzenarioHandler },
+			{ type: 'separator' },
 			{ label: getText('SzenarioStart', 'SemiAutoATMenuLang'), name: 'SzenarioStarten', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStart },
 			{ label: getText('SzenarioStop', 'SemiAutoATMenuLang'), name: 'SzenarioStoppen', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStoppen },
 			{ type: 'separator' },
-			{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('StopAfterCurrentRoundSzena', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTriggerSzena },
+			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ForceBackup', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: duplicateSettingsWithTimestamp },
 			{ label: getText('ForceOnlineUpdate', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion },
-			{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
-			{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
-			{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },
+			{ type: 'separator' },
 			{ label: getText('RestartClient', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DoARestart },
 			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
+			{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
+			{ type: 'separator' },
+			{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },	
+			{ type: 'separator' },			
+			{ type: "submenuEnd" },
 			{ label: getText('ToolsExtra', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('DailyLogin', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DailyLoginCheck },
-			{ type: 'separator' },
-			{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: "submenuEnd" },
 			{ label: getText('QuestSystem', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uQUESTSYSTEM_MainWindow },
 			{ label: getText('ArmyProd', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RebuildLossesFast },
+			{ type: "submenuEnd" },
+			{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Building', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingBuffsHandler },
 			{ label: getText('ExecuteBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiBuffsAktionMan },
 			{ label: getText('ManageBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingProdHandler },
 			{ label: getText('ExecuteBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiProdAktionMan },
-			{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
 			{ label: loca.GetText("ALT","UpgradeBuilding"), mnemonicIndex: 0, onSelect: SearchArchitecturesHandler2 },
 			{ label: loca.GetText("QUL", "TutBronzeMine") + " " + loca.GetText("QUL", "CQ2S1_Reconstitution_Tcl5"), mnemonicIndex: 0, onSelect: DepositDepletedMenuHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Trading', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('AcceptTrades', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _usAcceptTradesMenuHandler },
 			{ label: getText('SendTradeForFish', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: exudSaveResourcestMenuHandler },
 			{ label: getText('SendTrade', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTrades_MainWindow },
 			{ label: getText('SendTradepost', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTradepost_MainWindow },
+			{ type: "submenuEnd" },
+			{ label: getText('Lootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_MainWindow },
 			{ label: getText('OpenLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_OpenBox },
 			{ label: getText('CollectBuildingLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiCollectAktionMan },
+			{ type: "submenuEnd" },
+			{ label: getText('Staritems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARTOSTORE_MainWindow },
 			{ label: getText('ExecuteStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: SendStarItemToStore },
+			{ type: "submenuEnd" },
+			{ label: getText('Shopitems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSHOPITEMS_MainWindow },
 			{ label: getText('BuyShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: ShopItemsBuying },
-			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('Info', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('DonateMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateHandler },
 			{ label: getText('AmazonAffLink', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateAmaHandler },
 			{ label: getText('HelpMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openInfoHandler },
@@ -3402,8 +3790,13 @@ function shortcutsAutoFunc(event)
 					LoadAutoTools.splice(1, 0, { label: getText('UpdateFoundMenu', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion });
 				}
 			}catch(e){}
-			menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(mm);
+			//menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(mm);
+			var autoToolsItem = menu.nativeMenu.getItemByName("AutoTools");
+
+			autoToolsItem.submenu = new air.NativeMenu();
+			BuildNativeMenuFromFlatArray(autoToolsItem.submenu, mm);
 			ToolingMenuUpdateMainMenu(false);
+			ToolingMenuUpdateMainMenu2(false);
 	}
 	else if(event.target.name == getText('SemiAutomationOFF', 'SemiAutoATMenuLang') || event.target.name == 'Semi Automatisierung ist AN Short')
 	{
@@ -3420,6 +3813,8 @@ function shortcutsAutoFunc(event)
 		PathATAuslesen = false;
 		timeoutAlreadySet = false;
 		user_fast_shortcut_settings_AutoAT.Runde = 0;
+		user_fast_shortcut_settings_AutoAT.CurrentATStepIndex = 0;
+		user_fast_shortcut_settings_AutoAT.WasRestarted = false;
 		AutoATsave();
 
 		safeReset('AttackTimeoutIntern');
@@ -3442,51 +3837,79 @@ function shortcutsAutoFunc(event)
 			{ type: 'separator' },
 			{ label: getText('Title', 'SemiAutoATMenuLang'), name: 'MainMenu', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandler },
 			{ type: 'separator' },
-			{ label: '***Semi / AutoAT***', mnemonicIndex: 0, enabled: false },
+			{ label: getText('DirectShortcutON', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
+			{ type: 'separator' },
+			{ label: getText('AdvFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
+			{ label: getText('ATSettings', 'SemiAutoATMenuLang'), name: 'MainMenu2', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandlerAT },
+			{ type: 'separator' },
 			{ label: getText('DirectShortcutON', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ label: getText('SemiAutomationON', 'SemiAutoATMenuLang'), name: 'Semi Automatisierung ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ label: getText('AutoATStartON', 'SemiAutoATMenuLang'), name: 'Auto AT Start ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ type: 'separator' },
 			{ label: getText('StopAfterCurrentRound', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTrigger },
 			{ type: 'separator' },
+			{ type: "submenuEnd" },
 			{ label: getText('SzenarioFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
 			{ label: getText('SzenarioManage', 'SemiAutoATMenuLang'), name: 'FastShortcutSzenarioHandler', mnemonicIndex: 0, enabled: true, onSelect: FastShortcutSzenarioHandler },
+			{ type: 'separator' },
 			{ label: getText('SzenarioStart', 'SemiAutoATMenuLang'), name: 'SzenarioStarten', mnemonicIndex: 0, enabled: true, onSelect: SzenarioStart },
 			{ label: getText('SzenarioStop', 'SemiAutoATMenuLang'), name: 'SzenarioStoppen', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStoppen },
 			{ type: 'separator' },
-			{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('StopAfterCurrentRoundSzena', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTriggerSzena },
+			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ForceBackup', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: duplicateSettingsWithTimestamp },
 			{ label: getText('ForceOnlineUpdate', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion },
-			{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
-			{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
-			{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },
+			{ type: 'separator' },
 			{ label: getText('RestartClient', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DoARestart },
 			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
+			{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
+			{ type: 'separator' },
+			{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },	
+			{ type: 'separator' },			
+			{ type: "submenuEnd" },
 			{ label: getText('ToolsExtra', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('DailyLogin', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DailyLoginCheck },
-			{ type: 'separator' },
-			{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: "submenuEnd" },
 			{ label: getText('QuestSystem', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uQUESTSYSTEM_MainWindow },
 			{ label: getText('ArmyProd', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RebuildLossesFast },
+			{ type: "submenuEnd" },
+			{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Building', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingBuffsHandler },
 			{ label: getText('ExecuteBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiBuffsAktionMan },
 			{ label: getText('ManageBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingProdHandler },
 			{ label: getText('ExecuteBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiProdAktionMan },
-			{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
 			{ label: loca.GetText("ALT","UpgradeBuilding"), mnemonicIndex: 0, onSelect: SearchArchitecturesHandler2 },
 			{ label: loca.GetText("QUL", "TutBronzeMine") + " " + loca.GetText("QUL", "CQ2S1_Reconstitution_Tcl5"), mnemonicIndex: 0, onSelect: DepositDepletedMenuHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Trading', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('AcceptTrades', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _usAcceptTradesMenuHandler },
 			{ label: getText('SendTradeForFish', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: exudSaveResourcestMenuHandler },
 			{ label: getText('SendTrade', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTrades_MainWindow },
 			{ label: getText('SendTradepost', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTradepost_MainWindow },
+			{ type: "submenuEnd" },
+			{ label: getText('Lootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_MainWindow },
 			{ label: getText('OpenLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_OpenBox },
 			{ label: getText('CollectBuildingLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiCollectAktionMan },
+			{ type: "submenuEnd" },
+			{ label: getText('Staritems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARTOSTORE_MainWindow },
 			{ label: getText('ExecuteStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: SendStarItemToStore },
+			{ type: "submenuEnd" },
+			{ label: getText('Shopitems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSHOPITEMS_MainWindow },
 			{ label: getText('BuyShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: ShopItemsBuying },
-			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('Info', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('DonateMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateHandler },
 			{ label: getText('AmazonAffLink', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateAmaHandler },
 			{ label: getText('HelpMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openInfoHandler },
@@ -3499,8 +3922,13 @@ function shortcutsAutoFunc(event)
 					LoadAutoTools.splice(1, 0, { label: getText('UpdateFoundMenu', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion });
 				}
 			}catch(e){}
-		menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(mm);
+		//menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(mm);
+		var autoToolsItem = menu.nativeMenu.getItemByName("AutoTools");
+
+		autoToolsItem.submenu = new air.NativeMenu();
+		BuildNativeMenuFromFlatArray(autoToolsItem.submenu, mm);
 		ToolingMenuUpdateMainMenu(true);
+		ToolingMenuUpdateMainMenu2(true);
 	}
 	if(event.target.name == getText('AutoATStartON', 'SemiAutoATMenuLang') || event.target.name == 'Auto AT Start ist AUS Short')
 	{
@@ -3512,6 +3940,7 @@ function shortcutsAutoFunc(event)
 		ATweitermachen = true;
 		GetQuestSemiStarten = false;
 		RundenanzahlCounter = 0;
+		CurrentATStepIndex = 0;
 		WoBinIch = 0;
 		WoBinIchATneustarten = 0;
 		PathATAuslesen = true;
@@ -3523,60 +3952,88 @@ function shortcutsAutoFunc(event)
 		ATStart();
 		
 		var mm = [			
-		{ label: VersionUserFast, mnemonicIndex: 0, enabled: false },
-		{ type: 'separator' },
-		{ label: getText('Title', 'SemiAutoATMenuLang'), name: 'MainMenu', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandler },
-		{ type: 'separator' },
-		{ label: '***Semi / AutoAT***', mnemonicIndex: 0, enabled: false },
-		{ label: getText('DirectShortcutOFF', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
-		{ label: getText('SemiAutomationOFF', 'SemiAutoATMenuLang'), name: 'Semi Automatisierung ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
-		{ label: getText('AutoATStartOFF', 'SemiAutoATMenuLang'), name: 'Auto AT Start ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
-		{ type: 'separator' },
-		{ label: getText('StopAfterCurrentRound', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTrigger },
-		{ type: 'separator' },
-		{ label: getText('SzenarioFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
-		{ label: getText('SzenarioManage', 'SemiAutoATMenuLang'), name: 'FastShortcutSzenarioHandler', mnemonicIndex: 0, enabled: false, onSelect: FastShortcutSzenarioHandler },
-		{ label: getText('SzenarioStart', 'SemiAutoATMenuLang'), name: 'SzenarioStarten', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStart },
-		{ label: getText('SzenarioStop', 'SemiAutoATMenuLang'), name: 'SzenarioStoppen', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStoppen },
-		{ type: 'separator' },
-		{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
-		{ label: getText('ForceBackup', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: duplicateSettingsWithTimestamp },
-		{ label: getText('ForceOnlineUpdate', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion },
-		{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
-		{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
-		{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },
-		{ label: getText('RestartClient', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DoARestart },
-		{ type: 'separator' },
-		{ label: getText('ToolsExtra', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
-		{ label: getText('DailyLogin', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DailyLoginCheck },
-		{ type: 'separator' },
-		{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
-		{ label: getText('QuestSystem', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uQUESTSYSTEM_MainWindow },
-		{ label: getText('ArmyProd', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RebuildLossesFast },
-		{ label: getText('ManageBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingBuffsHandler },
-		{ label: getText('ExecuteBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiBuffsAktionMan },
-		{ label: getText('ManageBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingProdHandler },
-		{ label: getText('ExecuteBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiProdAktionMan },
-		{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
-		{ label: loca.GetText("ALT","UpgradeBuilding"), mnemonicIndex: 0, onSelect: SearchArchitecturesHandler2 },
-		{ label: loca.GetText("QUL", "TutBronzeMine") + " " + loca.GetText("QUL", "CQ2S1_Reconstitution_Tcl5"), mnemonicIndex: 0, onSelect: DepositDepletedMenuHandler2 },
-		{ label: getText('AcceptTrades', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _usAcceptTradesMenuHandler },
-		{ label: getText('SendTradeForFish', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: exudSaveResourcestMenuHandler },
-		{ label: getText('SendTrade', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTrades_MainWindow },
-		{ label: getText('SendTradepost', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTradepost_MainWindow },
-		{ label: getText('ManageLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_MainWindow },
-		{ label: getText('OpenLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_OpenBox },
-		{ label: getText('CollectBuildingLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiCollectAktionMan },
-		{ label: getText('ManageStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARTOSTORE_MainWindow },
-		{ label: getText('ExecuteStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: SendStarItemToStore },
-		{ label: getText('ManageShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSHOPITEMS_MainWindow },
-		{ label: getText('BuyShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: ShopItemsBuying },
-		{ type: 'separator' },
-		{ label: getText('DonateMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateHandler },
-		{ label: getText('AmazonAffLink', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateAmaHandler },
-		{ label: getText('HelpMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openInfoHandler },
-		{ label: getText('YoutubeRedGuideGamer', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openYoutubeHandler },
-		{ label: getText('YoutubeCry', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openYoutubeHandler2 }
+			{ label: VersionUserFast, mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
+			{ label: getText('Title', 'SemiAutoATMenuLang'), name: 'MainMenu', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandler },
+			{ type: 'separator' },
+			{ label: getText('DirectShortcutOFF', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
+			{ type: 'separator' },
+			{ label: getText('AdvFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
+			{ label: getText('ATSettings', 'SemiAutoATMenuLang'), name: 'MainMenu2', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandlerAT },
+			{ type: 'separator' },
+			{ label: getText('DirectShortcutOFF', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
+			{ label: getText('SemiAutomationOFF', 'SemiAutoATMenuLang'), name: 'Semi Automatisierung ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
+			{ label: getText('AutoATStartOFF', 'SemiAutoATMenuLang'), name: 'Auto AT Start ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
+			{ type: 'separator' },
+			{ label: getText('StopAfterCurrentRound', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTrigger },
+			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('SzenarioFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
+			{ label: getText('SzenarioManage', 'SemiAutoATMenuLang'), name: 'FastShortcutSzenarioHandler', mnemonicIndex: 0, enabled: false, onSelect: FastShortcutSzenarioHandler },
+			{ type: 'separator' },
+			{ label: getText('SzenarioStart', 'SemiAutoATMenuLang'), name: 'SzenarioStarten', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStart },
+			{ label: getText('SzenarioStop', 'SemiAutoATMenuLang'), name: 'SzenarioStoppen', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStoppen },
+			{ type: 'separator' },
+			{ label: getText('StopAfterCurrentRoundSzena', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTriggerSzena },
+			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('ForceBackup', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: duplicateSettingsWithTimestamp },
+			{ label: getText('ForceOnlineUpdate', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion },
+			{ type: 'separator' },
+			{ label: getText('RestartClient', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DoARestart },
+			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
+			{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
+			{ type: 'separator' },
+			{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },	
+			{ type: 'separator' },			
+			{ type: "submenuEnd" },
+			{ label: getText('ToolsExtra', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('DailyLogin', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DailyLoginCheck },
+			{ type: "submenuEnd" },
+			{ label: getText('QuestSystem', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uQUESTSYSTEM_MainWindow },
+			{ label: getText('ArmyProd', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RebuildLossesFast },
+			{ type: "submenuEnd" },
+			{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Building', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('ManageBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingBuffsHandler },
+			{ label: getText('ExecuteBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiBuffsAktionMan },
+			{ label: getText('ManageBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingProdHandler },
+			{ label: getText('ExecuteBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiProdAktionMan },
+			{ label: loca.GetText("ALT","UpgradeBuilding"), mnemonicIndex: 0, onSelect: SearchArchitecturesHandler2 },
+			{ label: loca.GetText("QUL", "TutBronzeMine") + " " + loca.GetText("QUL", "CQ2S1_Reconstitution_Tcl5"), mnemonicIndex: 0, onSelect: DepositDepletedMenuHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Trading', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('AcceptTrades', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _usAcceptTradesMenuHandler },
+			{ label: getText('SendTradeForFish', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: exudSaveResourcestMenuHandler },
+			{ label: getText('SendTrade', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTrades_MainWindow },
+			{ label: getText('SendTradepost', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTradepost_MainWindow },
+			{ type: "submenuEnd" },
+			{ label: getText('Lootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('ManageLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_MainWindow },
+			{ label: getText('OpenLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_OpenBox },
+			{ label: getText('CollectBuildingLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiCollectAktionMan },
+			{ type: "submenuEnd" },
+			{ label: getText('Staritems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('ManageStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARTOSTORE_MainWindow },
+			{ label: getText('ExecuteStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: SendStarItemToStore },
+			{ type: "submenuEnd" },
+			{ label: getText('Shopitems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('ManageShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSHOPITEMS_MainWindow },
+			{ label: getText('BuyShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: ShopItemsBuying },
+			{ type: "submenuEnd" },
+			{ label: getText('Info', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('DonateMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateHandler },
+			{ label: getText('AmazonAffLink', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateAmaHandler },
+			{ label: getText('HelpMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openInfoHandler },
+			{ label: getText('YoutubeRedGuideGamer', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openYoutubeHandler },
+			{ label: getText('YoutubeCry', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openYoutubeHandler2 }
 		];
 		try
 			{
@@ -3584,8 +4041,13 @@ function shortcutsAutoFunc(event)
 					LoadAutoTools.splice(1, 0, { label: getText('UpdateFoundMenu', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion });
 				}
 			}catch(e){}
-		menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(mm);
+		//menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(mm);
+		var autoToolsItem = menu.nativeMenu.getItemByName("AutoTools");
+
+		autoToolsItem.submenu = new air.NativeMenu();
+		BuildNativeMenuFromFlatArray(autoToolsItem.submenu, mm);
 		ToolingMenuUpdateMainMenu(false);
+		ToolingMenuUpdateMainMenu2(false);
 				
 	}
 	else if(event.target.name == getText('AutoATStartOFF', 'SemiAutoATMenuLang') || event.target.name == 'Auto AT Start ist AN Short')
@@ -3603,6 +4065,8 @@ function shortcutsAutoFunc(event)
 		PathATAuslesen = false;
 		timeoutAlreadySet = false;
 		user_fast_shortcut_settings_AutoAT.Runde = 0;
+		user_fast_shortcut_settings_AutoAT.CurrentATStepIndex = 0;
+		user_fast_shortcut_settings_AutoAT.WasRestarted = false;
 		AutoATsave();
 		
 		safeReset('AttackTimeoutIntern');
@@ -3625,51 +4089,79 @@ function shortcutsAutoFunc(event)
 			{ type: 'separator' },
 			{ label: getText('Title', 'SemiAutoATMenuLang'), name: 'MainMenu', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandler },
 			{ type: 'separator' },
-			{ label: '***Semi / AutoAT***', mnemonicIndex: 0, enabled: false },
+			{ label: getText('DirectShortcutON', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
+			{ type: 'separator' },
+			{ label: getText('AdvFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
+			{ label: getText('ATSettings', 'SemiAutoATMenuLang'), name: 'MainMenu2', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandlerAT },
+			{ type: 'separator' },
 			{ label: getText('DirectShortcutON', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ label: getText('SemiAutomationON', 'SemiAutoATMenuLang'), name: 'Semi Automatisierung ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ label: getText('AutoATStartON', 'SemiAutoATMenuLang'), name: 'Auto AT Start ist AUS Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
 			{ type: 'separator' },
 			{ label: getText('StopAfterCurrentRound', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTrigger },
 			{ type: 'separator' },
+			{ type: "submenuEnd" },
 			{ label: getText('SzenarioFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
 			{ label: getText('SzenarioManage', 'SemiAutoATMenuLang'), name: 'FastShortcutSzenarioHandler', mnemonicIndex: 0, enabled: true, onSelect: FastShortcutSzenarioHandler },
+			{ type: 'separator' },
 			{ label: getText('SzenarioStart', 'SemiAutoATMenuLang'), name: 'SzenarioStarten', mnemonicIndex: 0, enabled: true, onSelect: SzenarioStart },
 			{ label: getText('SzenarioStop', 'SemiAutoATMenuLang'), name: 'SzenarioStoppen', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStoppen },
 			{ type: 'separator' },
-			{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('StopAfterCurrentRoundSzena', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTriggerSzena },
+			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ForceBackup', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: duplicateSettingsWithTimestamp },
 			{ label: getText('ForceOnlineUpdate', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion },
-			{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
-			{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
-			{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },
+			{ type: 'separator' },
 			{ label: getText('RestartClient', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DoARestart },
 			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
+			{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
+			{ type: 'separator' },
+			{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },	
+			{ type: 'separator' },			
+			{ type: "submenuEnd" },
 			{ label: getText('ToolsExtra', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('DailyLogin', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DailyLoginCheck },
-			{ type: 'separator' },
-			{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: "submenuEnd" },
 			{ label: getText('QuestSystem', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uQUESTSYSTEM_MainWindow },
 			{ label: getText('ArmyProd', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RebuildLossesFast },
+			{ type: "submenuEnd" },
+			{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Building', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingBuffsHandler },
 			{ label: getText('ExecuteBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiBuffsAktionMan },
 			{ label: getText('ManageBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingProdHandler },
 			{ label: getText('ExecuteBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiProdAktionMan },
-			{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
 			{ label: loca.GetText("ALT","UpgradeBuilding"), mnemonicIndex: 0, onSelect: SearchArchitecturesHandler2 },
 			{ label: loca.GetText("QUL", "TutBronzeMine") + " " + loca.GetText("QUL", "CQ2S1_Reconstitution_Tcl5"), mnemonicIndex: 0, onSelect: DepositDepletedMenuHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Trading', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('AcceptTrades', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _usAcceptTradesMenuHandler },
 			{ label: getText('SendTradeForFish', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: exudSaveResourcestMenuHandler },
 			{ label: getText('SendTrade', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTrades_MainWindow },
 			{ label: getText('SendTradepost', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTradepost_MainWindow },
+			{ type: "submenuEnd" },
+			{ label: getText('Lootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_MainWindow },
 			{ label: getText('OpenLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_OpenBox },
 			{ label: getText('CollectBuildingLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiCollectAktionMan },
+			{ type: "submenuEnd" },
+			{ label: getText('Staritems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARTOSTORE_MainWindow },
 			{ label: getText('ExecuteStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: SendStarItemToStore },
+			{ type: "submenuEnd" },
+			{ label: getText('Shopitems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('ManageShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSHOPITEMS_MainWindow },
 			{ label: getText('BuyShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: ShopItemsBuying },
-			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('Info', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
 			{ label: getText('DonateMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateHandler },
 			{ label: getText('AmazonAffLink', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateAmaHandler },
 			{ label: getText('HelpMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openInfoHandler },
@@ -3682,12 +4174,21 @@ function shortcutsAutoFunc(event)
 					LoadAutoTools.splice(1, 0, { label: getText('UpdateFoundMenu', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion });
 				}
 			}catch(e){}
-		menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(mm);
+		//menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(mm);
+		var autoToolsItem = menu.nativeMenu.getItemByName("AutoTools");
+
+		autoToolsItem.submenu = new air.NativeMenu();
+		BuildNativeMenuFromFlatArray(autoToolsItem.submenu, mm);
 		ToolingMenuUpdateMainMenu(true);
+		ToolingMenuUpdateMainMenu2(true);
 	}
 	if(event.target.name == 'Auto AT Start - Nach Client Restart')
 	{
-		game.showAlert(getText('AutoATAfterRestart', 'SemiAutoATMenuLang') + (user_fast_shortcut_settings_AutoAT.Runde+1) + getText('AutoATAfterRestart2', 'SemiAutoATMenuLang'));
+		var useSequencer =
+		user_fast_shortcut_settings.Sequenzer === true &&
+		user_fast_shortcut_settings.ATSteps &&
+		user_fast_shortcut_settings.ATSteps.length > 0;
+	
 		stopChecking = false;
 		shortcutsAutoFuncBool = true;
 		automatisierung = true;
@@ -3695,69 +4196,100 @@ function shortcutsAutoFunc(event)
 		ATweitermachen = true;
 		GetQuestSemiStarten = false;
 		RundenanzahlCounter = user_fast_shortcut_settings_AutoAT.Runde;
+		CurrentATStepIndex = user_fast_shortcut_settings_AutoAT.CurrentATStepIndex;
 		WoBinIch = 0;
 		WoBinIchATneustarten = 0;
 		PathATAuslesen = true;
+		game.showAlert(getText('AutoATAfterRestart', 'SemiAutoATMenuLang') + (user_fast_shortcut_settings_AutoAT.Runde+1) + " von " + (useSequencer ? user_fast_shortcut_settings.ATSteps[CurrentATStepIndex].Runden : user_fast_shortcut_settings.RundenanzahlSelector) + getText('AutoATAfterRestart2', 'SemiAutoATMenuLang'));
 		ATStart();
 		user_fast_shortcut_settings_AutoAT.Runde = 0;
+		user_fast_shortcut_settings_AutoAT.CurrentATStepIndex = 0;
+		user_fast_shortcut_settings_AutoAT.WasRestarted = false;
 		AutoATsave();
 		
-		
 		var mm = [			
-		{ label: VersionUserFast, mnemonicIndex: 0, enabled: false },
-		{ type: 'separator' },
-		{ label: getText('Title', 'SemiAutoATMenuLang'), name: 'MainMenu', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandler },
-		{ type: 'separator' },
-		{ label: '***Semi / AutoAT***', mnemonicIndex: 0, enabled: false },
-		{ label: getText('DirectShortcutOFF', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
-		{ label: getText('SemiAutomationOFF', 'SemiAutoATMenuLang'), name: 'Semi Automatisierung ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
-		{ label: getText('AutoATStartOFF', 'SemiAutoATMenuLang'), name: 'Auto AT Start ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
-		{ type: 'separator' },
-		{ label: getText('StopAfterCurrentRound', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTrigger },
-		{ type: 'separator' },
-		{ label: getText('SzenarioFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
-		{ label: getText('SzenarioManage', 'SemiAutoATMenuLang'), name: 'FastShortcutSzenarioHandler', mnemonicIndex: 0, enabled: false, onSelect: FastShortcutSzenarioHandler },
-		{ label: getText('SzenarioStart', 'SemiAutoATMenuLang'), name: 'SzenarioStarten', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStart },
-		{ label: getText('SzenarioStop', 'SemiAutoATMenuLang'), name: 'SzenarioStoppen', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStoppen },
-		{ type: 'separator' },
-		{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
-		{ label: getText('ForceBackup', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: duplicateSettingsWithTimestamp },
-		{ label: getText('ForceOnlineUpdate', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion },
-		{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
-		{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
-		{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },
-		{ label: getText('RestartClient', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DoARestart },
-		{ type: 'separator' },
-		{ label: getText('ToolsExtra', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
-		{ label: getText('DailyLogin', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DailyLoginCheck },
-		{ type: 'separator' },
-		{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
-		{ label: getText('QuestSystem', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uQUESTSYSTEM_MainWindow },
-		{ label: getText('ArmyProd', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RebuildLossesFast },
-		{ label: getText('ManageBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingBuffsHandler },
-		{ label: getText('ExecuteBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiBuffsAktionMan },
-		{ label: getText('ManageBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingProdHandler },
-		{ label: getText('ExecuteBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiProdAktionMan },
-		{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
-		{ label: loca.GetText("ALT","UpgradeBuilding"), mnemonicIndex: 0, onSelect: SearchArchitecturesHandler2 },
-		{ label: loca.GetText("QUL", "TutBronzeMine") + " " + loca.GetText("QUL", "CQ2S1_Reconstitution_Tcl5"), mnemonicIndex: 0, onSelect: DepositDepletedMenuHandler2 },
-		{ label: getText('AcceptTrades', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _usAcceptTradesMenuHandler },
-		{ label: getText('SendTradeForFish', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: exudSaveResourcestMenuHandler },
-		{ label: getText('SendTrade', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTrades_MainWindow },
-		{ label: getText('SendTradepost', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTradepost_MainWindow },
-		{ label: getText('ManageLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_MainWindow },
-		{ label: getText('OpenLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_OpenBox },
-		{ label: getText('CollectBuildingLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiCollectAktionMan },
-		{ label: getText('ManageStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARTOSTORE_MainWindow },
-		{ label: getText('ExecuteStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: SendStarItemToStore },
-		{ label: getText('ManageShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSHOPITEMS_MainWindow },
-		{ label: getText('BuyShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: ShopItemsBuying },
-		{ type: 'separator' },
-		{ label: getText('DonateMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateHandler },
-		{ label: getText('AmazonAffLink', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateAmaHandler },
-		{ label: getText('HelpMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openInfoHandler },
-		{ label: getText('YoutubeRedGuideGamer', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openYoutubeHandler },
-		{ label: getText('YoutubeCry', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openYoutubeHandler2 }
+			{ label: VersionUserFast, mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
+			{ label: getText('Title', 'SemiAutoATMenuLang'), name: 'MainMenu', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandler },
+			{ type: 'separator' },
+			{ label: getText('DirectShortcutOFF', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
+			{ type: 'separator' },
+			{ label: getText('AdvFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
+			{ label: getText('ATSettings', 'SemiAutoATMenuLang'), name: 'MainMenu2', mnemonicIndex: 0, onSelect: FastShortcutSettingsHandlerAT },
+			{ type: 'separator' },
+			{ label: getText('DirectShortcutOFF', 'SemiAutoATMenuLang'), name: 'Verknüpfung direkt ausführen ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
+			{ label: getText('SemiAutomationOFF', 'SemiAutoATMenuLang'), name: 'Semi Automatisierung ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
+			{ label: getText('AutoATStartOFF', 'SemiAutoATMenuLang'), name: 'Auto AT Start ist AN Short', mnemonicIndex: 0, onSelect: shortcutsAutoFunc },
+			{ type: 'separator' },
+			{ label: getText('StopAfterCurrentRound', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTrigger },
+			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('SzenarioFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ type: 'separator' },
+			{ label: getText('SzenarioManage', 'SemiAutoATMenuLang'), name: 'FastShortcutSzenarioHandler', mnemonicIndex: 0, enabled: false, onSelect: FastShortcutSzenarioHandler },
+			{ type: 'separator' },
+			{ label: getText('SzenarioStart', 'SemiAutoATMenuLang'), name: 'SzenarioStarten', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStart },
+			{ label: getText('SzenarioStop', 'SemiAutoATMenuLang'), name: 'SzenarioStoppen', mnemonicIndex: 0, enabled: false, onSelect: SzenarioStoppen },
+			{ type: 'separator' },
+			{ label: getText('StopAfterCurrentRoundSzena', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: LastRoundTriggerSzena },
+			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('Tools', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('ForceBackup', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: duplicateSettingsWithTimestamp },
+			{ label: getText('ForceOnlineUpdate', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion },
+			{ type: 'separator' },
+			{ label: getText('RestartClient', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DoARestart },
+			{ type: 'separator' },
+			{ type: "submenuEnd" },
+			{ label: getText('RefreshFunctions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('RefreshBuildingsGUI', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshGUIBUI2 },
+			{ label: getText('RefreshZone', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshZoneViaMenu },
+			{ type: 'separator' },
+			{ label: getText('ReloadUserScripts', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RefreshScriptsViaMenu },	
+			{ type: 'separator' },			
+			{ type: "submenuEnd" },
+			{ label: getText('ToolsExtra', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('DailyLogin', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: DailyLoginCheck },
+			{ type: "submenuEnd" },
+			{ label: getText('QuestSystem', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uQUESTSYSTEM_MainWindow },
+			{ label: getText('ArmyProd', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: RebuildLossesFast },
+			{ type: "submenuEnd" },
+			{ label: loca.GetText("HIL", "Help_window_zonebuffs_0"), mnemonicIndex: 0, onSelect: SearchZoneBuffHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Building', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('ManageBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingBuffsHandler },
+			{ label: getText('ExecuteBuildingBuffs', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiBuffsAktionMan },
+			{ label: getText('ManageBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: FastShortcutBuildingProdHandler },
+			{ label: getText('ExecuteBuildingProductions', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiProdAktionMan },
+			{ label: loca.GetText("ALT","UpgradeBuilding"), mnemonicIndex: 0, onSelect: SearchArchitecturesHandler2 },
+			{ label: loca.GetText("QUL", "TutBronzeMine") + " " + loca.GetText("QUL", "CQ2S1_Reconstitution_Tcl5"), mnemonicIndex: 0, onSelect: DepositDepletedMenuHandler2 },
+			{ type: "submenuEnd" },
+			{ label: getText('Trading', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('AcceptTrades', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _usAcceptTradesMenuHandler },
+			{ label: getText('SendTradeForFish', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: exudSaveResourcestMenuHandler },
+			{ label: getText('SendTrade', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTrades_MainWindow },
+			{ label: getText('SendTradepost', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: _exudTradepost_MainWindow },
+			{ type: "submenuEnd" },
+			{ label: getText('Lootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('ManageLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_MainWindow },
+			{ label: getText('OpenLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARMENU_OpenBox },
+			{ label: getText('CollectBuildingLootboxes', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: BuiCollectAktionMan },
+			{ type: "submenuEnd" },
+			{ label: getText('Staritems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('ManageStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSTARTOSTORE_MainWindow },
+			{ label: getText('ExecuteStarItemsToStore', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: SendStarItemToStore },
+			{ type: "submenuEnd" },
+			{ label: getText('Shopitems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('ManageShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: uSHOPITEMS_MainWindow },
+			{ label: getText('BuyShopItems', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: ShopItemsBuying },
+			{ type: "submenuEnd" },
+			{ label: getText('Info', 'SemiAutoATMenuLang'), mnemonicIndex: 0, enabled: false },
+			{ label: getText('DonateMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateHandler },
+			{ label: getText('AmazonAffLink', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openDonateAmaHandler },
+			{ label: getText('HelpMSG', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openInfoHandler },
+			{ label: getText('YoutubeRedGuideGamer', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openYoutubeHandler },
+			{ label: getText('YoutubeCry', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: openYoutubeHandler2 }
 		];
 		try
 			{
@@ -3765,8 +4297,13 @@ function shortcutsAutoFunc(event)
 					LoadAutoTools.splice(1, 0, { label: getText('UpdateFoundMenu', 'SemiAutoATMenuLang'), mnemonicIndex: 0, onSelect: GetNewVersion });
 				}
 			}catch(e){}
-		menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(mm);
-		ToolingMenuUpdateMainMenu(false);		
+		//menu.nativeMenu.getItemByName("AutoTools").submenu = air.ui.Menu.createFromJSON(mm);
+		var autoToolsItem = menu.nativeMenu.getItemByName("AutoTools");
+
+		autoToolsItem.submenu = new air.NativeMenu();
+		BuildNativeMenuFromFlatArray(autoToolsItem.submenu, mm);
+		ToolingMenuUpdateMainMenu(false);	
+		ToolingMenuUpdateMainMenu2(false);		
 	}
 }
 
@@ -3787,7 +4324,7 @@ function updateProgress(progress, remainingTime) {
 		for (var i = 0; i < emptyBlocks; i++) {
 			bar += '░';
 		}
-		
+		cachedLoadingScreen = percentage + ' % | ' + remainingTime + 's | ' + bar;
 		menu.nativeMenu.getItemByName("existingProgress").label =
 			getText('Loading', 'SemiAutoATMenuLang') + ' ' + percentage + ' % | ' + remainingTime + 's | ' + bar;
 	}
@@ -3865,6 +4402,8 @@ function VorlagenUeberwachungAutoStart() {
             updateProgress(progress, remainingTime);
             if (progress === 1) {
                 game.showAlert(getText('AllLoadingDone', 'SemiAutoATMenuLang'));
+				cachedLoadingScreenBool = false;
+				rebuildOverlay();
 				ToolingMenuUpdateAllMainMenu(true);
                 try {
                     const existingProgress = window.nativeWindow.menu.getItemByName("existingProgress");
@@ -4079,18 +4618,19 @@ function EntdeckerAktion()
 				currentTimeout += delayIncrement;
 			}
 			
-			if(user_fast_shortcut_settings.MemUeberwachungNONAT && !ATweitermachen && !MyStart && stopScenario && game.gi.isOnHomzone() == true)
+			if(user_fast_shortcut_settings.MemUeberwachungNONAT && !ATweitermachen && !user_fast_shortcut_settings_AutoAT.WasRestarted && !MyStart && stopScenario && game.gi.isOnHomzone() == true)
 			{
 				setTimeout(function() {
-					if(MemTriggerClientRestartNONAT() && game.gi.isOnHomzone() == true)
+					if(MemTriggerClientRestartNONAT() && game.gi.isOnHomzone() == true && !MyStart && stopScenario)
 					{
 						showGameAlert(getText('SpeicherLimitHI', 'SemiAutoATMenuLang') + humanMemorySize(air.System.privateMemory, 1) + getText('SpeicherLimitHI2', 'SemiAutoATMenuLang'));
-						try{menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "HI - Speichergrenze erreicht, Neustart demnächst!";}catch(e){}
+						try{menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "HI - Speichergrenze erreicht, Neustart demnächst!"; cachedAutoATRundenanzahlLabel = "HI - Speichergrenze erreicht, Neustart demnächst!"; OverlayNeustart = true;}catch(e){}
 						ToolingMenuUpdateSzenaMenu(false);
 						ToolingMenuUpdateSzenaStoppen(false);
 						ToolingMenuUpdateSzenaStarten(false);
 						ToolingMenuUpdate(false);
 						ToolingMenuUpdateMainMenu(false);
+						ToolingMenuUpdateMainMenu2(false);
 					}		
 				},currentTimeout);
 				currentTimeout += delayIncrement;
@@ -4297,7 +4837,8 @@ function shortcutsMenuSelectedHandler(event)
 		var filetype = shortcutsStripType(event.target.name);
 		var file = new air.File(filetype[0]);
 		if(!file.exists) {
-			alert(getText("bad_template"));
+			//alert(getText("bad_template"));
+			game.showAlert(getText("bad_template"));
 			return;
 		}
 		var fileStream = new air.FileStream();
@@ -4311,7 +4852,8 @@ function shortcutsMenuSelectedHandler(event)
 					var filetype = shortcutsStripType(event.target.name);
 					var file = new air.File(filetype[0]);
 					if(!file.exists) {
-						alert(getText("bad_template"));
+						//alert(getText("bad_template"));
+						game.showAlert(getText("bad_template"));
 						return;
 					}
 					var fileStream = new air.FileStream();
@@ -4346,7 +4888,7 @@ function shortcutsMenuSelectedHandler(event)
 				}
 				catch(e) 
 				{
-					alert(getText("bad_template"));
+					//alert(getText("bad_template"));
 					showGameAlert(getText('TemplateErrorFAIL', 'SemiAutoATMenuLang'));
 				}
 	}
@@ -5693,7 +6235,7 @@ function sendSpecEntdecker(Daten)
 			game.zone.GetSpecialists_vector().forEach(function(item){
 			if(item.GetUniqueID().toKeyString().replace(".", '_') == spec && !item.GetTask() && game.gi.isOnHomzone() == true && val != "0")
 			{
-				queuesendSpecEntdecker.add(function(){ sendSpecPacket(spec, val); });
+				queuesendSpecEntdecker.add(function(){ sendSpecPacket(spec, val); }, randomDelay(1533, 5245));
 			}
 			});
 		});
@@ -5791,7 +6333,7 @@ function buffDoJob2(Daten) {
             buffsAvailable2[item.buffName].count -= 1;
             xbuffDoJob2.add(function() {
                 sendBuffPacket(buffsAvailable2[item.buffName].id, item.buiGrid);
-            });
+            }, randomDelay(1533, 3245));
         }
     });
     xbuffDoJob2.run();
@@ -5981,6 +6523,7 @@ function armyLoadGeneralsGenesAusSternCheck() {
 					try
 							{
 								HammerManCountLoad++;
+								cachedLagHammer = "HM : " + HammerManCount + " | LM : " + HammerManCountMove + " | LA : " + HammerManCountAttack + " | LL : " + HammerManCountLoad;
 								menu.nativeMenu.getItemByName("HammermanMenu2").label = "Hammerman : " + HammerManCount + " | LagMove : " + HammerManCountMove + " | LagAttack : " + HammerManCountAttack + " | LagLoad : " + HammerManCountLoad;
 							} catch (e) {}
 					showGameAlert(getText('HiringErrorRefresh', 'SemiAutoATMenuLang'));
@@ -6127,6 +6670,7 @@ function armyLoadGeneralsNEWHeimat() {
 					try
 							{
 								HammerManCountLoad++;
+								cachedLagHammer = "HM : " + HammerManCount + " | LM : " + HammerManCountMove + " | LA : " + HammerManCountAttack + " | LL : " + HammerManCountLoad;
 								menu.nativeMenu.getItemByName("HammermanMenu2").label = "Hammerman : " + HammerManCount + " | LagMove : " + HammerManCountMove + " | LagAttack : " + HammerManCountAttack + " | LagLoad : " + HammerManCountLoad;
 							} catch (e) {}
 					showGameAlert(getText('RefreshLoad', 'SemiAutoATMenuLang'));
@@ -6229,6 +6773,7 @@ function armyLoadGeneralsNEW() {
 							try
 							{
 								HammerManCountLoad++;
+								cachedLagHammer = "HM : " + HammerManCount + " | LM : " + HammerManCountMove + " | LA : " + HammerManCountAttack + " | LL : " + HammerManCountLoad;
 								menu.nativeMenu.getItemByName("HammermanMenu2").label = "Hammerman : " + HammerManCount + " | LagMove : " + HammerManCountMove + " | LagAttack : " + HammerManCountAttack + " | LagLoad : " + HammerManCountLoad;
 							} catch (e) {}
 							showGameAlert(getText('LoadRetry', 'SemiAutoATMenuLang'));
@@ -6782,6 +7327,7 @@ function battleAttackNEW()
 							try
 							{
 								HammerManCountAttack++;
+								cachedLagHammer = "HM : " + HammerManCount + " | LM : " + HammerManCountMove + " | LA : " + HammerManCountAttack + " | LL : " + HammerManCountLoad;
 								menu.nativeMenu.getItemByName("HammermanMenu2").label = "Hammerman : " + HammerManCount + " | LagMove : " + HammerManCountMove + " | LagAttack : " + HammerManCountAttack + " | LagLoad : " + HammerManCountLoad;
 							} catch (e) {}
 							
@@ -6865,7 +7411,7 @@ function battleMoveNEW()
 			if(battlePacket[item].grid > 0) {
 				battleTimedQueueAuto.add(function(){ battleSendGeneralNEW(spec, battlePacket[item].name, battlePacket[item].grid, 4, battlePacket[item].grid); });
 			} else {
-				battleTimedQueueAuto.add(function(){ armySendGeneralToStar(spec); });
+				battleTimedQueueAuto.add(function(){ armySendGeneralToStarCustom(spec); });
 			}
 
 			if(automatisierung && game.gi.isOnHomzone() == false)
@@ -6948,6 +7494,7 @@ function battleMoveNEW()
 						try
 							{
 								HammerManCountMove++;
+								cachedLagHammer = "HM : " + HammerManCount + " | LM : " + HammerManCountMove + " | LA : " + HammerManCountAttack + " | LL : " + HammerManCountLoad;
 								menu.nativeMenu.getItemByName("HammermanMenu2").label = "Hammerman : " + HammerManCount + " | LagMove : " + HammerManCountMove + " | LagAttack : " + HammerManCountAttack + " | LagLoad : " + HammerManCountLoad;
 							} catch (e) {}
 						
@@ -7045,6 +7592,25 @@ function shortcutsFreeAllUnitsNEW()
 	}
 }
 
+function armySendGeneralToStarCustom(spec)
+{
+	try
+	{
+		game.gi.mCurrentCursor.mCurrentSpecialist = spec;
+		var stask = new armySpecTaskDef();
+		stask.uniqueID = spec.GetUniqueID();
+		stask.subTaskID = 0;
+		game.gi.SendServerAction(95,12,game.gi.mCurrentCursor.GetGridPosition(),0,stask);
+		spec.SetTask(new armySpecTravelDef(game.gi,spec,0,12));
+	}
+	catch (error) {
+		//alert("Send to star error : " + error.message);
+		showGameAlert("Send to star: " + error);
+		RefreshGenesData(spec);
+		if(retrytryRunningMethod < 3){retrytryRunningMethod++; shortcutsReturnAllNEW(); showGameAlert('Retry - SendToStar erfolgreich');}else{showGameAlert('Retry x3 - SendToStar fehlgeschlagen');}
+	}
+}
+
 function shortcutsReturnAllNEW()
 {
 	try
@@ -7053,10 +7619,11 @@ function shortcutsReturnAllNEW()
 		safeReset('queueshortcutsReturnAllNEW');
 		queueshortcutsReturnAllNEW = new TimedQueue(1000);
 		swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
+			if(item == null || typeof item === undefined || item.GetTask() != null) { return; } //
 			if (game.player.GetPlayerId() == item.getPlayerID() && 
 				item.GetGarrisonGridIdx() > 0  && !item.IsInUse() && !item.isTravellingAway())
 			{
-				queueshortcutsReturnAllNEW.add(function(){ armySendGeneralToStar(item); });
+				queueshortcutsReturnAllNEW.add(function(){ armySendGeneralToStarCustom(item); });
 			}
 		});
 		queueshortcutsReturnAllNEW.add(function(){
@@ -7070,7 +7637,7 @@ function shortcutsReturnAllNEW()
 		if(retrytryRunningMethod < 3)
 		{
 			safeReset('queueshortcutsReturnAllNEW');
-			retrytryRunningMethod++; 
+			retrytryRunningMethod++;
 			shortcutsReturnAllNEW(); 
 			showGameAlert('Retry - shortcutsReturnAllNEW erfolgreich');
 			}
@@ -7089,10 +7656,11 @@ function shortcutsReturnAllNEWLagHammer()
 		safeReset('queueshortcutsReturnAllNEWLagHammer');
 		queueshortcutsReturnAllNEWLagHammer = new TimedQueue(1000);
 		swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
+			if(item == null || typeof item === undefined || item.GetTask() != null) { return; } //
 			if (game.player.GetPlayerId() == item.getPlayerID() && 
 				item.GetGarrisonGridIdx() > 0  && !item.IsInUse() && !item.isTravellingAway())
 			{
-				queueshortcutsReturnAllNEWLagHammer.add(function(){ armySendGeneralToStar(item); });
+				queueshortcutsReturnAllNEWLagHammer.add(function(){ armySendGeneralToStarCustom(item); });
 			}
 		});
 		queueshortcutsReturnAllNEWLagHammer.add(function(){
@@ -7396,6 +7964,12 @@ function LastRoundTrigger()
 	RundenanzahlCounterSzenario = 1337;
 }
 
+function LastRoundTriggerSzena()
+{
+	RundenanzahlCounter = 1337;
+	RundenanzahlCounterSzenario = 1337;
+}
+
 function MemTriggerClientRestart()
 {
 	try{
@@ -7414,7 +7988,7 @@ function MemTriggerClientRestart()
 function MemTriggerClientRestartNONAT()
 {
 	try{
-		if(user_fast_shortcut_settings.MemUeberwachungNONAT)
+		if(user_fast_shortcut_settings.MemUeberwachungNONAT && !user_fast_shortcut_settings_AutoAT.WasRestarted && !MyStart && stopScenario)
 		{
 			if((air.System.privateMemory / (1024 * 1024)) > user_fast_shortcut_settings.MemUeberwachungLimitNONAT)
 			{
@@ -7428,7 +8002,7 @@ function MemTriggerClientRestartNONAT()
 
 function MemTriggerClientRestartNONATTIME() {
 	try{
-		if (!user_fast_shortcut_settings.MemUeberwachungNONATTIME || MemTriggerClientRestartNONAT()) {
+		if (!user_fast_shortcut_settings.MemUeberwachungNONATTIME || MemTriggerClientRestartNONAT() || user_fast_shortcut_settings_AutoAT.WasRestarted || MyStart || !stopScenario || user_fast_shortcut_settings_AutoSzenario.Runde != 0 || user_fast_shortcut_settings_AutoAT.Runde != 0) {
 			if (user_fast_shortcut_settings.debugAT) {
 			debug("MemUeberwachungNONATTIME ist deaktiviert. Oder HI Grenze läuft");}
 			return false;
@@ -7478,7 +8052,7 @@ function MemTriggerClientRestartNONATTIME() {
 
 		if (nowHour > limitHour ||(nowHour === limitHour && nowMinute >= limitMinute)) 
 		{
-			if (user_fast_shortcut_settings_AutoAT.Runde === 0 && user_fast_shortcut_settings_AutoSzenario.Runde === 0) 
+			if (!MyStart && stopScenario) 
 			{
 				user_fast_shortcut_settings_MemTime.LastTimeRestartDate = todayDateStr;
 				MemTimesave();
@@ -7529,7 +8103,7 @@ function startTimeWatcher() {
 		timeWatcherInterval = setInterval(function () {
 			if (
 				user_fast_shortcut_settings.MemUeberwachungNONATTIME &&
-				!ATweitermachen &&
+				!MyStart &&
 				stopScenario &&
 				game.gi.isOnHomzone()
 			) {
@@ -7540,6 +8114,8 @@ function startTimeWatcher() {
 					debug("Zeitlimit überschritten – Neustart wird vorbereitet...");}
 					showGameAlert("Zeitlimit erreicht, Neustart demnächst!");
 					try {
+						cachedAutoATRundenanzahlLabel = "TIME - Zeitgrenze erreicht, Neustart demnächst!";
+						OverlayNeustart = true;
 						menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "TIME - Zeitgrenze erreicht, Neustart demnächst!";
 					} catch (e) {
 						debug("Fehler beim Setzen des Menüs: " + e);
@@ -7549,6 +8125,7 @@ function startTimeWatcher() {
 					ToolingMenuUpdateSzenaStarten(false);
 					ToolingMenuUpdate(false);
 					ToolingMenuUpdateMainMenu(false);
+					ToolingMenuUpdateMainMenu2(false);
 					clearInterval(timeWatcherInterval);
 					timeWatcherInterval = null;
 				} else {
@@ -7566,33 +8143,62 @@ function startTimeWatcher() {
 
 function shortcutGetPath()
 {
+	var useSequencer =
+		user_fast_shortcut_settings.Sequenzer === true &&
+		user_fast_shortcut_settings.ATSteps &&
+		user_fast_shortcut_settings.ATSteps.length > 0;
+
+	var currentID = null;
+
+	if (useSequencer) {
+
+		if (CurrentATStepIndex < 0 ||
+			CurrentATStepIndex >= user_fast_shortcut_settings.ATSteps.length)
+		{
+			showGameAlert("Sequencer: index out of range → fallback auf Standard-ID");
+			useSequencer = false;
+		}
+		else {
+			var step = user_fast_shortcut_settings.ATSteps[CurrentATStepIndex];
+			currentID = parseInt(step.ID, 10);
+
+			if (isNaN(currentID)) {
+				showGameAlert("Sequencer: Step-ID ist ungültig → fallback auf Standard-ID");
+				useSequencer = false;
+			}
+		}
+	}
+
+	if (!useSequencer) {
+		currentID = parseInt(user_fast_shortcut_settings.ATAuswahlID, 10);
+	}
+
+	if (isNaN(currentID)) {
+		showGameAlert("shortcutGetPath(): currentID ist ungültig → abbrechen");
+		return;
+	}
+
 	var item = shortcutGetPathArray;
-	
+
 	item.forEach(function(data, idx){
-		if(/--s[0-9]+p--/.test(data)) {
-			
+
+		if (/--s[0-9]+p--/.test(data)) {
 			return;
 		}
-		if(idx == user_fast_shortcut_settings.ATAuswahlID && PathATAuslesen)
-		{
-			ShortcutPathArray = [];
-			data.items.forEach(function(i, index) {
-					var label = "{0}".format(i);
-						var label2 = label.split(",")[0];	
-						ShortcutPathArray.push(label2);
-				});	
-		}
-		
-		if(idx == user_fast_shortcut_settings.ATAuswahlID && PathATAuslesen)
-		{
-			ShortcutPathArrayDirektSenden = [];
-			data.items.forEach(function(i, index) {
-					var label = "{0}".format(i);
-					var label2 = label.split(",")[0];	
-					ShortcutPathArrayDirektSenden.push(label2);
-				});	
-		}
 
+		if (idx === currentID && MyStart)
+		{
+			if (PathATAuslesen) {
+
+				ShortcutPathArray = data.items.map(function(i){
+					return String(i).split(",")[0];
+				});
+
+				ShortcutPathArrayDirektSenden = data.items.map(function(i){
+					return String(i).split(",")[0];
+				});
+			}
+		}
 		if(automatisierung && !MyStart && idx == GetIndexAT && !PathATAuslesen)
 		{
 			ShortcutPathArray = [];
@@ -7603,9 +8209,10 @@ function shortcutGetPath()
 						
 				});
 				GetIndexATAuslesen = false;	
-		}		
+		}
 	});
 }
+
 
 function shortcutGetpathVorlagenEnt()
 {
@@ -7756,17 +8363,90 @@ function shortcutGetpathVorlagenZonenbuffs()
 	}
 }
 
+function getTotalRounds() {
+	var useSequencer =
+    user_fast_shortcut_settings.Sequenzer === true &&
+    user_fast_shortcut_settings.ATSteps &&
+    user_fast_shortcut_settings.ATSteps.length > 0;
+    if (!useSequencer) {
+        return parseInt(user_fast_shortcut_settings.RundenanzahlSelector, 10);
+    }
+
+    return user_fast_shortcut_settings.ATSteps.reduce(function(sum, s) {
+        return sum + parseInt(s.Runden, 10);
+    }, 0);
+}
+
+function getCurrentGlobalRound() {
+	var useSequencer =
+    user_fast_shortcut_settings.Sequenzer === true &&
+    user_fast_shortcut_settings.ATSteps &&
+    user_fast_shortcut_settings.ATSteps.length > 0;
+    if (!useSequencer) {
+        return RundenanzahlCounter + 1;
+    }
+
+    var steps = user_fast_shortcut_settings.ATSteps;
+    if (!steps || steps.length === 0) {
+        return RundenanzahlCounter + 1;
+    }
+
+    var total = 0;
+
+    for (var i = 0; i < CurrentATStepIndex && i < steps.length; i++) {
+        total += parseInt(steps[i].Runden, 10);
+    }
+
+    total += (RundenanzahlCounter + 1);
+
+    return total;
+}
+
+
+function getCurrentGlobalRound_ForRestart(stepIndex, runde) {
+	var useSequencer =
+    user_fast_shortcut_settings.Sequenzer === true &&
+    user_fast_shortcut_settings.ATSteps &&
+    user_fast_shortcut_settings.ATSteps.length > 0;
+    if (!useSequencer) {
+        return runde;
+    }
+
+    var steps = user_fast_shortcut_settings.ATSteps;
+    if (!steps || steps.length === 0) {
+        return runde;
+    }
+
+    var total = 0;
+
+    for (var i = 0; i < stepIndex && i < steps.length; i++) {
+        total += parseInt(steps[i].Runden, 10);
+    }
+
+    total += (runde);
+
+    return total;
+}
+
 function ATStart() {
 	if (PathATAuslesen) {
 		shortcutGetPath();
 		PathATAuslesen = false;
 	}
+	
+	var useSequencer =
+    user_fast_shortcut_settings.Sequenzer === true &&
+    user_fast_shortcut_settings.ATSteps &&
+    user_fast_shortcut_settings.ATSteps.length > 0;
 
 	function checkATStart() {
 		if(!automatisierung)
 		{
 			return;
 		}
+		
+		
+		
 		if (game.gi.isOnHomzone() == false && automatisierung == true && game.gi.mCurrentPlayer.mIsAdventureZone) {
 			if (WoBinIch == 0) {
 				menu.nativeMenu.getItemByName("DebugMethoden").label = "ATStart() - im AT";
@@ -7801,16 +8481,16 @@ function ATStart() {
 				};
 				shortcutsAutoFunc(event);
 			}
-		} else if (game.gi.isOnHomzone() == true && ATweitermachen == true && RundenanzahlCounter < user_fast_shortcut_settings.RundenanzahlSelector) {
+		} else if (game.gi.isOnHomzone() == true && ATweitermachen == true && RundenanzahlCounter < (useSequencer ? user_fast_shortcut_settings.ATSteps[CurrentATStepIndex].Runden : user_fast_shortcut_settings.RundenanzahlSelector)) {
 			menu.nativeMenu.getItemByName("DebugMethoden").label = "ATStart() - Auf Heimatinsel";
 			game.showAlert(getText('AutoATMonitoringActive', 'SemiAutoATMenuLang'));
 			game.gi.mClientMessages.SendMessagetoServer(1037, game.gi.mCurrentViewedZoneID, null); //Test 0300625
 			showGameAlert('Auto Zone Refresh (F2)'); //Test 0300625
 			try {
-				var RundeAktuell = RundenanzahlCounter + 1;
-				menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "AutoAT Runde : " + RundeAktuell;
-			} catch (e) {}
-
+				var aktuelleRunde = getCurrentGlobalRound();
+				var gesamtRunden  = getTotalRounds();
+				//var RundeAktuell = RundenanzahlCounter + 1;
+				menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "AutoAT Runde: " + aktuelleRunde + " von " + gesamtRunden; cachedAutoATRundenanzahlLabel = "AutoAT Runde: " + aktuelleRunde + " von " + gesamtRunden;}catch (e) {}
 			if (user_fast_shortcut_settings.debugAT) {
 				debug("RundenanzahlCounter: " + RundenanzahlCounter);
 				debug("Direktsenden Index Länge: " + ShortcutPathArrayDirektSenden.length);
@@ -8207,21 +8887,59 @@ function ToHeimatInsel()
 							{
 								return;
 							}
-							if(ATweitermachen && automatisierung && RundenanzahlCounter < user_fast_shortcut_settings.RundenanzahlSelector)
+							
+							var useSequencer =
+							user_fast_shortcut_settings.Sequenzer === true &&
+							user_fast_shortcut_settings.ATSteps &&
+							user_fast_shortcut_settings.ATSteps.length > 0;
+							
+							if(useSequencer)
 							{
+								if(game.gi.isOnHomzone() == true && ATweitermachen == true && automatisierung && RundenanzahlCounter == user_fast_shortcut_settings.ATSteps[CurrentATStepIndex].Runden)
+								{
+									CurrentATStepIndex++;
+									RundenanzahlCounter = 0;
+									if (CurrentATStepIndex >= user_fast_shortcut_settings.ATSteps.length) {
+										game.showAlert(getText('AutoATStopRoundCount', 'SemiAutoATMenuLang'));
+										var event = {
+											target: {
+												name: getText('DirectShortcutOFF', 'SemiAutoATMenuLang')
+											}
+										};
+										shortcutsAutoFunc(event);
+										return;
+									}
+								}
+							}
+							
+							if(game.gi.isOnHomzone() && ATweitermachen && automatisierung && RundenanzahlCounter < (useSequencer ? user_fast_shortcut_settings.ATSteps[CurrentATStepIndex].Runden : user_fast_shortcut_settings.RundenanzahlSelector))
+							{
+								PathATAuslesen = true;
 								if(user_fast_shortcut_settings.MemUeberwachung)
 								{
 									if(MemTriggerClientRestart())
 									{
-										showGameAlert(getText('MemInAT', 'SemiAutoATMenuLang') + humanMemorySize(air.System.privateMemory, 1) + getText('MemInAT2', 'SemiAutoATMenuLang'));
-										try{menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "AutoModus - Speichergrenze erreicht, Neustart demnächst!";}catch(e){}
 										user_fast_shortcut_settings_AutoAT.Runde = RundenanzahlCounter;
+										user_fast_shortcut_settings_AutoAT.CurrentATStepIndex = CurrentATStepIndex;
+										user_fast_shortcut_settings_AutoAT.WasRestarted = true;
+										OverlayAutoATNeustart = true;
 										AutoATsave();
+										showGameAlert(getText('MemInAT', 'SemiAutoATMenuLang') + humanMemorySize(air.System.privateMemory, 1) + getText('MemInAT2', 'SemiAutoATMenuLang'));
+										var globaleRunde = getCurrentGlobalRound_ForRestart(
+												user_fast_shortcut_settings_AutoAT.CurrentATStepIndex,
+												user_fast_shortcut_settings_AutoAT.Runde
+											);
+
+											var gesamtRunden = getTotalRounds();
+											OverlayNeustart = true;
+											cachedAutoATRundenanzahlLabel = "AutoAT Runden: " + globaleRunde + " von " + gesamtRunden +	" (fertig) | AutoModus - Speichergrenze erreicht, Neustart demnächst!";
+											menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "AutoAT Runden: " + globaleRunde + " von " + gesamtRunden +	" (fertig) | AutoModus - Speichergrenze erreicht, Neustart demnächst!";
 										ToolingMenuUpdateSzenaMenu(false);
 										ToolingMenuUpdateSzenaStoppen(false);
 										ToolingMenuUpdateSzenaStarten(false);
 										ToolingMenuUpdate(false);
 										ToolingMenuUpdateMainMenu(false);
+										ToolingMenuUpdateMainMenu2(false);
 									}
 									else
 									{
@@ -8313,12 +9031,16 @@ function ATStartBuffen()
 	else if(game.gi.isOnHomzone() == true && automatisierung && ATweitermachen)
 	{
 		menu.nativeMenu.getItemByName("DebugMethoden").label = "ATStartBuffen() - AT Buffen";
+		var useSequencer =
+		user_fast_shortcut_settings.Sequenzer === true &&
+		user_fast_shortcut_settings.ATSteps &&
+		user_fast_shortcut_settings.ATSteps.length > 0;
 		var MyBuffID;
 		var buffVector = [];
 		try{
 			buffVector = CHAOS_CURRENT_PLAYER().getAvailableBuffs_vector();
 			buffVector.forEach(function(data){
-				if(data.GetResourceName_string() == user_fast_shortcut_settings.ATAuswahl && data.GetBuffDefinition().GetName_string() == "Adventure") {
+				if(data.GetResourceName_string() == (useSequencer ? user_fast_shortcut_settings.ATSteps[CurrentATStepIndex].Name : user_fast_shortcut_settings.ATAuswahl) && data.GetBuffDefinition().GetName_string() == "Adventure") {
 					BuffGefunden = true;
 					MyBuffID = data.GetUniqueId();
 				}
@@ -8342,9 +9064,12 @@ function ATStartBuffen()
 				}
 				if(BuffGefunden && !ATnochAktiv)
 				{
-					game.showAlert(getText('Buffing', 'SemiAutoATMenuLang') + user_fast_shortcut_settings.ATAuswahl + " | ID: " + MyBuffID);
+					var cachedATNameGetText = CHAOS_GET_TEXT();
+					game.showAlert(getText('Buffing', 'SemiAutoATMenuLang') + (useSequencer ? cachedATNameGetText(user_fast_shortcut_settings.ATSteps[CurrentATStepIndex].Name) : cachedATNameGetText(user_fast_shortcut_settings.ATAuswahl)) + " | ID: " + MyBuffID);
 					game.gi.SendServerAction(61, 0, 0, 0, MyBuffID);
 					ATisRunning();
+					//cachedATName = (useSequencer ? cachedATNameGetText(user_fast_shortcut_settings.ATSteps[CurrentATStepIndex].Name) : cachedATNameGetText(user_fast_shortcut_settings.ATAuswahl));
+					cachedATNameRaw = (useSequencer ? user_fast_shortcut_settings.ATSteps[CurrentATStepIndex].Name : user_fast_shortcut_settings.ATAuswahl);
 				}
 				else
 				{
@@ -8522,6 +9247,10 @@ function shortcutsAddHandler2(event)
 			shortcutsAutoFuncMakeMenu();
 			shortcutsWindow.withHeader('.shortcutsSaved').fadeIn();
 			setTimeout(function() { shortcutsWindow.withHeader('.shortcutsSaved').fadeOut(); }, 1000);
+			try{
+				shortcutGetPathArray = [];
+				$.extend(shortcutGetPathArray, readSettings(null, 'shortcuts'));
+			}catch(e){}
 		});
 		shortcutsWindow.withHeader('.renamePart').click(function(){
 			var des = prompt("New folder name", '');
@@ -8535,10 +9264,6 @@ function shortcutsAddHandler2(event)
 	}
 	shortcutsRefresh();
 	shortcutsWindow.show();
-	try{
-		shortcutGetPathArray = [];
-		$.extend(shortcutGetPathArray, readSettings(null, 'shortcuts'));
-	}catch(e){}
 }
 
 function shortcutsselectTextFile2(type) 
@@ -8577,22 +9302,20 @@ var ShortcutCurrentNameIDUeberwachungInnerIndex4 = [];
 var ShortcutCurrentNameIDUeberwachungInnerIndex5 = [];
 var ShortcutCurrentNameIDUeberwachungInnerIndex6 = [];
 
-function FastShortcutSettingsHandler(event)
+function FastShortcutSettingsHandlerAT(event)
 {
-	if (!_FastShortcutSettingsViewerModalInitialized)
+	if (!_FastShortcutSettingsATViewerModalInitialized)
 	{
-		$('div[role="dialog"]:not(#FastShortcutSettings):visible').modal('hide');
-		$('#FastShortcutSettings').remove();
+		$('div[role="dialog"]:not(#FastShortcutSettingsAT):visible').modal('hide');
+		$('#FastShortcutSettingsAT').remove();
 	}
 	
-	user_fast_shortcut_settings.VorlagenUeberwachungEntSafe = true;
-	user_fast_shortcut_settings.VorlagenUeberwachungGeoSafe = true;
-	user_fast_shortcut_settings.VorlagenUeberwachungBuffsSafe = true;
-	user_fast_shortcut_settings.VorlagenUeberwachungAusbauSafe = true;
-	user_fast_shortcut_settings.VorlagenUeberwachungBauenSafe = true;
-	user_fast_shortcut_settings.VorlagenUeberwachungZonenbuffsSafe = true;
+	try{
+		var shortcutGetPathArray = [];
+		$.extend(shortcutGetPathArray, readSettings(null, 'shortcuts'));
+	}catch(e){}
 	
-	var w = new Modal('FastShortcutSettings', utils.getImageTag('icon_dice.png', '45px') + ' ' + getText('Title', 'SemiAutoATMenuLang') + "<div style='text-align: center; font-size: smaller;'>"+getText('Anleitung', 'SemiAutoATMenuLang')+": https://a-calc.de/dsoinfo.html</div>");
+	var w = new Modal('FastShortcutSettingsAT', utils.getImageTag('icon_dice.png', '45px') + ' ' + getText('ATSettings', 'SemiAutoATMenuLang') + "<div style='text-align: center; font-size: smaller;'>"+getText('Anleitung', 'SemiAutoATMenuLang')+": https://pure-chaos.de/dsoinfo.html</div>");
 	var createButton = function(id, text) {
 		return $('<button>', { 
 			'style': 'cursor: pointer;text-decoration:none;color:#000;height: 20px;padding: 0px;',
@@ -8657,6 +9380,8 @@ function FastShortcutSettingsHandler(event)
 	$('<option>', { 'value': 'RaidingTheRaiders' }).text(loca.GetText("ADN", "RaidingTheRaiders")),
 	$('<option>', { 'value': 'TheDarkPriests' }).text(loca.GetText("ADN", "TheDarkPriests")),
 	$('<option>', { 'value': 'BuffAdventures_LostCity' }).text(loca.GetText("ADN", "BuffAdventures_LostCity")),
+	$('<option>', { 'value': 'BuffAdventures_TF_Stage01' }).text(loca.GetText("SHI", "BuffAdventures_TF_Stage01")),
+	$('<option>', { 'value': 'BuffAdventures_Miners' }).text(loca.GetText("ADN", "BuffAdventures_Miners")),
 	$('<option>', { 'value': 'MotherLove' }).text(loca.GetText("ADN", "MotherLove")),
 	$('<option>', { 'value': 'Birthday2013MilitaryAdventure1ShopVersion' }).text(loca.GetText("SHI", "AdventureMilitaryBirthday1")),
 	$('<option>', { 'value': 'Birthday2013MilitaryAdventure2ShopVersion' }).text(loca.GetText("SHI", "AdventureMilitaryBirthday2")),
@@ -8667,6 +9392,7 @@ function FastShortcutSettingsHandler(event)
 	$('<option>', { 'value': 'MiadTikkiIsland' }).text(loca.GetText("ADN", "MiadTikkiIsland")),
 	$('<option>', { 'value': 'EoWEventAdventure' }).text(loca.GetText("ADN", "EoWEventAdventure")),
 	$('<option>', { 'value': 'BuffAdventures_RaidOfTheNords' }).text(loca.GetText("ADN", "BuffAdventures_RaidOfTheNords")),
+	$('<option>', { 'value': 'BuffAdventures_DragonsRoost' }).text(loca.GetText("ADN", "BuffAdventures_DragonsRoost")),
 	$('<option>', { 'value': 'OldFriends' }).text(loca.GetText("ADN", "OldFriends")),
 	$('<option>', { 'value': 'TheSiege' }).text(loca.GetText("ADN", "TheSiege")),
 	$('<option>', { 'value': 'BuffAdventures_Evil_Queen_Hansel_Gretel' }).text(loca.GetText("ADN", "BuffAdventures_Evil_Queen_Hansel_Gretel")),
@@ -8802,6 +9528,377 @@ function FastShortcutSettingsHandler(event)
 	$('<option>', { 'value': 'GeneralSpeedBuff_Mystical' }).text(loca.GetText("LAB", "GeneralSpeedBuff_Mystical"))
 	
 	]);
+	
+	var buffNameSöldnerSelector = $('<select>', { 'class': 'form-control buffNameSöldnerSelector' });
+	buffNameSöldnerSelector.append([
+	$('<option>', { 'value': 'Recruit' }).text(loca.GetText("RES", "Recruit")), 
+	$('<option>', { 'value': 'Soldier' }).text(loca.GetText("RES", "Soldier")),
+	$('<option>', { 'value': 'Bowman' }).text(loca.GetText("RES", "Bowman"))
+	
+	]);
+	
+	var MemUeberwachungLimitValue = $('<select>', { 'class': 'form-control MemUeberwachungLimitValue' });
+	for (var i = 1000; i <= 5000; i += 100) {
+    MemUeberwachungLimitValue.append($('<option>', { 'value': i }).text((i / 1000).toFixed(1) + " GB"));
+	}
+	
+	var ObsiSelector = $('<select>', { 'class': 'form-control ObsiSelector' });
+	var AllBuffsObsi;
+	try{
+	AllBuffsObsi = GebaeudeBuffsEinlesen("Observatory");
+	AllBuffsObsi.forEach(function(item){
+		ObsiSelector.append([
+		$('<option>', { 'value': item.SelectedOrderType }).text(item.Name)
+		]);
+	});	
+	}catch(e){}
+	
+	var SpaehSelector = $('<select>', { 'class': 'form-control SpaehSelector' });
+	var AllBuffsSpaeh;
+	try{
+	AllBuffsSpaeh = GebaeudeBuffsEinlesen("EspionageBuilding");
+	AllBuffsSpaeh.forEach(function(item){
+		SpaehSelector.append([
+		$('<option>', { 'value': item.SelectedOrderType }).text(item.Name)
+		]);
+	});	
+	}catch(e){}
+	
+	var FeldlazaSelector = $('<select>', { 'class': 'form-control FeldlazaSelector' });
+	var AllBuffsFeldlaza;
+	try{
+	AllBuffsFeldlaza = GebaeudeBuffsEinlesen("GrandFieldHospital");
+	AllBuffsFeldlaza.forEach(function(item){
+		FeldlazaSelector.append([
+		$('<option>', { 'value': item.SelectedOrderType }).text(item.Name)
+		]);
+	});	
+	}catch(e){}
+	
+	var FreiluftSelector = $('<select>', { 'class': 'form-control FreiluftSelector' });
+	var AllBuffsFreiluft;
+	try{
+	AllBuffsFreiluft = GebaeudeBuffsEinlesen("OutdoorCanteen");
+	AllBuffsFreiluft.forEach(function(item){
+		FreiluftSelector.append([
+		$('<option>', { 'value': item.SelectedOrderType }).text(item.Name)
+		]);
+	});	
+	}catch(e){}
+
+	html += utils.createTableRow([[6, '------------------------------------------------Auto AT Config--------------------------------------------'], [6, ""]]);
+	html += utils.createTableRow([[6, getText('ATNameSelection', 'SemiAutoATMenuLang')], [6, ATSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText('ATIndexSelection', 'SemiAutoATMenuLang')], [6, ATSelectorID.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText('AutoATRounds', 'SemiAutoATMenuLang')], [6, RundenanzahlSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[11, '<b>AT Ablauffolgen (Sequenzer)</b>'], [1, createSwitch('Sequenzer', user_fast_shortcut_settings.Sequenzer)]]);
+	html += utils.createTableRow([[12, '<b>AT Wahl/AT Index/AT Rundenanzahl beachten vor dem hinzufügen!!!</b>']]);
+	html += utils.createTableRow([
+		[12, '<button id="AddStepAT" class="btn btn-primary" style="width:100%;">+</button>']
+	]);
+	html += utils.createTableRow([
+		[12, '<ul id="ATStepList" style="margin-top:10px; padding-left:15px;"></ul>']
+	]);
+	html += utils.createTableRow([[11, getText('BattleSoundsStartEnd', 'SemiAutoATMenuLang')], [1, createSwitch('Kampfgeraeuschesound', user_fast_shortcut_settings.Kampfgeraeusche)]]);
+	html += utils.createTableRow([[11, getText('SoundOnTemplateErrorRetry', 'SemiAutoATMenuLang')], [1, createSwitch('Fehlergeraeusche', user_fast_shortcut_settings.Fehlergeraeusche)]]);
+	/* html += utils.createTableRow([[11, getText('NoGenesLanding', 'SemiAutoATMenuLang')], [1, createSwitch('NoGenesLanding', user_fast_shortcut_settings.NoGenesLanding)]]); */
+	html += utils.createTableRow([[11, getText('UnloadAllTroops', 'SemiAutoATMenuLang')], [1, createSwitch('UnloadAllTroops', user_fast_shortcut_settings.UnloadAllTroops)]]);
+	html += utils.createTableRow([[11, getText('HorseshoeBuffing', 'SemiAutoATMenuLang')], [1, createSwitch('Hufeisenbuffen', user_fast_shortcut_settings.Hufeisenbuffen)]]);
+	html += utils.createTableRow([[6, getText('HorseshoeSelection', 'SemiAutoATMenuLang')], [6, buffNameHufeisenSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[11, getText('BlackWhirlwindBuffing', 'SemiAutoATMenuLang')], [1, createSwitch('Wirbelwindbuffen', user_fast_shortcut_settings.Wirbelwindbuffen)]]);
+	html += utils.createTableRow([[11, getText('LeftoversBuffing', 'SemiAutoATMenuLang')], [1, createSwitch('Resteessenbuffen', user_fast_shortcut_settings.Resteessenbuffen)]]);
+	html += utils.createTableRow([[11, getText('ObservatoryBuffing', 'SemiAutoATMenuLang')], [1, createSwitch('Obsibuffen', user_fast_shortcut_settings.Obsibuffen)]]);
+	html += utils.createTableRow([[6, getText('StarMapSelection', 'SemiAutoATMenuLang')], [6, ObsiSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[11, getText('OutpostBuffing', 'SemiAutoATMenuLang')], [1, createSwitch('Spaehbuffen', user_fast_shortcut_settings.Spaehbuffen)]]);
+	html += utils.createTableRow([[6, getText('CombatInfoSelection', 'SemiAutoATMenuLang')], [6, SpaehSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[11, getText('FieldHospitalBuffing', 'SemiAutoATMenuLang')], [1, createSwitch('Feldlazabuffen', user_fast_shortcut_settings.Feldlazabuffen)]]);
+	html += utils.createTableRow([[6, getText('HealthPlanSelection', 'SemiAutoATMenuLang')], [6, FeldlazaSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[11, getText('OpenAirCanteenBuffing', 'SemiAutoATMenuLang')], [1, createSwitch('Freiluftbuffen', user_fast_shortcut_settings.Freiluftbuffen)]]);
+	html += utils.createTableRow([[6, getText('MealSelection', 'SemiAutoATMenuLang')], [6, FreiluftSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[9, '<br>']]);
+	html += utils.createTableRow([[6, getText('WaitingTimes', 'SemiAutoATMenuLang')], [6, ""]]);
+	html += utils.createTableRow([[6, getText('WaitingTimeBetweenTemplates', 'SemiAutoATMenuLang')], [6, WarteZeitZwischenVorlagenSelector.prop('outerHTML')]]); 
+	html += utils.createTableRow([[6, getText('WaitingTimeGetGenesFromStar', 'SemiAutoATMenuLang')], [6, WarteZeitAusSternVersetzenSelector.prop('outerHTML')]]); 
+	html += utils.createTableRow([[6, getText('WaitingTimeAutomaticGenesHome', 'SemiAutoATMenuLang')], [6, WarteZeitWeiterNachGenesNachHauseSelector.prop('outerHTML')]]); 
+	html += utils.createTableRow([[6, getText('RestartATAutomatic', 'SemiAutoATMenuLang')], [6, WarteZeitZwischenATNeustartSelector.prop('outerHTML')]]); 
+	html += utils.createTableRow([[6, getText('SendGenesToAT', 'SemiAutoATMenuLang')], [6, WarteZeitZwischenATAutoStartSelector.prop('outerHTML')]]); 
+	html += utils.createTableRow([[6, getText('SwitchFromHomeIslandToAT', 'SemiAutoATMenuLang')], [6, WarteZeitZwischenInselswitchSelector.prop('outerHTML')]]); 
+	html += utils.createTableRow([[6, getText('StartMonitoringInAT', 'SemiAutoATMenuLang')], [6, WarteZeitZwischenAutomatikstartenimATSelector.prop('outerHTML')]]); 
+	html += utils.createTableRow([[6, getText('AutomaticQuestCompletionMonitoring', 'SemiAutoATMenuLang')], [6, WarteZeitZwischenQuestÜberwachungSelector.prop('outerHTML')]]); 
+	html += utils.createTableRow([[6, getText('SwitchFromATToHomeIsland', 'SemiAutoATMenuLang')], [6, WarteZeitZwischenZurHeimatinselATEndeSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[9, '<br>']]);
+	html += utils.createTableRow([[6, getText('Hiring', 'SemiAutoATMenuLang')], [6, ""]]);
+	html += utils.createTableRow([[9, getText('Anleitung2', 'SemiAutoATMenuLang')], [3, ""]]);
+	html += utils.createTableRow([[6, getText('RecruitsChoice', 'SemiAutoATMenuLang')], [6, buffNameSöldnerSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[9, '<br>']]);
+	html += utils.createTableRow([[6, getText('MemoryMonitoring', 'SemiAutoATMenuLang')], [6, ""]]);
+	html += utils.createTableRow([[11, getText('MemoryMonitoringEnableAutoAT', 'SemiAutoATMenuLang')], [1, createSwitch('MemUeberwachung', user_fast_shortcut_settings.MemUeberwachung)]]); 
+	html += utils.createTableRow([[6, getText('MemoryLimitLabel', 'SemiAutoATMenuLang')], [6, MemUeberwachungLimitValue.prop('outerHTML')]]); 
+	html += utils.createTableRow([[9, getText('MemoryLimitRestartClient', 'SemiAutoATMenuLang')], [3, ""]]); 
+	html += utils.createTableRow([[9, '<br>']]);
+	html += utils.createTableRow([[6, getText('Tools2', 'SemiAutoATMenuLang')], [6, ""]]);
+	html += utils.createTableRow([[11, getText('ShowGridAndGenesIDsInMenu', 'SemiAutoATMenuLang')], [1, createSwitch('debugPlaygroundGridGenesIDs', user_fast_shortcut_settings.debugPlaygroundGridGenesIDs)]]);
+	html += utils.createTableRow([[11, getText('HammermanSurveillance', 'SemiAutoATMenuLang')], [1, createSwitch('Hammerman', user_fast_shortcut_settings.Hammerman)]]);
+	html += utils.createTableRow([[11, getText('HammermanAntiLagMethods', 'SemiAutoATMenuLang')], [1, createSwitch('HammermanMethoden', user_fast_shortcut_settings.HammermanMethoden)]]);
+	html += utils.createTableRow([[9, '<br>']]);
+	html += utils.createTableRow([[6, getText('Debug', 'SemiAutoATMenuLang')], [6, ""]]);
+	html += utils.createTableRow([[11, getText('DebugErrorAnalysisIntroInspector', 'SemiAutoATMenuLang')], [1, createSwitch('debugAT', user_fast_shortcut_settings.debugAT)]]);
+	html += utils.createTableRow([[11, getText('DebugFindATBuffNamesIntroInspector', 'SemiAutoATMenuLang')], [1, createSwitch('debugPlayground', user_fast_shortcut_settings.debugPlayground)]]);
+	html += utils.createTableRow([[11, getText('DebugErrorAnalysisQuestIntroInspector', 'SemiAutoATMenuLang')], [1, createSwitch('debugPlaygroundQuestNamen', user_fast_shortcut_settings.debugPlaygroundQuestNamen)]]);
+	html += utils.createTableRow([[11, getText('PersonalTestingPiTi', 'SemiAutoATMenuLang')], [1, createSwitch('Personal', user_fast_shortcut_settings.PersonalTesting)]]);
+
+	w.Body().html(html + '<div>');
+	w.withBody('div.row').addClass('nohide');
+
+	w.withBody('.ATAuswahl').val(user_fast_shortcut_settings.ATAuswahl).change(function(e) { user_fast_shortcut_settings.ATAuswahl = $(e.target).val(); });
+	w.withBody('.ATAuswahlID').val(user_fast_shortcut_settings.ATAuswahlID).change(function(e) { user_fast_shortcut_settings.ATAuswahlID = $(e.target).val(); });
+	w.withBody('.RundenanzahlSelector').val(user_fast_shortcut_settings.RundenanzahlSelector).change(function(e) { user_fast_shortcut_settings.RundenanzahlSelector = $(e.target).val(); });
+	w.withBody('#Kampfgeraeuschesound').change(function(e) { user_fast_shortcut_settings.Kampfgeraeusche = $(e.target).is(':checked'); });
+	w.withBody('#Sequenzer').change(function(e) { user_fast_shortcut_settings.Sequenzer = $(e.target).is(':checked'); });
+	w.withBody('#Fehlergeraeusche').change(function(e) { user_fast_shortcut_settings.Fehlergeraeusche = $(e.target).is(':checked'); });
+	/* w.withBody('#NoGenesLanding').change(function(e) { user_fast_shortcut_settings.NoGenesLanding = $(e.target).is(':checked'); }); */
+	w.withBody('#UnloadAllTroops').change(function(e) { user_fast_shortcut_settings.UnloadAllTroops = $(e.target).is(':checked'); });
+	w.withBody('#Hufeisenbuffen').change(function(e) { user_fast_shortcut_settings.Hufeisenbuffen = $(e.target).is(':checked'); });
+	w.withBody('.buffNameHufeisenSelector').val(user_fast_shortcut_settings.buffNameHufeisenSelector).change(function(e) { user_fast_shortcut_settings.buffNameHufeisenSelector = $(e.target).val(); });
+	w.withBody('#Wirbelwindbuffen').change(function(e) { user_fast_shortcut_settings.Wirbelwindbuffen = $(e.target).is(':checked'); });
+	w.withBody('#Resteessenbuffen').change(function(e) { user_fast_shortcut_settings.Resteessenbuffen = $(e.target).is(':checked'); });
+	w.withBody('#Obsibuffen').change(function(e) { user_fast_shortcut_settings.Obsibuffen = $(e.target).is(':checked'); });
+	w.withBody('.ObsiSelector').val(user_fast_shortcut_settings.ObsiSelector).change(function(e) { user_fast_shortcut_settings.ObsiSelector = $(e.target).val(); });
+	w.withBody('#Spaehbuffen').change(function(e) { user_fast_shortcut_settings.Spaehbuffen = $(e.target).is(':checked'); });
+	w.withBody('.SpaehSelector').val(user_fast_shortcut_settings.SpaehSelector).change(function(e) { user_fast_shortcut_settings.SpaehSelector = $(e.target).val(); });
+	w.withBody('#Feldlazabuffen').change(function(e) { user_fast_shortcut_settings.Feldlazabuffen = $(e.target).is(':checked'); });
+	w.withBody('.FeldlazaSelector').val(user_fast_shortcut_settings.FeldlazaSelector).change(function(e) { user_fast_shortcut_settings.FeldlazaSelector = $(e.target).val(); });
+	w.withBody('#Freiluftbuffen').change(function(e) { user_fast_shortcut_settings.Freiluftbuffen = $(e.target).is(':checked'); });
+	w.withBody('.FreiluftSelector').val(user_fast_shortcut_settings.FreiluftSelector).change(function(e) { user_fast_shortcut_settings.FreiluftSelector = $(e.target).val(); });
+	w.withBody('.WarteZeitZwischenVorlagenSelector').val(user_fast_shortcut_settings.WarteZeitZwischenVorlagenSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitZwischenVorlagenSelector = $(e.target).val(); });
+	w.withBody('.WarteZeitAusSternVersetzenSelector').val(user_fast_shortcut_settings.WarteZeitAusSternVersetzenSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitAusSternVersetzenSelector = $(e.target).val(); });
+	w.withBody('.WarteZeitWeiterNachGenesNachHauseSelector').val(user_fast_shortcut_settings.WarteZeitWeiterNachGenesNachHauseSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitWeiterNachGenesNachHauseSelector = $(e.target).val(); });
+	w.withBody('.WarteZeitZwischenATNeustartSelector').val(user_fast_shortcut_settings.WarteZeitZwischenATNeustartSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitZwischenATNeustartSelector = $(e.target).val(); });
+	w.withBody('.WarteZeitZwischenATAutoStartSelector').val(user_fast_shortcut_settings.WarteZeitZwischenATAutoStartSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitZwischenATAutoStartSelector = $(e.target).val(); });
+	w.withBody('.WarteZeitZwischenInselswitchSelector').val(user_fast_shortcut_settings.WarteZeitZwischenInselswitchSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitZwischenInselswitchSelector = $(e.target).val(); });
+	w.withBody('.WarteZeitZwischenAutomatikstartenimATSelector').val(user_fast_shortcut_settings.WarteZeitZwischenAutomatikstartenimATSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitZwischenAutomatikstartenimATSelector = $(e.target).val(); });
+	w.withBody('.WarteZeitZwischenQuestÜberwachungSelector').val(user_fast_shortcut_settings.WarteZeitZwischenQuestÜberwachungSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitZwischenQuestÜberwachungSelector = $(e.target).val(); });
+	w.withBody('.WarteZeitZwischenZurHeimatinselATEndeSelector').val(user_fast_shortcut_settings.WarteZeitZwischenZurHeimatinselATEndeSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitZwischenZurHeimatinselATEndeSelector = $(e.target).val(); });
+	w.withBody('#SoeldnerStern').change(function(e) { user_fast_shortcut_settings.SollBuffenImATSoeldner = $(e.target).is(':checked'); });
+	w.withBody('.buffNameSöldnerSelector').val(user_fast_shortcut_settings.buffNameSöldnerSelector).change(function(e) { user_fast_shortcut_settings.buffNameSöldnerSelector = $(e.target).val(); });
+	w.withBody('#Hammerman').change(function(e) { user_fast_shortcut_settings.Hammerman = $(e.target).is(':checked'); });
+	w.withBody('#HammermanMethoden').change(function(e) { user_fast_shortcut_settings.HammermanMethoden = $(e.target).is(':checked'); });
+	w.withBody('#MemUeberwachung').change(function(e) { user_fast_shortcut_settings.MemUeberwachung = $(e.target).is(':checked'); });
+	w.withBody('.MemUeberwachungLimitValue').val(user_fast_shortcut_settings.MemUeberwachungLimit).change(function(e) { user_fast_shortcut_settings.MemUeberwachungLimit = $(e.target).val(); });
+	w.withBody('#debugAT').change(function(e) { user_fast_shortcut_settings.debugAT = $(e.target).is(':checked'); });
+	w.withBody('#debugPlayground').change(function(e) { user_fast_shortcut_settings.debugPlayground = $(e.target).is(':checked'); });
+	w.withBody('#debugPlaygroundGridGenesIDs').change(function(e) { user_fast_shortcut_settings.debugPlaygroundGridGenesIDs = $(e.target).is(':checked'); });
+	w.withBody('#debugPlaygroundQuestNamen').change(function(e) { user_fast_shortcut_settings.debugPlaygroundQuestNamen = $(e.target).is(':checked'); });
+	w.withBody('#Personal').change(function(e) { user_fast_shortcut_settings.PersonalTesting = $(e.target).is(':checked'); });
+
+if (!user_fast_shortcut_settings.ATSteps)
+    user_fast_shortcut_settings.ATSteps = [];
+
+function moveATStep(fromIndex, toIndex) {
+    var arr = user_fast_shortcut_settings.ATSteps;
+
+    if (toIndex < 0 || toIndex >= arr.length) return;
+
+    var tmp = arr[fromIndex];
+    arr[fromIndex] = arr[toIndex];
+    arr[toIndex] = tmp;
+
+    RefreshATStepList();
+}
+
+function RefreshATStepList() {
+    var ul = w.withBody('#ATStepList');
+    ul.html("");
+
+    user_fast_shortcut_settings.ATSteps.forEach(function(step, index) {
+
+        var translatedName = step.Translated;
+		var RawName = step.Name;
+        var isFirst = index === 0;
+        var isLast = index === user_fast_shortcut_settings.ATSteps.length - 1;
+
+        var li = $('<li>').css({
+            position: 'relative',
+            padding: '4px 80px 4px 4px',
+            marginBottom: '4px',
+            fontSize: '13px'
+        });
+
+        var txt = $('<span>');
+		txt.append((index + 1) + ". ");
+		txt.append(getImageTag(RawName, '22px'));
+		txt.append(document.createTextNode(
+			" " + translatedName +
+			" | AT Index: " + step.ID +
+			" | Runden: " + step.Runden
+		));
+
+        var upBtn = $('<button>')
+            .text('↑')
+            .css({
+                position: 'absolute',
+                right: '55px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: '#5bc0de',
+                border: 'none',
+                color: 'white',
+                width: '22px',
+                height: '22px',
+                fontSize: '14px',
+                borderRadius: '4px',
+                cursor: isFirst ? 'not-allowed' : 'pointer',
+                opacity: isFirst ? 0.4 : 1
+            })
+            .prop('disabled', isFirst)
+            .click(function () {
+                moveATStep(index, index - 1);
+            });
+
+        var downBtn = $('<button>')
+            .text('↓')
+            .css({
+                position: 'absolute',
+                right: '30px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: '#5bc0de',
+                border: 'none',
+                color: 'white',
+                width: '22px',
+                height: '22px',
+                fontSize: '14px',
+                borderRadius: '4px',
+                cursor: isLast ? 'not-allowed' : 'pointer',
+                opacity: isLast ? 0.4 : 1
+            })
+            .prop('disabled', isLast)
+            .click(function () {
+                moveATStep(index, index + 1);
+            });
+
+        var delBtn = $('<button>')
+            .text('−')
+            .css({
+                position: 'absolute',
+                right: '5px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: '#d9534f',
+                border: 'none',
+                color: 'white',
+                width: '22px',
+                height: '22px',
+                fontSize: '16px',
+                borderRadius: '4px',
+                cursor: 'pointer'
+            })
+            .click(function () {
+                user_fast_shortcut_settings.ATSteps.splice(index, 1);
+                RefreshATStepList();
+            });
+
+        li.append(txt);
+        li.append(upBtn);
+        li.append(downBtn);
+        li.append(delBtn);
+        ul.append(li);
+    });
+}
+
+RefreshATStepList();
+
+w.withBody('#AddStepAT').click(function () {
+
+    var atNameInternal = w.withBody('.ATAuswahl').val();
+    var atNameTranslated = w.withBody('.ATAuswahl option:selected').text();
+
+    var atIndex = w.withBody('.ATAuswahlID').val();
+    var atRounds = w.withBody('.RundenanzahlSelector').val();
+
+    if (!atNameInternal || !atIndex || !atRounds) {
+        game.showAlert("Alle 3 Felder müssen gesetzt sein.");
+        return;
+    }
+
+    user_fast_shortcut_settings.ATSteps.push({
+        Name: atNameInternal,
+        Translated: atNameTranslated,
+        ID: atIndex,
+        Runden: atRounds
+    });
+
+    RefreshATStepList();
+});
+
+    if(game.gi.isOnHomzone())
+	{
+		w.Footer().prepend($("<button>").attr({'class':"btn btn-primary pull-left"}).text(loca.GetText("LAB","Save")).click(function(){
+		if(ObsiSelector.val() == null)
+		{
+			user_fast_shortcut_settings.Obsibuffen = false;
+		}
+		if(SpaehSelector.val() == null)
+		{
+			user_fast_shortcut_settings.Spaehbuffen = false;
+		}
+		if(FeldlazaSelector.val() == null)
+		{
+			user_fast_shortcut_settings.Feldlazabuffen = false;
+		}
+		if(FreiluftSelector.val() == null)
+		{
+			user_fast_shortcut_settings.Freiluftbuffen = false;
+		}
+		
+		if (!Array.isArray(user_fast_shortcut_settings.ATSteps)) {
+			user_fast_shortcut_settings.ATSteps = [];
+		}
+		
+		game.showAlert(getText('SettingsSave', 'SemiAutoATMenuLang'));
+		settings.settings["FastShortcut"] = {};
+		settings.store(user_fast_shortcut_settings, "FastShortcut");
+		//reloadScripts();
+		//$.extend(user_fast_shortcut_settings, settings.read(null, "FastShortcut"));
+		setTimeout(function () {$.extend(user_fast_shortcut_settings, settings.read(null, "FastShortcut"));RefreshATStepList();}, 2000);
+		setTimeout(function () {Playground2();}, 5000);
+		w.hide();
+		}));
+	}
+	w.show();
+}
+
+function FastShortcutSettingsHandler(event)
+{
+	if (!_FastShortcutSettingsViewerModalInitialized)
+	{
+		$('div[role="dialog"]:not(#FastShortcutSettings):visible').modal('hide');
+		$('#FastShortcutSettings').remove();
+	}
+	
+	try{
+		var shortcutGetPathArray = [];
+		$.extend(shortcutGetPathArray, readSettings(null, 'shortcuts'));
+	}catch(e){}
+	
+	user_fast_shortcut_settings.VorlagenUeberwachungEntSafe = true;
+	user_fast_shortcut_settings.VorlagenUeberwachungGeoSafe = true;
+	user_fast_shortcut_settings.VorlagenUeberwachungBuffsSafe = true;
+	user_fast_shortcut_settings.VorlagenUeberwachungAusbauSafe = true;
+	user_fast_shortcut_settings.VorlagenUeberwachungBauenSafe = true;
+	user_fast_shortcut_settings.VorlagenUeberwachungZonenbuffsSafe = true;
+	
+	var w = new Modal('FastShortcutSettings', utils.getImageTag('icon_dice.png', '45px') + ' ' + getText('Title', 'SemiAutoATMenuLang') + "<div style='text-align: center; font-size: smaller;'>"+getText('Anleitung', 'SemiAutoATMenuLang')+": https://pure-chaos.de/dsoinfo.html</div>");
+	var createButton = function(id, text) {
+		return $('<button>', { 
+			'style': 'cursor: pointer;text-decoration:none;color:#000;height: 20px;padding: 0px;',
+			'class': 'btn form-control',
+			'id': id
+		}).text(text)
+	}
+	w.size = '';
+	w.create();
+	var html = '<div class="container-fluid" style="user-select: all;">';
+	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
 	
 	var WarteZeitZwischenVorlagenÜberwachungSelector = $('<select>', { 'class': 'form-control WarteZeitZwischenVorlagenÜberwachungSelector' });
 	var customOptions = [
@@ -8996,14 +10093,6 @@ function FastShortcutSettingsHandler(event)
 	$('<option>', { 'value': '12' }).text("12")
 	]);
 	
-	var buffNameSöldnerSelector = $('<select>', { 'class': 'form-control buffNameSöldnerSelector' });
-	buffNameSöldnerSelector.append([
-	$('<option>', { 'value': 'Recruit' }).text(loca.GetText("RES", "Recruit")), 
-	$('<option>', { 'value': 'Soldier' }).text(loca.GetText("RES", "Soldier")),
-	$('<option>', { 'value': 'Bowman' }).text(loca.GetText("RES", "Bowman"))
-	
-	]);
-	
 	var BookbinderSelector = $('<select>', { 'class': 'form-control BookbinderSelector' });
 	BookbinderSelector.append([
 	$('<option>', { 'value': 'Manuscript' }).text(loca.GetText("RES", "Manuscript")), 
@@ -9011,11 +10100,6 @@ function FastShortcutSettingsHandler(event)
 	$('<option>', { 'value': 'Codex' }).text(loca.GetText("RES", "Codex"))
 	
 	]);
-	
-	var MemUeberwachungLimitValue = $('<select>', { 'class': 'form-control MemUeberwachungLimitValue' });
-	for (var i = 1000; i <= 5000; i += 100) {
-    MemUeberwachungLimitValue.append($('<option>', { 'value': i }).text((i / 1000).toFixed(1) + " GB"));
-	}
 	
 	var MemUeberwachungLimitNONATValue = $('<select>', { 'class': 'form-control MemUeberwachungLimitNONATValue' });
 	for (var i = 1000; i <= 5000; i += 100) {
@@ -9036,91 +10120,8 @@ function FastShortcutSettingsHandler(event)
 		);
 	  }
 	}
-	
-	var ObsiSelector = $('<select>', { 'class': 'form-control ObsiSelector' });
-	var AllBuffsObsi;
-	try{
-	AllBuffsObsi = GebaeudeBuffsEinlesen("Observatory");
-	AllBuffsObsi.forEach(function(item){
-		ObsiSelector.append([
-		$('<option>', { 'value': item.SelectedOrderType }).text(item.Name)
-		]);
-	});	
-	}catch(e){}
-	
-	var SpaehSelector = $('<select>', { 'class': 'form-control SpaehSelector' });
-	var AllBuffsSpaeh;
-	try{
-	AllBuffsSpaeh = GebaeudeBuffsEinlesen("EspionageBuilding");
-	AllBuffsSpaeh.forEach(function(item){
-		SpaehSelector.append([
-		$('<option>', { 'value': item.SelectedOrderType }).text(item.Name)
-		]);
-	});	
-	}catch(e){}
-	
-	var FeldlazaSelector = $('<select>', { 'class': 'form-control FeldlazaSelector' });
-	var AllBuffsFeldlaza;
-	try{
-	AllBuffsFeldlaza = GebaeudeBuffsEinlesen("GrandFieldHospital");
-	AllBuffsFeldlaza.forEach(function(item){
-		FeldlazaSelector.append([
-		$('<option>', { 'value': item.SelectedOrderType }).text(item.Name)
-		]);
-	});	
-	}catch(e){}
-	
-	var FreiluftSelector = $('<select>', { 'class': 'form-control FreiluftSelector' });
-	var AllBuffsFreiluft;
-	try{
-	AllBuffsFreiluft = GebaeudeBuffsEinlesen("OutdoorCanteen");
-	AllBuffsFreiluft.forEach(function(item){
-		FreiluftSelector.append([
-		$('<option>', { 'value': item.SelectedOrderType }).text(item.Name)
-		]);
-	});	
-	}catch(e){}
 
-	html += utils.createTableRow([[6, '------------------------------------------------Auto AT Config--------------------------------------------'], [6, ""]]);
-	html += utils.createTableRow([[6, getText('ATNameSelection', 'SemiAutoATMenuLang')], [6, ATSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[6, getText('ATIndexSelection', 'SemiAutoATMenuLang')], [6, ATSelectorID.prop('outerHTML')]]);
-	html += utils.createTableRow([[6, getText('AutoATRounds', 'SemiAutoATMenuLang')], [6, RundenanzahlSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[11, getText('BattleSoundsStartEnd', 'SemiAutoATMenuLang')], [1, createSwitch('Kampfgeraeuschesound', user_fast_shortcut_settings.Kampfgeraeusche)]]);
-	html += utils.createTableRow([[11, getText('SoundOnTemplateErrorRetry', 'SemiAutoATMenuLang')], [1, createSwitch('Fehlergeraeusche', user_fast_shortcut_settings.Fehlergeraeusche)]]);
-	/* html += utils.createTableRow([[11, getText('NoGenesLanding', 'SemiAutoATMenuLang')], [1, createSwitch('NoGenesLanding', user_fast_shortcut_settings.NoGenesLanding)]]); */
-	html += utils.createTableRow([[11, getText('UnloadAllTroops', 'SemiAutoATMenuLang')], [1, createSwitch('UnloadAllTroops', user_fast_shortcut_settings.UnloadAllTroops)]]);
-	html += utils.createTableRow([[11, getText('HorseshoeBuffing', 'SemiAutoATMenuLang')], [1, createSwitch('Hufeisenbuffen', user_fast_shortcut_settings.Hufeisenbuffen)]]);
-	html += utils.createTableRow([[6, getText('HorseshoeSelection', 'SemiAutoATMenuLang')], [6, buffNameHufeisenSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[11, getText('BlackWhirlwindBuffing', 'SemiAutoATMenuLang')], [1, createSwitch('Wirbelwindbuffen', user_fast_shortcut_settings.Wirbelwindbuffen)]]);
-	html += utils.createTableRow([[11, getText('LeftoversBuffing', 'SemiAutoATMenuLang')], [1, createSwitch('Resteessenbuffen', user_fast_shortcut_settings.Resteessenbuffen)]]);
-	html += utils.createTableRow([[11, getText('ObservatoryBuffing', 'SemiAutoATMenuLang')], [1, createSwitch('Obsibuffen', user_fast_shortcut_settings.Obsibuffen)]]);
-	html += utils.createTableRow([[6, getText('StarMapSelection', 'SemiAutoATMenuLang')], [6, ObsiSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[11, getText('OutpostBuffing', 'SemiAutoATMenuLang')], [1, createSwitch('Spaehbuffen', user_fast_shortcut_settings.Spaehbuffen)]]);
-	html += utils.createTableRow([[6, getText('CombatInfoSelection', 'SemiAutoATMenuLang')], [6, SpaehSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[11, getText('FieldHospitalBuffing', 'SemiAutoATMenuLang')], [1, createSwitch('Feldlazabuffen', user_fast_shortcut_settings.Feldlazabuffen)]]);
-	html += utils.createTableRow([[6, getText('HealthPlanSelection', 'SemiAutoATMenuLang')], [6, FeldlazaSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[11, getText('OpenAirCanteenBuffing', 'SemiAutoATMenuLang')], [1, createSwitch('Freiluftbuffen', user_fast_shortcut_settings.Freiluftbuffen)]]);
-	html += utils.createTableRow([[6, getText('MealSelection', 'SemiAutoATMenuLang')], [6, FreiluftSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[9, '<br>']]);
-	html += utils.createTableRow([[6, getText('WaitingTimes', 'SemiAutoATMenuLang')], [6, ""]]);
-	html += utils.createTableRow([[6, getText('WaitingTimeBetweenTemplates', 'SemiAutoATMenuLang')], [6, WarteZeitZwischenVorlagenSelector.prop('outerHTML')]]); 
-	html += utils.createTableRow([[6, getText('WaitingTimeGetGenesFromStar', 'SemiAutoATMenuLang')], [6, WarteZeitAusSternVersetzenSelector.prop('outerHTML')]]); 
-	html += utils.createTableRow([[6, getText('WaitingTimeAutomaticGenesHome', 'SemiAutoATMenuLang')], [6, WarteZeitWeiterNachGenesNachHauseSelector.prop('outerHTML')]]); 
-	html += utils.createTableRow([[6, getText('RestartATAutomatic', 'SemiAutoATMenuLang')], [6, WarteZeitZwischenATNeustartSelector.prop('outerHTML')]]); 
-	html += utils.createTableRow([[6, getText('SendGenesToAT', 'SemiAutoATMenuLang')], [6, WarteZeitZwischenATAutoStartSelector.prop('outerHTML')]]); 
-	html += utils.createTableRow([[6, getText('SwitchFromHomeIslandToAT', 'SemiAutoATMenuLang')], [6, WarteZeitZwischenInselswitchSelector.prop('outerHTML')]]); 
-	html += utils.createTableRow([[6, getText('StartMonitoringInAT', 'SemiAutoATMenuLang')], [6, WarteZeitZwischenAutomatikstartenimATSelector.prop('outerHTML')]]); 
-	html += utils.createTableRow([[6, getText('AutomaticQuestCompletionMonitoring', 'SemiAutoATMenuLang')], [6, WarteZeitZwischenQuestÜberwachungSelector.prop('outerHTML')]]); 
-	html += utils.createTableRow([[6, getText('SwitchFromATToHomeIsland', 'SemiAutoATMenuLang')], [6, WarteZeitZwischenZurHeimatinselATEndeSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[9, '<br>']]);
-	html += utils.createTableRow([[6, getText('Hiring', 'SemiAutoATMenuLang')], [6, ""]]);
-	html += utils.createTableRow([[9, getText('Anleitung2', 'SemiAutoATMenuLang')], [3, ""]]);
-	html += utils.createTableRow([[6, getText('RecruitsChoice', 'SemiAutoATMenuLang')], [6, buffNameSöldnerSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[9, '<br>']]);
 	html += utils.createTableRow([[6, getText('MemoryMonitoring', 'SemiAutoATMenuLang')], [6, ""]]);
-	html += utils.createTableRow([[11, getText('MemoryMonitoringEnableAutoAT', 'SemiAutoATMenuLang')], [1, createSwitch('MemUeberwachung', user_fast_shortcut_settings.MemUeberwachung)]]); 
-	html += utils.createTableRow([[6, getText('MemoryLimitLabel', 'SemiAutoATMenuLang')], [6, MemUeberwachungLimitValue.prop('outerHTML')]]); 
-	html += utils.createTableRow([[9, getText('MemoryLimitRestartClient', 'SemiAutoATMenuLang')], [3, ""]]); 
 	html += utils.createTableRow([[11, getText('MemoryMonitoringEnableHomeIsland', 'SemiAutoATMenuLang')], [1, createSwitch('MemUeberwachungNONAT', user_fast_shortcut_settings.MemUeberwachungNONAT)]]); 
 	html += utils.createTableRow([[6, getText('MemoryLimitLabel', 'SemiAutoATMenuLang')], [6, MemUeberwachungLimitNONATValue.prop('outerHTML')]]); 
 	html += utils.createTableRow([[9, getText('MemoryLimitRestartHomeIsland', 'SemiAutoATMenuLang')], [3, ""]]); 
@@ -9170,10 +10171,8 @@ function FastShortcutSettingsHandler(event)
 	html += utils.createTableRow([[11, getText('ShopItemsBuying', 'SemiAutoATMenuLang')], [1, createSwitch('VorlagenUeberwachungShopItemsBuying', user_fast_shortcut_settings.VorlagenUeberwachungShopItemsBuying)]]);
 	html += utils.createTableRow([[9, '<br>']]);
 	html += utils.createTableRow([[6, getText('Tools2', 'SemiAutoATMenuLang')], [6, ""]]);
-	html += utils.createTableRow([[11, getText('EnableAutoTradeOnClientStart', 'SemiAutoATMenuLang')], [1, createSwitch('AutoTrade', user_fast_shortcut_settings.AutoTrade)]]);
 	html += utils.createTableRow([[11, getText('ShowGridAndGenesIDsInMenu', 'SemiAutoATMenuLang')], [1, createSwitch('debugPlaygroundGridGenesIDs', user_fast_shortcut_settings.debugPlaygroundGridGenesIDs)]]);
-	html += utils.createTableRow([[11, getText('HammermanSurveillance', 'SemiAutoATMenuLang')], [1, createSwitch('Hammerman', user_fast_shortcut_settings.Hammerman)]]);
-	html += utils.createTableRow([[11, getText('HammermanAntiLagMethods', 'SemiAutoATMenuLang')], [1, createSwitch('HammermanMethoden', user_fast_shortcut_settings.HammermanMethoden)]]);
+	html += utils.createTableRow([[11, getText('EnableAutoTradeOnClientStart', 'SemiAutoATMenuLang')], [1, createSwitch('AutoTrade', user_fast_shortcut_settings.AutoTrade)]]);
 	html += utils.createTableRow([[11, getText('TweaksReduceChatHistory', 'SemiAutoATMenuLang')], [1, createSwitch('TweaksmessageHistory', user_fast_shortcut_settings.TweaksmessageHistory)]]);
 	html += utils.createTableRow([[11, getText('TweaksIncreaseTradeAmountATs', 'SemiAutoATMenuLang')], [1, createSwitch('TweakstradeMaxAdventureAmount', user_fast_shortcut_settings.TweakstradeMaxAdventureAmount)]]);
 	html += utils.createTableRow([[11, getText('TweaksIncreaseTradeAmountBuildings', 'SemiAutoATMenuLang')], [1, createSwitch('TweakstradeMaxBuildingAmount', user_fast_shortcut_settings.TweakstradeMaxBuildingAmount)]]);
@@ -9193,34 +10192,6 @@ function FastShortcutSettingsHandler(event)
 	w.Body().html(html + '<div>');
 	w.withBody('div.row').addClass('nohide');
 
-	w.withBody('.ATAuswahl').val(user_fast_shortcut_settings.ATAuswahl).change(function(e) { user_fast_shortcut_settings.ATAuswahl = $(e.target).val(); });
-	w.withBody('.ATAuswahlID').val(user_fast_shortcut_settings.ATAuswahlID).change(function(e) { user_fast_shortcut_settings.ATAuswahlID = $(e.target).val(); });
-	w.withBody('.RundenanzahlSelector').val(user_fast_shortcut_settings.RundenanzahlSelector).change(function(e) { user_fast_shortcut_settings.RundenanzahlSelector = $(e.target).val(); });
-	w.withBody('#Kampfgeraeuschesound').change(function(e) { user_fast_shortcut_settings.Kampfgeraeusche = $(e.target).is(':checked'); });
-	w.withBody('#Fehlergeraeusche').change(function(e) { user_fast_shortcut_settings.Fehlergeraeusche = $(e.target).is(':checked'); });
-	/* w.withBody('#NoGenesLanding').change(function(e) { user_fast_shortcut_settings.NoGenesLanding = $(e.target).is(':checked'); }); */
-	w.withBody('#UnloadAllTroops').change(function(e) { user_fast_shortcut_settings.UnloadAllTroops = $(e.target).is(':checked'); });
-	w.withBody('#Hufeisenbuffen').change(function(e) { user_fast_shortcut_settings.Hufeisenbuffen = $(e.target).is(':checked'); });
-	w.withBody('.buffNameHufeisenSelector').val(user_fast_shortcut_settings.buffNameHufeisenSelector).change(function(e) { user_fast_shortcut_settings.buffNameHufeisenSelector = $(e.target).val(); });
-	w.withBody('#Wirbelwindbuffen').change(function(e) { user_fast_shortcut_settings.Wirbelwindbuffen = $(e.target).is(':checked'); });
-	w.withBody('#Resteessenbuffen').change(function(e) { user_fast_shortcut_settings.Resteessenbuffen = $(e.target).is(':checked'); });
-	w.withBody('#Obsibuffen').change(function(e) { user_fast_shortcut_settings.Obsibuffen = $(e.target).is(':checked'); });
-	w.withBody('.ObsiSelector').val(user_fast_shortcut_settings.ObsiSelector).change(function(e) { user_fast_shortcut_settings.ObsiSelector = $(e.target).val(); });
-	w.withBody('#Spaehbuffen').change(function(e) { user_fast_shortcut_settings.Spaehbuffen = $(e.target).is(':checked'); });
-	w.withBody('.SpaehSelector').val(user_fast_shortcut_settings.SpaehSelector).change(function(e) { user_fast_shortcut_settings.SpaehSelector = $(e.target).val(); });
-	w.withBody('#Feldlazabuffen').change(function(e) { user_fast_shortcut_settings.Feldlazabuffen = $(e.target).is(':checked'); });
-	w.withBody('.FeldlazaSelector').val(user_fast_shortcut_settings.FeldlazaSelector).change(function(e) { user_fast_shortcut_settings.FeldlazaSelector = $(e.target).val(); });
-	w.withBody('#Freiluftbuffen').change(function(e) { user_fast_shortcut_settings.Freiluftbuffen = $(e.target).is(':checked'); });
-	w.withBody('.FreiluftSelector').val(user_fast_shortcut_settings.FreiluftSelector).change(function(e) { user_fast_shortcut_settings.FreiluftSelector = $(e.target).val(); });
-	w.withBody('.WarteZeitZwischenVorlagenSelector').val(user_fast_shortcut_settings.WarteZeitZwischenVorlagenSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitZwischenVorlagenSelector = $(e.target).val(); });
-	w.withBody('.WarteZeitAusSternVersetzenSelector').val(user_fast_shortcut_settings.WarteZeitAusSternVersetzenSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitAusSternVersetzenSelector = $(e.target).val(); });
-	w.withBody('.WarteZeitWeiterNachGenesNachHauseSelector').val(user_fast_shortcut_settings.WarteZeitWeiterNachGenesNachHauseSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitWeiterNachGenesNachHauseSelector = $(e.target).val(); });
-	w.withBody('.WarteZeitZwischenATNeustartSelector').val(user_fast_shortcut_settings.WarteZeitZwischenATNeustartSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitZwischenATNeustartSelector = $(e.target).val(); });
-	w.withBody('.WarteZeitZwischenATAutoStartSelector').val(user_fast_shortcut_settings.WarteZeitZwischenATAutoStartSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitZwischenATAutoStartSelector = $(e.target).val(); });
-	w.withBody('.WarteZeitZwischenInselswitchSelector').val(user_fast_shortcut_settings.WarteZeitZwischenInselswitchSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitZwischenInselswitchSelector = $(e.target).val(); });
-	w.withBody('.WarteZeitZwischenAutomatikstartenimATSelector').val(user_fast_shortcut_settings.WarteZeitZwischenAutomatikstartenimATSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitZwischenAutomatikstartenimATSelector = $(e.target).val(); });
-	w.withBody('.WarteZeitZwischenQuestÜberwachungSelector').val(user_fast_shortcut_settings.WarteZeitZwischenQuestÜberwachungSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitZwischenQuestÜberwachungSelector = $(e.target).val(); });
-	w.withBody('.WarteZeitZwischenZurHeimatinselATEndeSelector').val(user_fast_shortcut_settings.WarteZeitZwischenZurHeimatinselATEndeSelector).change(function(e) { user_fast_shortcut_settings.WarteZeitZwischenZurHeimatinselATEndeSelector = $(e.target).val(); });
 	w.withBody('#VorlagenUeberwachungAfterAT').change(function(e) { user_fast_shortcut_settings.VorlagenUeberwachungAfterAT = $(e.target).is(':checked'); });
 	w.withBody('#SafeMonitoring').change(function(e) { user_fast_shortcut_settings.SafeMonitoring = $(e.target).is(':checked'); });
 	w.withBody('#OverlayMonitoringSetting').change(function(e) { user_fast_shortcut_settings.OverlayMonitoringSetting = $(e.target).is(':checked'); });
@@ -9252,11 +10223,7 @@ function FastShortcutSettingsHandler(event)
 	w.withBody('#VorlagenUeberwachungBookbinder').change(function(e) { user_fast_shortcut_settings.VorlagenUeberwachungBookbinder = $(e.target).is(':checked'); });
 	w.withBody('.BookbinderSelector').val(user_fast_shortcut_settings.BookbinderSelector).change(function(e) { user_fast_shortcut_settings.BookbinderSelector = $(e.target).val(); });
 	w.withBody('#VorlagenUeberwachungStarItemsCollect').change(function(e) { user_fast_shortcut_settings.VorlagenUeberwachungStarItemsCollect = $(e.target).is(':checked'); });
-	w.withBody('#VorlagenUeberwachungShopItemsBuying').change(function(e) { user_fast_shortcut_settings.VorlagenUeberwachungShopItemsBuying = $(e.target).is(':checked'); });
-	w.withBody('#SoeldnerStern').change(function(e) { user_fast_shortcut_settings.SollBuffenImATSoeldner = $(e.target).is(':checked'); });
-	w.withBody('.buffNameSöldnerSelector').val(user_fast_shortcut_settings.buffNameSöldnerSelector).change(function(e) { user_fast_shortcut_settings.buffNameSöldnerSelector = $(e.target).val(); });
-	w.withBody('#Hammerman').change(function(e) { user_fast_shortcut_settings.Hammerman = $(e.target).is(':checked'); });
-	w.withBody('#HammermanMethoden').change(function(e) { user_fast_shortcut_settings.HammermanMethoden = $(e.target).is(':checked'); });
+	w.withBody('#VorlagenUeberwachungShopItemsBuying').change(function(e) { user_fast_shortcut_settings.VorlagenUeberwachungShopItemsBuying = $(e.target).is(':checked'); });	
 	w.withBody('#TweaksmessageHistory').change(function(e) { user_fast_shortcut_settings.TweaksmessageHistory = $(e.target).is(':checked'); });
 	w.withBody('#TweakstradeMaxAdventureAmount').change(function(e) { user_fast_shortcut_settings.TweakstradeMaxAdventureAmount = $(e.target).is(':checked'); });
 	w.withBody('#TweakstradeMaxBuildingAmount').change(function(e) { user_fast_shortcut_settings.TweakstradeMaxBuildingAmount = $(e.target).is(':checked'); });
@@ -9266,8 +10233,6 @@ function FastShortcutSettingsHandler(event)
 	w.withBody('#TweaksmailboxPageSize').change(function(e) { user_fast_shortcut_settings.TweaksmailboxPageSize = $(e.target).is(':checked'); });
 	w.withBody('#Tweakszoomfactor').change(function(e) { user_fast_shortcut_settings.Tweakszoomfactor = $(e.target).is(':checked'); });
 	w.withBody('#TweaksmEventInfoPanel').change(function(e) { user_fast_shortcut_settings.TweaksmEventInfoPanel = $(e.target).is(':checked'); });
-	w.withBody('#MemUeberwachung').change(function(e) { user_fast_shortcut_settings.MemUeberwachung = $(e.target).is(':checked'); });
-	w.withBody('.MemUeberwachungLimitValue').val(user_fast_shortcut_settings.MemUeberwachungLimit).change(function(e) { user_fast_shortcut_settings.MemUeberwachungLimit = $(e.target).val(); });
 	w.withBody('#MemUeberwachungNONAT').change(function(e) { user_fast_shortcut_settings.MemUeberwachungNONAT = $(e.target).is(':checked'); });
 	w.withBody('.MemUeberwachungLimitNONATValue').val(user_fast_shortcut_settings.MemUeberwachungLimitNONAT).change(function(e) { user_fast_shortcut_settings.MemUeberwachungLimitNONAT = $(e.target).val(); });
 	w.withBody('#MemUeberwachungNONATTIME').change(function(e) { user_fast_shortcut_settings.MemUeberwachungNONATTIME = $(e.target).is(':checked'); });
@@ -9275,9 +10240,9 @@ function FastShortcutSettingsHandler(event)
 	w.withBody('#AutoTrade').change(function(e) { user_fast_shortcut_settings.AutoTrade = $(e.target).is(':checked'); });
 	w.withBody('#debugAT').change(function(e) { user_fast_shortcut_settings.debugAT = $(e.target).is(':checked'); });
 	w.withBody('#debugPlayground').change(function(e) { user_fast_shortcut_settings.debugPlayground = $(e.target).is(':checked'); });
-	w.withBody('#debugPlaygroundGridGenesIDs').change(function(e) { user_fast_shortcut_settings.debugPlaygroundGridGenesIDs = $(e.target).is(':checked'); });
 	w.withBody('#debugPlaygroundQuestNamen').change(function(e) { user_fast_shortcut_settings.debugPlaygroundQuestNamen = $(e.target).is(':checked'); });
 	w.withBody('#Personal').change(function(e) { user_fast_shortcut_settings.PersonalTesting = $(e.target).is(':checked'); });
+	w.withBody('#debugPlaygroundGridGenesIDs').change(function(e) { user_fast_shortcut_settings.debugPlaygroundGridGenesIDs = $(e.target).is(':checked'); });
 	var previousOverlaySetting = user_fast_shortcut_settings.OverlayMonitoringSetting;
 	var previousTimings = user_fast_shortcut_settings.WarteZeitZwischenVorlagenÜberwachungSelector;
 	var previousNONATTIME = user_fast_shortcut_settings.MemUeberwachungNONATTIME;
@@ -9285,22 +10250,6 @@ function FastShortcutSettingsHandler(event)
     if(onlyoncesetting && game.gi.isOnHomzone())
 	{
 		w.Footer().prepend($("<button>").attr({'class':"btn btn-primary pull-left"}).text(loca.GetText("LAB","Save")).click(function(){
-		if(ObsiSelector.val() == null)
-		{
-			user_fast_shortcut_settings.Obsibuffen = false;
-		}
-		if(SpaehSelector.val() == null)
-		{
-			user_fast_shortcut_settings.Spaehbuffen = false;
-		}
-		if(FeldlazaSelector.val() == null)
-		{
-			user_fast_shortcut_settings.Feldlazabuffen = false;
-		}
-		if(FreiluftSelector.val() == null)
-		{
-			user_fast_shortcut_settings.Freiluftbuffen = false;
-		}
 		if(MemUeberwachungLimitNONATTIMEValue.val() == null)
 		{
 			user_fast_shortcut_settings.MemUeberwachungNONATTIME = false;
@@ -10013,7 +10962,7 @@ function _searchArchitecturesModal2(buildingList) {
 						(itemStatus === '' ? '' : '<span style="color:LightGray;font-style:italic;">') +
 						'<sup>' + item.level + '</sup>&thinsp;' +
 						'<span style="color:' + (item.tradeable ? 'cyan' : 'white') + ';">' +  // Conditional color
-						item.locName + " (Grid: " + item.grid + ")" +
+						getImageTag(item.name, '22px') + item.locName + " (Grid: " + item.grid + ")" +
 						'</span>' + 
 						(itemStatus === '' ? '' : '</span>')
 					],
@@ -10079,7 +11028,7 @@ function upgradeBuildingForClientArray2(buildingArray_input) {
 					if (isUpgradeAllowed_tmp && !isDeplete && game.gi.isOnHomzone() == true) {
 						game.gi.SendServerAction(60,  0, building.GetGrid(), 0, null);
 					};
-				}); 
+				}, randomDelay(1533, 5245)); 
 			};
 		}
 		
@@ -10102,7 +11051,7 @@ function upgradeBuildingForClientArrayUI2(buildingArray_input) {
 					if (isUpgradeAllowed_tmp && !isDepleteUI && game.gi.isOnHomzone() == true) {
 						game.gi.SendServerAction(60,  0, building.GetGrid(), 0, null);
 					};
-				}); 
+				}, randomDelay(1533, 5245));
 			};
 		}
 		
@@ -10281,7 +11230,7 @@ function _searchZoneBuffModal2(ZoneBuffList2) {
                 _checkboxZonenbuffs2_ = '<input type="checkbox" id="_Zonenbuffs2_' + item.zonebuffname + '" />'.format(item.zonebuffname);
 
                 out += createTableRow([
-                        [5, loca.GetText("RES", item.zonebuffname)],
+                        [5, getImageTag(item.zonebuffname, '22px') + loca.GetText("RES", item.zonebuffname)],
                         [4, item.zoneBuffamount],
 						[3, _checkboxZonenbuffs2_ ]
                     ]);
@@ -10340,7 +11289,7 @@ function ZoneBuffForClientArray2(zoneBuffArray_input2) {
 			x.add(function () {
 			game.showAlert(loca.GetText("LAB", "Buffs") + ": " + loca.GetText("RES", zoneBuff));
 			game.gi.SendServerAction(61, 0, 0, 0, MyBuffID);
-			});
+			}, randomDelay(1533, 3245));
 		}
 		else
 		{
@@ -10916,7 +11865,7 @@ function DepositDepletedGetData2() {
 				buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace('<img', '<img id="buildPOSMine2_' + item.GetGrid() + '"').replace('style="', 'style="cursor: pointer;');
                 $('#DepositDepletedResult2').append(
                     createTableRow([
-                            [4, loca.GetText("RES", item.GetName_string()) + ' '+  buildingInfo],
+                            [4, getImageTag(item.GetName_string(), '22px') + loca.GetText("RES", item.GetName_string()) + ' '+  buildingInfo],
                             [2, item.GetAmount()],
 							[2, item.GetGrid()],
 							[3, _checkboxRebuildMines2_],
@@ -11108,7 +12057,7 @@ function buildMineUI2(buildArray_input) {
 							}
 						}
 					}catch(e){}
-                });
+                }, randomDelay(1533, 5245));
             }
         }
 		
@@ -12901,7 +13850,7 @@ function _exudSaveResourcesRefresh()
 					}
 
 					RESULT.push( {
-					"Name" : localizedTextFinal !== '[undefined text] ' ? localizedTextFinal + " (Stern)" : data.GetResourceName_string() + " (Stern)",
+					"Name" : getImageTag(data.GetResourceName_string(), '22px') + (localizedTextFinal !== '[undefined text] ' ? localizedTextFinal + " (Stern)" : data.GetResourceName_string() + " (Stern)"),
 					"Amount" : data.GetAmount(),
 					"ToSend" : tosend2,
 					"Production12" : 0,
@@ -12932,7 +13881,7 @@ function _exudSaveResourcesRefresh()
 					}
 
 					RESULT.push( {
-					"Name" : localizedTextFinal !== '[undefined text] ' ? localizedTextFinal + " (Stern)" : data.GetBuffDefinition().GetName_string() + " (Stern)",
+					"Name" : getImageTag(data.GetBuffDefinition().GetName_string(), '22px') + (localizedTextFinal !== '[undefined text] ' ? localizedTextFinal + " (Stern)" : data.GetBuffDefinition().GetName_string() + " (Stern)"),
 					"Amount" : data.GetAmount(),
 					"ToSend" : tosend2,
 					"Production12" : 0,
@@ -12969,7 +13918,7 @@ function _exudSaveResourcesRefresh()
 				var secondsToFullFill = (dres.maxLimit-dres.getAmount())/Prod1sec;
 
 				RESULT.push( {
-					"Name" :loca.GetText("RES", i.resourceName_string),
+					"Name" : getImageTag(i.resourceName_string, '22px') + loca.GetText("RES", i.resourceName_string),
 					"Amount" : dres.getAmount(),
 					"ToSend" : tosend,
 					"Production12" : Prod12,
@@ -13071,7 +14020,7 @@ function _exudSaveResourcesRefresh()
 					}
 
 					RESULT.push( {
-					"Name" : localizedTextFinal !== '[undefined text] ' ? localizedTextFinal + " (Stern)" : data.GetResourceName_string() + " (Stern)",
+					"Name" : getImageTag(data.GetResourceName_string(), '22px') + (localizedTextFinal !== '[undefined text] ' ? localizedTextFinal + " (Stern)" : data.GetResourceName_string() + " (Stern)"),
 					"Amount" : data.GetAmount(),
 					"ToSend" : tosend2,
 					"Production12" : 0,
@@ -13102,7 +14051,7 @@ function _exudSaveResourcesRefresh()
 					}
 
 					RESULT.push( {
-					"Name" : localizedTextFinal !== '[undefined text] ' ? localizedTextFinal + " (Stern)" : data.GetBuffDefinition().GetName_string() + " (Stern)",
+					"Name" : getImageTag(data.GetBuffDefinition().GetName_string(), '22px') + (localizedTextFinal !== '[undefined text] ' ? localizedTextFinal + " (Stern)" : data.GetBuffDefinition().GetName_string() + " (Stern)"),
 					"Amount" : data.GetAmount(),
 					"ToSend" : tosend2,
 					"Production12" : 0,
@@ -13195,7 +14144,7 @@ function _exudSaveResourcesRefresh()
 				var secondsToFullFill = (dres.maxLimit-dres.getAmount())/Prod1sec;
 
 				RESULT.push( {
-					"Name" :loca.GetText("RES", i.resourceName_string),
+					"Name" : getImageTag(i.resourceName_string, '22px') + loca.GetText("RES", i.resourceName_string),
 					"Amount" : dres.getAmount(),
 					"ToSend" : tosend,
 					"Production12" : Prod12,
@@ -13792,13 +14741,13 @@ function _exudTrades_MakeTableData()
 			out += createTableRow([
 					[2 , getText('Send', '_exudTradesLang')],
 					[2 , trade.SendAmount],
-					[4 , loca.GetText("RES", trade.SendResource)],
+					[4 , getImageTag(trade.SendResource, '22px') + loca.GetText("RES", trade.SendResource)],
 					[4 , (trade.ISBV ?  getText('ISBV', '_exudTradesLang') : "")]
 					], false)
 			out += createTableRow([
 					[2 , getText('Receive', '_exudTradesLang')],
 					[2 , trade.ReceiveAmount ],
-					[4 , loca.GetText("RES", trade.ReceiveResource)],
+					[4 , getImageTag(trade.ReceiveResource, '22px') + loca.GetText("RES", trade.ReceiveResource)],
 					[3 , (isIgnoreFriend ? friendName2 : trade.FriendName)],
 					[1, $('<button>', { 'type': 'button', 'class': 'close exudTradesDelItem', 'value': trade.ID }).html($('<span style="color: red;font-size: 35px;">').html('&times;'))]
 					], false)
@@ -14027,7 +14976,12 @@ var uSTARMENU_BOXTYPES = [
 	"Loottable_ValentineCardBox",
 	"Loottable_ProspectorMysteryBox1",
 	"Loottable_ProspectorMysteryBox2",
-	"Loottable_ProspectorMysteryBox3"
+	"Loottable_ProspectorMysteryBox3",
+	"Loottable_WitchCovenAchievement1_MysteryBox",
+	"Loottable_WitchCovenAchievement2_MysteryBox",
+	"Loottable_XmasSock_MysteryBox",
+	"Loottable_CombatLoot_MysteryBox334",
+	"Loottable_DepositoriumMysteryBox"
 	];
 
 function uSTARMENU_MainWindow(event)
@@ -14100,8 +15054,9 @@ function uSTARMENU_MakeTableData() {
         for (var x = 0; x < uSTARMENU_BOXTYPES.length; x++) {
             var isSel = (_exSTARMENU_Settings.BOXTYPES.indexOf(uSTARMENU_BOXTYPES[x]) >= 0);
             var text = _exudMissions_FindTextOf(uSTARMENU_BOXTYPES[x]);
+			var text2 = uSTARMENU_BOXTYPES[x];
 
-            tableData.push({ switchValue: createSwitch("uSTARMENU_sw_" + x, isSel), text: text });
+            tableData.push({ switchValue: createSwitch("uSTARMENU_sw_" + x, isSel), text: text, text2: text2 });
         }
 
         tableData.sort(function(a, b) {
@@ -14111,7 +15066,7 @@ function uSTARMENU_MakeTableData() {
         for (var i = 0; i < tableData.length; i++) {
             out += createTableRow([
                 [1, tableData[i].switchValue],
-                [11, tableData[i].text]
+                [11, getImageTag(text2, '22px') + tableData[i].text]
             ], false);
         }
     } catch (e) {
@@ -14127,14 +15082,54 @@ function uSTARMENU_OpenBox(e) {
 			game.showAlert(getText('not_home'));
 			return;
 		}
+		
 		var buffs = _exudMissions_GetSecureBuffMinimalInfo();
 
 		if (buffs == null) {
 			return;
 		}
 		var MH = CHAOS_CURRENT_PLAYER_ZONE().mStreetDataMap.GetMayorHouse().GetGrid();
-		var q = new TimedQueue(2000);
+		var q = new TimedQueue(1000);
 		var bb = uSTARMENU_FindBuffsLootable(buffs);
+		var chaosGetText = CHAOS_GET_TEXT();
+		
+		var openBoxResponder = game.createResponder(
+			function (e, response) {
+				try {
+					if (!response || !response.data || !response.data.data || !response.data.data.items) {
+						uSTARMENU_Message("Keine gültige Antwort vom Server erhalten.");
+						return;
+					}
+
+					var items = response.data.data.items.source;
+					if (!items || items.length === 0) {
+						uSTARMENU_Message("Box geöffnet, aber keine Items erhalten.");
+						return;
+					}
+
+					items.forEach(function (item) {
+
+					var rawKey = item.resourceName_string !== ""
+						? item.resourceName_string
+						: item.buffName_string;
+
+					var translated = chaosGetText(rawKey);
+
+					if (!translated || translated.toLowerCase().indexOf("undefined") >= 0) {
+						translated = rawKey;
+					}
+
+					uSTARMENU_Message("Erhalten: " + item.amount + "x " + translated);
+				});
+
+				} catch (err) {
+					uSTARMENU_Message("Responder Fehler: " + err);
+				}
+			},
+			function () {
+				uSTARMENU_Message("Box konnte nicht geöffnet werden!");
+			}
+		);
 
 		if (bb != null) {
 			for (var x = 0; x < bb.length; x++) {
@@ -14150,11 +15145,11 @@ function uSTARMENU_OpenBox(e) {
 									uSTARMENU_Message(getText("lblOpenMessage2", 'uSTARMENULang')+"("+ y +")"+": " + txtName);
 									var uniqueIdArr = b.UID.split("_");
 									var uniqueID = swmmo.getDefinitionByName("Communication.VO::dUniqueID").Create(uniqueIdArr[0], uniqueIdArr[1]);
-									CHAOS_GI().SendServerAction(61, 0, MH, 0, uniqueID);
+									CHAOS_GI().SendServerAction(61, 0, MH, 0, uniqueID, openBoxResponder);
 								} catch (e) {
 									uSTARMENU_Message(getText("lblOpenMessageError", 'uSTARMENULang') + e);
 								}
-							}, 5000);
+							}, 1000);
 						})(b, txtName, y);
 
 					}
@@ -14306,6 +15301,19 @@ function CHAOS_GLOBALFLASH()
 {
 	return swmmo.getDefinitionByName("globalFlash");
 }
+function CHAOS_GET_TEXT() {
+    return function (item) {
+        const textTypes = ["RES", "BUI", "SPE", "COL", "LAB", "ADN", "ALM", "SHI", "ACL"];
+        if (item == "") return "";
+
+        for (var idx = 0; idx < textTypes.length; idx++) {
+            var n = loca.GetText(textTypes[idx], item);
+            if (n.toLowerCase().indexOf("undefined") < 0)
+                return n;
+        }
+        return item;
+    };
+}	
 ////////////////////////////////////////////
 ////####Staritems zum Lager schicken####////
 ////////////////////////////////////////////
@@ -14436,8 +15444,9 @@ function uSTARTOSTORE_MakeTableData() {
         for (var x = 0; x < uSTARTOSTORE_TYPES.length; x++) {
             var isSel = (_exSTARTOSTORE_Settings.BOXTYPES.indexOf(uSTARTOSTORE_TYPES[x]) >= 0);
             var text = _exudMissions_FindTextOf(uSTARTOSTORE_TYPES[x]);
+			var text2 = uSTARTOSTORE_TYPES[x];
 
-            tableData.push({ switchValue: createSwitch("uSTARTOSTORE_sw_" + x, isSel), text: text });
+            tableData.push({ switchValue: createSwitch("uSTARTOSTORE_sw_" + x, isSel), text: text, text2: text2 });
         }
 
         tableData.sort(function(a, b) {
@@ -14448,7 +15457,7 @@ function uSTARTOSTORE_MakeTableData() {
         for (var i = 0; i < tableData.length; i++) {
             out += createTableRow([
                 [1, tableData[i].switchValue],
-                [11, tableData[i].text]
+                [11, getImageTag(tableData[i].text2, '22px') + tableData[i].text]
             ], false);
         }
     } catch (e) {
@@ -14521,6 +15530,7 @@ function SendStarItemToStore(e)
 		}
 	} catch (ex) {
 		uSTARTOSTORE_Message(getText('SendStarToStorageErrorFatal', 'SemiAutoATMenuLang') + ex);
+		debug(ex);
 	}
 }
 //////////////////////////////////
@@ -14662,7 +15672,7 @@ function uSHOPITEMS_MakeTableData() {
 			var Costsname = i.GetCosts_vector()[0].getName();
 			var Costs = i.GetCosts_vector()[0].amount;
 			var Costcombo = Costs + " " + Costsname
-			tableData.push({ switchValue: createSwitch("uSHOPITEMS_sw_" + x, isSel), text: text, cost: Costcombo });
+			tableData.push({ switchValue: createSwitch("uSHOPITEMS_sw_" + x, isSel), text: text, cost: Costcombo, name: i.GetName_string()  });
         }
       });
 	  ShopItems2.forEach(function(i){
@@ -14670,7 +15680,7 @@ function uSHOPITEMS_MakeTableData() {
 			var Costsname = i.GetCosts_vector()[0].getName();
 			var Costs = i.GetCosts_vector()[0].amount;
 			var Costcombo = Costs + " " + Costsname
-			tableData.push({ switchValue: createSwitch("uSHOPITEMS_sw_" + x, isSel), text: text, cost: Costcombo });
+			tableData.push({ switchValue: createSwitch("uSHOPITEMS_sw_" + x, isSel), text: text, cost: Costcombo, name: i.GetName_string() });
         }
       });
     }
@@ -14683,7 +15693,7 @@ function uSHOPITEMS_MakeTableData() {
     for (var i = 0; i < tableData.length; i++) {
       out += createTableRow([
         [1, tableData[i].switchValue],
-        [11, tableData[i].text + " ("+ tableData[i].cost +")"]
+        [11, getImageTag(tableData[i].name, '22px') + tableData[i].text + " ("+ tableData[i].cost +")"]
       ], false);
     }
   } catch (e) {
@@ -14820,6 +15830,7 @@ function ShopItemsBuying(e) {
                 }
             } catch (e) {
 				uSHOPITEMS_Message(getText('ShopItemErrorQueue', 'SemiAutoATMenuLang') + e);
+				debug(e);
             }
         });
 		
@@ -15093,7 +16104,23 @@ function BuiBuffsAktion()
 					}        
 				}, currentTimeout);
 				currentTimeout += delayIncrement;
-			}		
+			}
+			if (game.gi.isOnHomzone() == true && user_fast_shortcut_settings.VorlagenUeberwachungBuildingCollecting && FirstClientStart) {
+				setTimeout(function() {
+					if (game.gi.isOnHomzone() == true) {
+						GebaeudeCollecting("DimensionalRift");
+					}        
+				}, currentTimeout);
+				currentTimeout += delayIncrement;
+			}
+			if (game.gi.isOnHomzone() == true && user_fast_shortcut_settings.VorlagenUeberwachungBuildingCollecting && FirstClientStart) {
+				setTimeout(function() {
+					if (game.gi.isOnHomzone() == true) {
+						GebaeudeCollecting("Depositorium");
+					}        
+				}, currentTimeout);
+				currentTimeout += delayIncrement;
+			}			
 			if (game.gi.isOnHomzone() == true && user_fast_shortcut_settings.VorlagenUeberwachungGebaeudeLoot && !FirstClientStart) {
 				setTimeout(function() {
 					if (game.gi.isOnHomzone() == true) {
@@ -15342,10 +16369,28 @@ function BuiCollectAktionMan()
 					}
 				},17000);
 			}
+			if(game.gi.isOnHomzone() == true)
+			{
+				setTimeout(function() {
+					if(game.gi.isOnHomzone() == true)
+					{
+						GebaeudeCollectingMan("DimensionalRift");
+					}
+				},21000);
+			}
+			if(game.gi.isOnHomzone() == true)
+			{
+				setTimeout(function() {
+					if(game.gi.isOnHomzone() == true)
+					{
+						GebaeudeCollectingMan("Depositorium");
+					}
+				},25000);
+			}
 			if (user_fast_shortcut_settings.SafeMonitoring) {
 				setTimeout(function() {
 					SafeMonitoringAlphaReturn();
-				},20000);
+				},28000);
             }
 			setTimeout(function() {
 					if(game.gi.isOnHomzone() == true)
@@ -15353,7 +16398,7 @@ function BuiCollectAktionMan()
 						game.showAlert(getText('BuildingLootFinish', 'SemiAutoATMenuLang'));
 					}
 					OtherUeberwachungLoot = false;
-			},20000);
+			},28000);
 }
 
 function FastShortcutBuildingBuffsHandler(event)
@@ -16947,6 +17992,66 @@ function BuiProdAktion()
 				currentTimeout += delayIncrement;
 			}
 			
+			if (game.gi.isOnHomzone() == true && user_fast_shortcut_settings_BuildingProd.UeberwachungWitchCoven) {
+				setTimeout(function() {
+					if (game.gi.isOnHomzone() == true) {
+						GebaeudeProdExeWithGrid(
+							"WitchCoven", 
+							user_fast_shortcut_settings_BuildingProd.WitchCovenSelector2, 
+							loca.GetText("BUI", "WitchCoven"), 
+							user_fast_shortcut_settings_BuildingProd.WitchCovenSelector,
+							user_fast_shortcut_settings_BuildingProd.WitchCovenLimit
+						);
+					}        
+				}, currentTimeout);
+				currentTimeout += delayIncrement;
+			}
+			
+			if (game.gi.isOnHomzone() == true && user_fast_shortcut_settings_BuildingProd.UeberwachungRetirementHome) {
+				setTimeout(function() {
+					if (game.gi.isOnHomzone() == true) {
+						GebaeudeProdExeWithGrid(
+							"RetirementHome", 
+							user_fast_shortcut_settings_BuildingProd.RetirementHomeSelector2, 
+							loca.GetText("BUI", "RetirementHome"), 
+							user_fast_shortcut_settings_BuildingProd.RetirementHomeSelector,
+							user_fast_shortcut_settings_BuildingProd.RetirementHomeLimit
+						);
+					}        
+				}, currentTimeout);
+				currentTimeout += delayIncrement;
+			}
+			
+			if (game.gi.isOnHomzone() == true && user_fast_shortcut_settings_BuildingProd.UeberwachungWeddingChapel) {
+				setTimeout(function() {
+					if (game.gi.isOnHomzone() == true) {
+						GebaeudeProdExeWithGrid(
+							"WeddingChapel", 
+							user_fast_shortcut_settings_BuildingProd.WeddingChapelSelector2, 
+							loca.GetText("BUI", "WeddingChapel"), 
+							user_fast_shortcut_settings_BuildingProd.WeddingChapelSelector,
+							user_fast_shortcut_settings_BuildingProd.WeddingChapelLimit
+						);
+					}        
+				}, currentTimeout);
+				currentTimeout += delayIncrement;
+			}
+			
+			if (game.gi.isOnHomzone() == true && user_fast_shortcut_settings_BuildingProd.UeberwachungFluffyLogistics) {
+				setTimeout(function() {
+					if (game.gi.isOnHomzone() == true) {
+						GebaeudeProdExeWithGrid(
+							"FluffyLogistics", 
+							user_fast_shortcut_settings_BuildingProd.FluffyLogisticsSelector2, 
+							loca.GetText("BUI", "FluffyLogistics"), 
+							user_fast_shortcut_settings_BuildingProd.FluffyLogisticsSelector,
+							user_fast_shortcut_settings_BuildingProd.FluffyLogisticsLimit
+						);
+					}        
+				}, currentTimeout);
+				currentTimeout += delayIncrement;
+			}
+			
 			if (game.gi.isOnHomzone() == true && user_fast_shortcut_settings_BuildingProd.UeberwachungGuild1) {
 				setTimeout(function() {
 					if (game.gi.isOnHomzone() == true) {
@@ -17510,6 +18615,66 @@ function BuiProdAktionMan()
 							loca.GetText("BUI", "Prospector"), 
 							user_fast_shortcut_settings_BuildingProd.ProspectorSelector,
 							user_fast_shortcut_settings_BuildingProd.ProspectorLimit
+						);
+					}        
+				}, currentTimeout);
+				currentTimeout += delayIncrement;
+			}
+			
+			if (game.gi.isOnHomzone() == true && user_fast_shortcut_settings_BuildingProd.UeberwachungWitchCoven) {
+				setTimeout(function() {
+					if (game.gi.isOnHomzone() == true) {
+						GebaeudeProdExeWithGrid(
+							"WitchCoven", 
+							user_fast_shortcut_settings_BuildingProd.WitchCovenSelector2, 
+							loca.GetText("BUI", "WitchCoven"), 
+							user_fast_shortcut_settings_BuildingProd.WitchCovenSelector,
+							user_fast_shortcut_settings_BuildingProd.WitchCovenLimit
+						);
+					}        
+				}, currentTimeout);
+				currentTimeout += delayIncrement;
+			}
+			
+			if (game.gi.isOnHomzone() == true && user_fast_shortcut_settings_BuildingProd.UeberwachungRetirementHome) {
+				setTimeout(function() {
+					if (game.gi.isOnHomzone() == true) {
+						GebaeudeProdExeWithGrid(
+							"RetirementHome", 
+							user_fast_shortcut_settings_BuildingProd.RetirementHomeSelector2, 
+							loca.GetText("BUI", "RetirementHome"), 
+							user_fast_shortcut_settings_BuildingProd.RetirementHomeSelector,
+							user_fast_shortcut_settings_BuildingProd.RetirementHomeLimit
+						);
+					}        
+				}, currentTimeout);
+				currentTimeout += delayIncrement;
+			}
+			
+			if (game.gi.isOnHomzone() == true && user_fast_shortcut_settings_BuildingProd.UeberwachungWeddingChapel) {
+				setTimeout(function() {
+					if (game.gi.isOnHomzone() == true) {
+						GebaeudeProdExeWithGrid(
+							"WeddingChapel", 
+							user_fast_shortcut_settings_BuildingProd.WeddingChapelSelector2, 
+							loca.GetText("BUI", "WeddingChapel"), 
+							user_fast_shortcut_settings_BuildingProd.WeddingChapelSelector,
+							user_fast_shortcut_settings_BuildingProd.WeddingChapelLimit
+						);
+					}        
+				}, currentTimeout);
+				currentTimeout += delayIncrement;
+			}
+			
+			if (game.gi.isOnHomzone() == true && user_fast_shortcut_settings_BuildingProd.UeberwachungFluffyLogistics) {
+				setTimeout(function() {
+					if (game.gi.isOnHomzone() == true) {
+						GebaeudeProdExeWithGrid(
+							"FluffyLogistics", 
+							user_fast_shortcut_settings_BuildingProd.FluffyLogisticsSelector2, 
+							loca.GetText("BUI", "FluffyLogistics"), 
+							user_fast_shortcut_settings_BuildingProd.FluffyLogisticsSelector,
+							user_fast_shortcut_settings_BuildingProd.FluffyLogisticsLimit
 						);
 					}        
 				}, currentTimeout);
@@ -18350,6 +19515,110 @@ function FastShortcutBuildingProdHandler(event)
 		});
 	} catch (e) {}
 	
+	var WitchCovenSelector = $('<select>', { 'class': 'form-control WitchCovenSelector' });
+	var WitchCovenSelector2 = $('<select>', { 'class': 'form-control WitchCovenSelector2' });
+	var AllBuffsWitchCoven;
+	var AllWitchCoven;
+	var WitchCovenLimit = $('<select>', { 'class': 'form-control WitchCovenLimit' });
+	for (var i = 1; i <= 600; i++) {
+		WitchCovenLimit.append($('<option>', { 'value': i }).text(i));
+	}
+
+	try {
+		AllBuffsWitchCoven = GebaeudeProdProdEinlesenWithGrid("WitchCoven");
+		AllWitchCoven = GebaeudeProdEinlesenWithGrid("WitchCoven");
+
+		AllBuffsWitchCoven.forEach(function(item) {
+			WitchCovenSelector2.append(
+				$('<option>', { 'value': item.SelectedOrderType }).text(item.BuffName)
+			);
+		});
+
+		AllWitchCoven.forEach(function(item) {
+			WitchCovenSelector.append(
+				$('<option>', { 'value': item.Grid }).text(item.Name + " | LvL:" + item.Level + " | Grid:" + item.Grid)
+			);
+		});
+	} catch (e) {}
+	
+	var RetirementHomeSelector = $('<select>', { 'class': 'form-control RetirementHomeSelector' });
+	var RetirementHomeSelector2 = $('<select>', { 'class': 'form-control RetirementHomeSelector2' });
+	var AllBuffsRetirementHome;
+	var AllRetirementHome;
+	var RetirementHomeLimit = $('<select>', { 'class': 'form-control RetirementHomeLimit' });
+	for (var i = 1; i <= 600; i++) {
+		RetirementHomeLimit.append($('<option>', { 'value': i }).text(i));
+	}
+
+	try {
+		AllBuffsRetirementHome = GebaeudeProdProdEinlesenWithGrid("RetirementHome");
+		AllRetirementHome = GebaeudeProdEinlesenWithGrid("RetirementHome");
+
+		AllBuffsRetirementHome.forEach(function(item) {
+			RetirementHomeSelector2.append(
+				$('<option>', { 'value': item.SelectedOrderType }).text(item.BuffName)
+			);
+		});
+
+		AllRetirementHome.forEach(function(item) {
+			RetirementHomeSelector.append(
+				$('<option>', { 'value': item.Grid }).text(item.Name + " | LvL:" + item.Level + " | Grid:" + item.Grid)
+			);
+		});
+	} catch (e) {}
+	
+	var WeddingChapelSelector = $('<select>', { 'class': 'form-control WeddingChapelSelector' });
+	var WeddingChapelSelector2 = $('<select>', { 'class': 'form-control WeddingChapelSelector2' });
+	var AllBuffsWeddingChapel;
+	var AllWeddingChapel;
+	var WeddingChapelLimit = $('<select>', { 'class': 'form-control WeddingChapelLimit' });
+	for (var i = 1; i <= 600; i++) {
+		WeddingChapelLimit.append($('<option>', { 'value': i }).text(i));
+	}
+
+	try {
+		AllBuffsWeddingChapel = GebaeudeProdProdEinlesenWithGrid("WeddingChapel");
+		AllWeddingChapel = GebaeudeProdEinlesenWithGrid("WeddingChapel");
+
+		AllBuffsWeddingChapel.forEach(function(item) {
+			WeddingChapelSelector2.append(
+				$('<option>', { 'value': item.SelectedOrderType }).text(item.BuffName)
+			);
+		});
+
+		AllWeddingChapel.forEach(function(item) {
+			WeddingChapelSelector.append(
+				$('<option>', { 'value': item.Grid }).text(item.Name + " | LvL:" + item.Level + " | Grid:" + item.Grid)
+			);
+		});
+	} catch (e) {}
+	
+	var FluffyLogisticsSelector = $('<select>', { 'class': 'form-control FluffyLogisticsSelector' });
+	var FluffyLogisticsSelector2 = $('<select>', { 'class': 'form-control FluffyLogisticsSelector2' });
+	var AllBuffsFluffyLogistics;
+	var AllFluffyLogistics;
+	var FluffyLogisticsLimit = $('<select>', { 'class': 'form-control FluffyLogisticsLimit' });
+	for (var i = 1; i <= 600; i++) {
+		FluffyLogisticsLimit.append($('<option>', { 'value': i }).text(i));
+	}
+
+	try {
+		AllBuffsFluffyLogistics = GebaeudeProdProdEinlesenWithGrid("FluffyLogistics");
+		AllFluffyLogistics = GebaeudeProdEinlesenWithGrid("FluffyLogistics");
+
+		AllBuffsFluffyLogistics.forEach(function(item) {
+			FluffyLogisticsSelector2.append(
+				$('<option>', { 'value': item.SelectedOrderType }).text(item.BuffName)
+			);
+		});
+
+		AllFluffyLogistics.forEach(function(item) {
+			FluffyLogisticsSelector.append(
+				$('<option>', { 'value': item.Grid }).text(item.Name + " | LvL:" + item.Level + " | Grid:" + item.Grid)
+			);
+		});
+	} catch (e) {}
+	
 	var ProviSelector = $('<select>', { 'class': 'form-control ProviSelector' });
 	var ProviSelector2 = $('<select>', { 'class': 'form-control ProviSelector2' });
 	var AllBuffsProvi;
@@ -18579,6 +19848,16 @@ function FastShortcutBuildingProdHandler(event)
 	html += utils.createTableRow([[6, getText('BuffToBeProduced', 'SemiAutoATMenuLang')], [6, HarbourSelector2.prop('outerHTML')]]);
 	html += utils.createTableRow([[6, getText('ProductionQueueLimit', 'SemiAutoATMenuLang')], [6, HarbourLimit.prop('outerHTML')]]);
 	html += utils.createTableRow([[9, '<br>']]);
+	html += utils.createTableRow([[11, getText('WeddingChapelAutomation', 'SemiAutoATMenuLang')], [1, createSwitch('UeberwachungWeddingChapel', user_fast_shortcut_settings_BuildingProd.UeberwachungWeddingChapel)]]);
+	html += utils.createTableRow([[6, getText('BuildingPositionSelection', 'SemiAutoATMenuLang')], [6, WeddingChapelSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText('BuffToBeProduced', 'SemiAutoATMenuLang')], [6, WeddingChapelSelector2.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText('ProductionQueueLimit', 'SemiAutoATMenuLang')], [6, WeddingChapelLimit.prop('outerHTML')]]);
+	html += utils.createTableRow([[9, '<br>']]);
+	html += utils.createTableRow([[11, getText('FluffyLogisticsAutomation', 'SemiAutoATMenuLang')], [1, createSwitch('UeberwachungFluffyLogistics', user_fast_shortcut_settings_BuildingProd.UeberwachungFluffyLogistics)]]);
+	html += utils.createTableRow([[6, getText('BuildingPositionSelection', 'SemiAutoATMenuLang')], [6, FluffyLogisticsSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText('BuffToBeProduced', 'SemiAutoATMenuLang')], [6, FluffyLogisticsSelector2.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText('ProductionQueueLimit', 'SemiAutoATMenuLang')], [6, FluffyLogisticsLimit.prop('outerHTML')]]);
+	html += utils.createTableRow([[9, '<br>']]);
 	html += utils.createTableRow([[11, getText('SnackStandAutomation', 'SemiAutoATMenuLang')], [1, createSwitch('UeberwachungImbiss', user_fast_shortcut_settings_BuildingProd.UeberwachungImbiss)]]);
 	html += utils.createTableRow([[6, getText('BuildingPositionSelection', 'SemiAutoATMenuLang')], [6, ImbissSelector.prop('outerHTML')]]);
 	html += utils.createTableRow([[6, getText('BuffToBeProduced', 'SemiAutoATMenuLang')], [6, ImbissSelector2.prop('outerHTML')]]);
@@ -18618,6 +19897,16 @@ function FastShortcutBuildingProdHandler(event)
 	html += utils.createTableRow([[6, getText('BuildingPositionSelection', 'SemiAutoATMenuLang')], [6, ProspectorSelector.prop('outerHTML')]]);
 	html += utils.createTableRow([[6, getText('BuffToBeProduced', 'SemiAutoATMenuLang')], [6, ProspectorSelector2.prop('outerHTML')]]);
 	html += utils.createTableRow([[6, getText('ProductionQueueLimit', 'SemiAutoATMenuLang')], [6, ProspectorLimit.prop('outerHTML')]]);
+	html += utils.createTableRow([[9, '<br>']]);
+	html += utils.createTableRow([[11, getText('WitchCovenAutomation', 'SemiAutoATMenuLang')], [1, createSwitch('UeberwachungWitchCoven', user_fast_shortcut_settings_BuildingProd.UeberwachungWitchCoven)]]);
+	html += utils.createTableRow([[6, getText('BuildingPositionSelection', 'SemiAutoATMenuLang')], [6, WitchCovenSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText('BuffToBeProduced', 'SemiAutoATMenuLang')], [6, WitchCovenSelector2.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText('ProductionQueueLimit', 'SemiAutoATMenuLang')], [6, WitchCovenLimit.prop('outerHTML')]]);
+	html += utils.createTableRow([[9, '<br>']]);
+	html += utils.createTableRow([[11, getText('RetirementHomeAutomation', 'SemiAutoATMenuLang')], [1, createSwitch('UeberwachungRetirementHome', user_fast_shortcut_settings_BuildingProd.UeberwachungRetirementHome)]]);
+	html += utils.createTableRow([[6, getText('BuildingPositionSelection', 'SemiAutoATMenuLang')], [6, RetirementHomeSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText('BuffToBeProduced', 'SemiAutoATMenuLang')], [6, RetirementHomeSelector2.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText('ProductionQueueLimit', 'SemiAutoATMenuLang')], [6, RetirementHomeLimit.prop('outerHTML')]]);
 	html += utils.createTableRow([[9, '<br>']]);
 	html += utils.createTableRow([[11, getText('ProviantlagerAutomation', 'SemiAutoATMenuLang')], [1, createSwitch('UeberwachungProvi', user_fast_shortcut_settings_BuildingProd.UeberwachungProvi)]]);
 	html += utils.createTableRow([[6, getText('BuildingPositionSelection', 'SemiAutoATMenuLang')], [6, ProviSelector.prop('outerHTML')]]);
@@ -19110,6 +20399,50 @@ function FastShortcutBuildingProdHandler(event)
 	});
 	w.withBody('.ProspectorLimit').val(user_fast_shortcut_settings_BuildingProd.ProspectorLimit).change(function(e) { user_fast_shortcut_settings_BuildingProd.ProspectorLimit = $(e.target).val(); });
 	
+	w.withBody('#UeberwachungWitchCoven').change(function(e) {
+		user_fast_shortcut_settings_BuildingProd.UeberwachungWitchCoven = $(e.target).is(':checked');
+	});
+	w.withBody('.WitchCovenSelector').val(user_fast_shortcut_settings_BuildingProd.WitchCovenSelector).change(function(e) {
+		user_fast_shortcut_settings_BuildingProd.WitchCovenSelector = $(e.target).val();
+	});
+	w.withBody('.WitchCovenSelector2').val(user_fast_shortcut_settings_BuildingProd.WitchCovenSelector2).change(function(e) {
+		user_fast_shortcut_settings_BuildingProd.WitchCovenSelector2 = $(e.target).val();
+	});
+	w.withBody('.WitchCovenLimit').val(user_fast_shortcut_settings_BuildingProd.WitchCovenLimit).change(function(e) { user_fast_shortcut_settings_BuildingProd.WitchCovenLimit = $(e.target).val(); });
+	
+	w.withBody('#UeberwachungRetirementHome').change(function(e) {
+		user_fast_shortcut_settings_BuildingProd.UeberwachungRetirementHome = $(e.target).is(':checked');
+	});
+	w.withBody('.RetirementHomeSelector').val(user_fast_shortcut_settings_BuildingProd.RetirementHomeSelector).change(function(e) {
+		user_fast_shortcut_settings_BuildingProd.RetirementHomeSelector = $(e.target).val();
+	});
+	w.withBody('.RetirementHomeSelector2').val(user_fast_shortcut_settings_BuildingProd.RetirementHomeSelector2).change(function(e) {
+		user_fast_shortcut_settings_BuildingProd.RetirementHomeSelector2 = $(e.target).val();
+	});
+	w.withBody('.RetirementHomeLimit').val(user_fast_shortcut_settings_BuildingProd.RetirementHomeLimit).change(function(e) { user_fast_shortcut_settings_BuildingProd.RetirementHomeLimit = $(e.target).val(); });
+	
+	w.withBody('#UeberwachungWeddingChapel').change(function(e) {
+		user_fast_shortcut_settings_BuildingProd.UeberwachungWeddingChapel = $(e.target).is(':checked');
+	});
+	w.withBody('.WeddingChapelSelector').val(user_fast_shortcut_settings_BuildingProd.WeddingChapelSelector).change(function(e) {
+		user_fast_shortcut_settings_BuildingProd.WeddingChapelSelector = $(e.target).val();
+	});
+	w.withBody('.WeddingChapelSelector2').val(user_fast_shortcut_settings_BuildingProd.WeddingChapelSelector2).change(function(e) {
+		user_fast_shortcut_settings_BuildingProd.WeddingChapelSelector2 = $(e.target).val();
+	});
+	w.withBody('.WeddingChapelLimit').val(user_fast_shortcut_settings_BuildingProd.WeddingChapelLimit).change(function(e) { user_fast_shortcut_settings_BuildingProd.WeddingChapelLimit = $(e.target).val(); });
+	
+	w.withBody('#UeberwachungFluffyLogistics').change(function(e) {
+		user_fast_shortcut_settings_BuildingProd.UeberwachungFluffyLogistics = $(e.target).is(':checked');
+	});
+	w.withBody('.FluffyLogisticsSelector').val(user_fast_shortcut_settings_BuildingProd.FluffyLogisticsSelector).change(function(e) {
+		user_fast_shortcut_settings_BuildingProd.FluffyLogisticsSelector = $(e.target).val();
+	});
+	w.withBody('.FluffyLogisticsSelector2').val(user_fast_shortcut_settings_BuildingProd.FluffyLogisticsSelector2).change(function(e) {
+		user_fast_shortcut_settings_BuildingProd.FluffyLogisticsSelector2 = $(e.target).val();
+	});
+	w.withBody('.FluffyLogisticsLimit').val(user_fast_shortcut_settings_BuildingProd.FluffyLogisticsLimit).change(function(e) { user_fast_shortcut_settings_BuildingProd.FluffyLogisticsLimit = $(e.target).val(); });
+	
 	var previousTimingsProd = user_fast_shortcut_settings_BuildingProd.WarteZeitZwischenVorlagenÜberwachungSelector3;
 	
     if(onlyoncesetting3 && game.gi.isOnHomzone())
@@ -19253,6 +20586,22 @@ function FastShortcutBuildingProdHandler(event)
 		
 		if (ProspectorSelector.val() === null || ProspectorSelector2.val() === null) {
 			user_fast_shortcut_settings_BuildingProd.UeberwachungProspector = false;
+		}
+		
+		if (WitchCovenSelector.val() === null || WitchCovenSelector2.val() === null) {
+			user_fast_shortcut_settings_BuildingProd.UeberwachungWitchCoven = false;
+		}
+		
+		if (RetirementHomeSelector.val() === null || RetirementHomeSelector2.val() === null) {
+			user_fast_shortcut_settings_BuildingProd.UeberwachungRetirementHome = false;
+		}
+		
+		if (WeddingChapelSelector.val() === null || WeddingChapelSelector2.val() === null) {
+			user_fast_shortcut_settings_BuildingProd.UeberwachungWeddingChapel = false;
+		}
+		
+		if (FluffyLogisticsSelector.val() === null || FluffyLogisticsSelector2.val() === null) {
+			user_fast_shortcut_settings_BuildingProd.UeberwachungFluffyLogistics = false;
 		}
 		
 		try
@@ -20462,7 +21811,7 @@ function GebaeudeProdExeWithGridMayor(Realname, BuffID, Name, Grid, xLimit)
 			//game.showAlert(Name + "("+AllProds[0].Grid+")" +": " + AllProds[0].Name + ' Produktionswarteschlange > Limit oder keine Ressourcen!');
 		}
 	}
-	catch(e) {}
+	catch(e) {debug(e);}
 }
 /////////////////////////
 ////####Checkups####/////
@@ -21137,7 +22486,7 @@ function GetMilitaryUnitsFast() {
 
 
 				out += utils.createTableRow([
-					[3, '<span style="font-size: 12px;">' + getText(name2, 'RebuildLosses_translationsFast') + '</span>'],
+					[3, '<span style="font-size: 12px;">' + getImageTag(name2, '22px') + getText(name2, 'RebuildLosses_translationsFast') + '</span>'],
 					[1, '<span style="font-size: 12px; display: inline-block; width: 70px; text-align: center; line-height: 20px; vertical-align: middle;"">' + (unassigned + assigned) + '</span>'],
 					[1, '<span style="font-size: 12px; display: inline-block; width: 70px; text-align: center; line-height: 20px; vertical-align: middle;">' + unassigned + '</span>'],
 					[1, '<span style="font-size: 12px; display: inline-block; width: 70px; text-align: center; line-height: 20px; vertical-align: middle;">' + assigned + '</span>'],
@@ -21499,6 +22848,7 @@ function _IsHammerman()
 		}
 		try
 		{
+			cachedLagHammer = "HM : " + HammerManCount + " | LM : " + HammerManCountMove + " | LA : " + HammerManCountAttack + " | LL : " + HammerManCountLoad;
 			menu.nativeMenu.getItemByName("HammermanMenu2").label = "Hammerman : " + HammerManCount + " | LagMove : " + HammerManCountMove + " | LagAttack : " + HammerManCountAttack + " | LagLoad : " + HammerManCountLoad;
 		} catch (e) {}
 	 }
@@ -21515,32 +22865,105 @@ function _IsHammerman()
 //////////////////////////////
 ////####Restart Client####////
 //////////////////////////////
+function detectBestClientExe(callback)
+{
+    var npsi = new window.runtime.flash.desktop.NativeProcessStartupInfo();
+    npsi.executable = new air.File("C:\\Windows\\System32\\cmd.exe");
+
+    var args = new window.runtime.Vector["<String>"]();
+    args[0] = "/c";
+    args[1] = "echo %PROCESSOR_ARCHITECTURE%";
+
+    npsi.arguments = args;
+
+    var process = new window.runtime.flash.desktop.NativeProcess();
+    var output = "";
+
+    process.addEventListener(
+        window.runtime.flash.events.ProgressEvent.STANDARD_OUTPUT_DATA,
+        function() {
+            output += process.standardOutput.readUTFBytes(
+                process.standardOutput.bytesAvailable
+            );
+        }
+    );
+
+    process.addEventListener(
+        window.runtime.flash.events.NativeProcessExitEvent.EXIT,
+        function() {
+
+            var is64 =
+                output.toUpperCase().indexOf("64") !== -1;
+
+            var client64 = air.File.applicationDirectory.resolvePath("client64.exe");
+            var client32 = air.File.applicationDirectory.resolvePath("client.exe");
+
+            if (is64 && client64.exists)
+                callback("client64.exe");
+            else
+                callback("client.exe");
+        }
+    );
+
+    process.start(npsi);
+}
+
 function DoARestart()
 {
-		setTimeout(function() {
-			window.runtime.flash.desktop.NativeApplication.nativeApplication.exit(0);      
-		}, 2000);
-		var process = null;
-		process = runNewApplicationRestart(game.def("mx.messaging::FlexClient").getInstance().id, game.def("defines").CLIENT_AUTHRANDOM, null);
+    detectBestClientExe(function(exeName) {
+
+        var process = runNewApplicationRestart(
+            exeName,
+            game.def("mx.messaging::FlexClient").getInstance().id,
+            game.def("defines").CLIENT_AUTHRANDOM,
+            null
+        );
+
+        setTimeout(function() {
+            window.runtime.flash.desktop.NativeApplication.nativeApplication.exit(0);      
+        }, 1000);
+    });
 }
-function runNewApplicationRestart(flexid, randomauth, zoneid)
+function runNewApplicationRestart(exeName, flexid, randomauth, zoneid)
 {
-	updateApplication();
-	var nativeProcessStartupInfo = new window.runtime.flash.desktop.NativeProcessStartupInfo();
-	var file = air.File.applicationDirectory.resolvePath("client.exe");
-	nativeProcessStartupInfo.executable = file;
-	var processArgs = new window.runtime.Vector["<String>"]();
-	rawArgs["window"] = mainSettings.mwWindowSize == 'same' ? rawArgs["window"] : mainSettings.mwWindowSize;
-	if (zoneid == null)
-		$.extend(rawArgs, { "flexid": flexid, "authrandom": randomauth});
-	else
-		$.extend(rawArgs, { "flexid": flexid, "authrandom": randomauth, "zoneid": zoneid });
-		processArgs[0] = "tso://?" + Object.keys(rawArgs).map(function(k) { return "{0}={1}".format(k, rawArgs[k]); }).join('&');
-		nativeProcessStartupInfo.arguments = processArgs;
-		process = new window.runtime.flash.desktop.NativeProcess();
-		process.start(nativeProcessStartupInfo);
-		return process;
+    updateApplication();
+
+    var nativeProcessStartupInfo =
+        new window.runtime.flash.desktop.NativeProcessStartupInfo();
+
+    var file = air.File.applicationDirectory.resolvePath(exeName);
+
+    if (!file.exists)
+        throw "EXE NOT FOUND: " + exeName;
+
+    nativeProcessStartupInfo.executable = file;
+
+    var processArgs = new window.runtime.Vector["<String>"]();
+
+    rawArgs["window"] = mainSettings.mwWindowSize == 'same'
+        ? rawArgs["window"]
+        : mainSettings.mwWindowSize;
+
+    if (zoneid == null)
+        $.extend(rawArgs, { "flexid": flexid, "authrandom": randomauth });
+    else
+        $.extend(rawArgs, { "flexid": flexid, "authrandom": randomauth, "zoneid": zoneid });
+
+    processArgs[0] =
+        "tso://?" +
+        Object.keys(rawArgs)
+            .map(function(k) { return "{0}={1}".format(k, rawArgs[k]); })
+            .join('&');
+
+    nativeProcessStartupInfo.arguments = processArgs;
+
+    var process = new window.runtime.flash.desktop.NativeProcess();
+    process.start(nativeProcessStartupInfo);
+
+    return process;
 }
+
+
 function BPro(bool)
 {
 	/* try
@@ -21604,11 +23027,11 @@ function BuffAllFish() {
         var modeMatch = str.match(/mode='([^']+)'/);
         var mode = modeMatch ? modeMatch[1] : null;
 
-        if (item.IsBuffable() && mode != "ProducesNoResources" && buffsAvailableAllBuff[buffName].count > 0) {
+        if (item.IsBuffable() && item.IsProductionActive() && mode != "ProducesNoResources" && buffsAvailableAllBuff[buffName].count > 0) {
             BuffAllFishbuffDoJob.add(function() {
                 sendBuffPacket(buffsAvailableAllBuff[buffName].id, item.GetGrid());
                 buffsAvailableAllBuff[buffName].count--;
-            });
+            }, randomDelay(1533, 2245));
         }
     });
     BuffAllFishbuffDoJob.run();
@@ -21753,7 +23176,7 @@ function buffDoJob3(Daten) {
             buffsAvailable3[item.buffName].count -= 1;
             xbuffDoJob3.add(function() {
                 sendBuffPacket(buffsAvailable3[item.buffName].id, item.buiGrid);
-            });
+            }, randomDelay(1533, 3245));
         }
     });
     xbuffDoJob3.run();
@@ -22094,6 +23517,7 @@ function QuestComplete(e) {
 
     } catch (ex) {
         uQUESTSYSTEM_Message(ex);
+		debug(ex);
     }
 }
 //////////////////////////////
@@ -22696,6 +24120,7 @@ function CheckAutoSzenario()
 		ToolingMenuUpdateSzenaStoppen(true);
 		ToolingMenuUpdateSzenaStarten(false);
 		ToolingMenuUpdateMainMenu(false);
+		ToolingMenuUpdateMainMenu2(false);
 		setTimeout(function() {
 			showGameAlert(getText('CheckRound', 'SemiAutoATMenuLang'));
 		}, 130000);
@@ -22746,7 +24171,8 @@ function FastShortcutSzenarioHandler(event)
 	$('<option>', { 'value': 'BuffAdventures_Storm_Recovery' }).text(loca.GetText("ADN", "BuffAdventures_Storm_Recovery")),
 	$('<option>', { 'value': 'BuffAdventures_heartOfTheWood_medium' }).text(loca.GetText("ADN", "BuffAdventures_heartOfTheWood_medium")),
 	$('<option>', { 'value': 'BuffAdventures_safeTheTowns_easy' }).text(loca.GetText("ADN", "BuffAdventures_safeTheTowns_easy")),
-	$('<option>', { 'value': 'BuffAdventures_Riches_of_the_Mountain' }).text(loca.GetText("ADN", "BuffAdventures_Riches_of_the_Mountain"))
+	$('<option>', { 'value': 'BuffAdventures_Riches_of_the_Mountain' }).text(loca.GetText("ADN", "BuffAdventures_Riches_of_the_Mountain")),
+	$('<option>', { 'value': 'BuffAdventures_Easter_Event_2015' }).text(loca.GetText("ADN", "BuffAdventures_Easter_Event_2015"))
 	];
 	
 	options.sort(function (a, b) {
@@ -22951,6 +24377,12 @@ function FastDataLoad()
 				BattleBuffHurt_BuffAd_WaterSplash: [[2631], 10],
 				BattleBuffHurt_BuffAd_Explosive: [2631],
 				BattleBuffHurt_BuffAd_Specialist: [2631]
+			},
+			BuffAdventures_Easter_Event_2015: {
+				BattleBuffHurt_BuffAd_Fitch_Gin: [6216, 5536, 6023, 4797, 3294, 2202, 1388],
+				ChangeSkin_Easter_BuffAd_Polecat_Spray: [5475, 5813, 5750, 5951, 5748],
+				ChangeSkin_Easter_BuffAd_Frightened_chicken: [5475, 5813, 5750, 5951, 5748],
+				EmptyEffectBuff_Easter_BuffAd_ChickWellness: [5475, 5813, 5750, 5951, 5748]
 			}
 		},
 		FastSenarios: {
@@ -23139,6 +24571,30 @@ function FastDataLoad()
 					{ name: "Wait", data: 15000 },
 					{ name: "ApplyBuff", data: "BattleBuffHurt_BuffAd_Specialist" }
 				]
+			},
+			"BuffAdventures_Easter_Event_2015" : { //Oster Event
+				"name": "BuffAdventures_Easter_Event_2015",
+				"steps": [
+					{ name: "StartSenario" },
+					{ name: "Wait", data: 20000 },
+					{ name: "ProduceItem", data: "BattleBuffHurt_BuffAd_Fitch_Gin" },
+					{ name: "VisitSenario" },
+					{ name: "CollectPickups" },
+					{ name: "ReturnHome" },
+					{ name: "ProduceItem", data: "ChangeSkin_Easter_BuffAd_Polecat_Spray" },
+					{ name: "VisitSenario" },
+					{ name: "ApplyBuff", data: "ChangeSkin_Easter_BuffAd_Polecat_Spray" },
+					{ name: "Wait", data: 35000 },
+					{ name: "ApplyBuff", data: "BattleBuffHurt_BuffAd_Fitch_Gin" },
+					{ name: "CollectPickups" },
+					{ name: "ReturnHome" },
+					{ name: "ProduceItem", data: "ChangeSkin_Easter_BuffAd_Frightened_chicken" },
+					{ name: "ProduceItem", data: "EmptyEffectBuff_Easter_BuffAd_ChickWellness" },
+					{ name: "VisitSenario" },
+					{ name: "ApplyBuff", data: "ChangeSkin_Easter_BuffAd_Frightened_chicken" },
+					{ name: "Wait", data: 35000 },
+					{ name: "ApplyBuff", data: "EmptyEffectBuff_Easter_BuffAd_ChickWellness" }
+				]
 			}
 		},
 		FastSenariosResources: {
@@ -23196,6 +24652,14 @@ function FastDataLoad()
 				"Salpeter" : { "amount" : 100},
 				"Gunpowder" : { "amount" : 800},
 				"Population" : { "amount" : 20}
+			},
+			"BuffAdventures_Easter_Event_2015": {
+				"Fish" : { "amount" : 2500},
+				"Water" : { "amount" : 2500},
+				"Tool" : { "amount" : 2450},
+				"IronOre" : { "amount" : 1225},
+				"Corn" : { "amount" : 1250},
+				"CollectibleHerbs" : { "amount" : 75}
 			}
 		}
 	}
@@ -23734,7 +25198,7 @@ function GetQuestSenario(scenarioName) {
 							if(MemTriggerClientRestart())
 							{
 								showGameAlert(getText('MemInAT', 'SemiAutoATMenuLang') + humanMemorySize(air.System.privateMemory, 1) + getText('MemInAT2', 'SemiAutoATMenuLang'));
-								try{menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "AutoModus - Speichergrenze erreicht, Neustart demnächst!";}catch(e){}
+								try{menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "Szenario Runden: " + RealRundenanzahlCounterSzenario + " von " + user_fast_shortcut_settings_SZENARIO.SzenarioRundenanzahl + " (fertig) | " + "AutoModus - Speichergrenze erreicht, Neustart demnächst!"; cachedAutoATRundenanzahlLabel = "Szenario Runden: " + RealRundenanzahlCounterSzenario + " von " + user_fast_shortcut_settings_SZENARIO.SzenarioRundenanzahl + " (fertig) | " + "AutoModus - Speichergrenze erreicht, Neustart demnächst!"; OverlayNeustart = true;}catch(e){}
 								user_fast_shortcut_settings_AutoSzenario.Runde = RundenanzahlCounterSzenario;
 								AutoSzenariosave();
 								ToolingMenuUpdateSzenaMenu(false);
@@ -23742,6 +25206,7 @@ function GetQuestSenario(scenarioName) {
 								ToolingMenuUpdateSzenaStarten(false);
 								ToolingMenuUpdate(false);
 								ToolingMenuUpdateMainMenu(false);
+								ToolingMenuUpdateMainMenu2(false);
 							}
 							else
 							{
@@ -23764,11 +25229,11 @@ function GetQuestSenario(scenarioName) {
 				{
 					if(RundenanzahlCounterSzenario === 1338)
 					{
-						try{menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "Szenario Runden : " + RealRundenanzahlCounterSzenario + " (Fertig, gestoppt nach Runde)";}catch(e){}
+						try{menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "Szenario Runden: " + RealRundenanzahlCounterSzenario + " von " + user_fast_shortcut_settings_SZENARIO.SzenarioRundenanzahl + " (fertig, gestoppt nach Runde)"; cachedAutoATRundenanzahlLabel = "Szenario Runden: " + RealRundenanzahlCounterSzenario + " von " + user_fast_shortcut_settings_SZENARIO.SzenarioRundenanzahl + " (fertig, gestoppt nach Runde)";}catch(e){}
 					}
 					else
 					{
-						try{menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "Szenario Runden : " + RundenanzahlCounterSzenario + " (Fertig)";}catch(e){}
+						try{menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "Szenario Runden: " + RealRundenanzahlCounterSzenario + " von " + user_fast_shortcut_settings_SZENARIO.SzenarioRundenanzahl + " (fertig)"; cachedAutoATRundenanzahlLabel = "Szenario Runden: " + RealRundenanzahlCounterSzenario + " von " + user_fast_shortcut_settings_SZENARIO.SzenarioRundenanzahl + " (fertig)";}catch(e){}
 					}
 					
 					RundenanzahlCounterSzenario = 0;
@@ -23780,7 +25245,8 @@ function GetQuestSenario(scenarioName) {
 					ToolingMenuUpdateSzenaMenu(true);
 					ToolingMenuUpdateSzenaStoppen(false);
 					ToolingMenuUpdateSzenaStarten(true);	
-					ToolingMenuUpdateMainMenu(true);					
+					ToolingMenuUpdateMainMenu(true);
+					ToolingMenuUpdateMainMenu2(true);					
 				}
             }, 20000);
             return;
@@ -23881,7 +25347,8 @@ function sendBuffPacketSzenario(buffId, grid, amount)
 			uniqueID = game.def("Communication.VO::dUniqueID").Create(uniqueIdArr[0], uniqueIdArr[1]);
 		game.gi.SendServerAction(61, 0, grid, amount, uniqueID);
 	} catch (ex) {
-		alert(ex);
+		//alert(ex);
+		game.showAlert(ex);
 	}
 }
 
@@ -23910,6 +25377,7 @@ function SzenarioStoppen()
 	ToolingMenuUpdateSzenaStoppen(false);
 	ToolingMenuUpdateSzenaStarten(true);
 	ToolingMenuUpdateMainMenu(true);
+	ToolingMenuUpdateMainMenu2(true);
 	game.showAlert("Szenario wird gestoppt!");
 	RundenanzahlCounterSzenario = 0;
 	user_fast_shortcut_settings_AutoSzenario.Runde = 0;
@@ -23921,6 +25389,7 @@ function SzenarioStoppen()
 
 function SzenarioStart() {
 
+	game.showAlert("Szenario wird gestartet!");
 	FastDataLoad();
 	if(!RessiCheckBeforeStart())
 	{
@@ -23933,6 +25402,7 @@ function SzenarioStart() {
 	ToolingMenuUpdateSzenaStoppen(true);
 	ToolingMenuUpdateSzenaStarten(false);
 	ToolingMenuUpdateMainMenu(false);
+	ToolingMenuUpdateMainMenu2(false);
 	WasProddedperRound = false;
 	SzenarioCollectReady = false;
 	WasProddedEnoughRess = true;
@@ -23948,7 +25418,7 @@ function SzenarioStart() {
 			try{menu.nativeMenu.getItemByName("DebugMethoden").label = "SzenarioStart() - Auf Heimatinsel";}catch(e){}
 			
 			var RundeAktuell = RundenanzahlCounterSzenario + 1;
-			try{menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "Szenario Runde : " + RundeAktuell;}catch(e){}
+			try{menu.nativeMenu.getItemByName("AutoATRundenanzahl").label = "Szenario Runden: " + RundeAktuell + " von " + user_fast_shortcut_settings_SZENARIO.SzenarioRundenanzahl; cachedAutoATRundenanzahlLabel = "Szenario Runden: " + RundeAktuell + " von " + user_fast_shortcut_settings_SZENARIO.SzenarioRundenanzahl;}catch(e){}
 			RealRundenanzahlCounterSzenario = RundeAktuell;
 			
 			setTimeout(function () {
@@ -23972,7 +25442,7 @@ function SzenarioStart() {
 function openInfoHandler(event)
 {
 	try{
-		air.navigateToURL(new air.URLRequest("https://a-calc.de/dsoinfo.html"));
+		air.navigateToURL(new air.URLRequest("https://pure-chaos.de/dsoinfo.html"));
 	}catch(e){}
 }
 function openDonateHandler(event)
@@ -23996,7 +25466,7 @@ function openYoutubeHandler2(event)
 function openDonateAmaHandler(event)
 {
 	try{
-		air.navigateToURL(new air.URLRequest("https://a-calc.de/dsoinfo.html#affli"));
+		air.navigateToURL(new air.URLRequest("https://pure-chaos.de/dsoinfo.html#affli"));
 	}catch(e){}
 }
 
@@ -24119,145 +25589,1335 @@ function SafeMonitoringAlphaReturn()
 	}catch(e){}
 }
 
-function createOverlayWindow() {
-		if(!user_fast_shortcut_settings.OverlayMonitoringSetting)
-		{
-			return;
+var user_fast_shortcut_settings_Overlay = {
+    Templates: true,
+    BuildingBuffs: true,
+    BuildingProd: true,
+    TroopProd: true,
+    ShortcutDirect: true,
+    SemiAT: true,
+    AutoAT: true,
+    TimeWatcher: true,
+    AutoATRundenanzahl: true,
+	OverlayAutoATNeustart: true,
+	OverlayNeustart: true,
+	cachedMem: true,
+	cachedOnline: true,
+	cachedLagHammer: true,
+	cachedLoadingScreen: true,
+	cachedATName: true,
+	Overlayminimized: false
+};
+$.extend(user_fast_shortcut_settings_Overlay, settings.read(null, "FastShortcutOverlay"));
+
+function Overlaysave() {
+    settings.settings["FastShortcutOverlay"] = {};
+    settings.store(user_fast_shortcut_settings_Overlay, "FastShortcutOverlay");
+}
+
+function overlayHasTimeWatcher() {
+    return !!(user_fast_shortcut_settings && user_fast_shortcut_settings.MemUeberwachungNONATTIME);
+}
+
+function getOverlayVisibleRows() {
+    var rows = [];
+	var cachedATNameGetText = CHAOS_GET_TEXT();
+	
+	if(cachedLoadingScreenBool)
+	{
+		if (user_fast_shortcut_settings_Overlay.cachedLoadingScreen) {
+			rows.push({
+				key: "cachedLoadingScreen",
+				label: cachedLoadingScreen,
+				labelOnly: true
+		   });
 		}
-		try {
-			var initOptions = new air.NativeWindowInitOptions();
-			initOptions.systemChrome = "none";
-			initOptions.transparent = true;
-			initOptions.type = air.NativeWindowType.LIGHTWEIGHT;
+	}
 
-			overlayWindow = new air.NativeWindow(initOptions);
-			overlayWindow.title = "Overlay";
-			overlayWindow.width = 300;
-			overlayWindow.height = 70;
+	if (user_fast_shortcut_settings_Overlay.cachedMem) {
+        rows.push({
+            key: "cachedMem",
+            label: cachedMem,
+            labelOnly: true
+       });
+    }
+	
+	if (user_fast_shortcut_settings_Overlay.cachedOnline) {
+        rows.push({
+            key: "cachedOnline",
+            label: cachedOnline,
+            labelOnly: true
+       });
+    }
 
-			overlayWindow.alwaysInFront = true;
+    if (user_fast_shortcut_settings_Overlay.Templates) {
+        rows.push({
+            key: "Templates",
+            label: getText('OverlayTemplates', 'SemiAutoATMenuLang'),
+            value: getTimerText(getRemainingTimeInSecondsVorlagen()),
+            color: getTimerColor(getRemainingTimeInSecondsVorlagen(), OtherUeberwachung)
+        });
+    }
 
-			function positionOverlay() {
-				overlayWindow.x = window.nativeWindow.x + window.nativeWindow.width - overlayWindow.width - 12;
-				overlayWindow.y = window.nativeWindow.y + window.nativeWindow.height - overlayWindow.height - 120;
-			}
+    if (user_fast_shortcut_settings_Overlay.BuildingBuffs) {
+        rows.push({
+            key: "BuildingBuffs",
+            label: getText('OverlayBuildingBuffs', 'SemiAutoATMenuLang'),
+            value: getTimerText(getRemainingTimeInSecondsGebaeudeBuffs()),
+            color: getTimerColor(getRemainingTimeInSecondsGebaeudeBuffs(), (OtherUeberwachungBuffs || OtherUeberwachungLoot))
+        });
+    }
 
-			positionOverlay();
-			
-			window.nativeWindow.addEventListener(air.NativeWindowBoundsEvent.MOVE, positionOverlay);
-			window.nativeWindow.addEventListener(air.NativeWindowBoundsEvent.RESIZE, positionOverlay);
-			window.nativeWindow.addEventListener(air.NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGE, displayStateChangeEventHandler);
-			function displayStateChangeEventHandler() {
-				
-				switch (window.nativeWindow.displayState)
-				{
-					case "minimized":
-					overlayWindow.visible = false;
-					break;
-					case "normal":
-					overlayWindow.visible = true;
-					break;
-					case "maximized":
-					overlayWindow.visible = true;
-					break;
+    if (user_fast_shortcut_settings_Overlay.BuildingProd) {
+        rows.push({
+            key: "BuildingProd",
+            label: getText('OverlayBuildingProd', 'SemiAutoATMenuLang'),
+            value: getTimerText(getRemainingTimeInSecondsGebaeudeProd()),
+            color: getTimerColor(getRemainingTimeInSecondsGebaeudeProd(), OtherUeberwachungProd)
+        });
+    }
+
+    if (user_fast_shortcut_settings_Overlay.TroopProd) {
+        rows.push({
+            key: "TroopProd",
+            label: getText('OverlayTroopProd', 'SemiAutoATMenuLang'),
+            value: getTimerText(getRemainingTimeInSecondsTruppenProd()),
+            color: getTimerColor(getRemainingTimeInSecondsTruppenProd(), OtherUeberwachungTroop)
+        });
+    }
+
+    if (user_fast_shortcut_settings_Overlay.ShortcutDirect) {
+        rows.push({
+            key: "ShortcutDirect",
+            label: "Verknüpfung direkt: ",
+            value: shortcutsAutoFuncBool !== false ? getText("TimeWatcherBool", "SemiAutoATMenuLang") : getText("TimeWatcherBool2", "SemiAutoATMenuLang"),
+            color: shortcutsAutoFuncBool !== false ? 0x8FE388 : 0xFF7B7B
+        });
+    }
+
+    if (user_fast_shortcut_settings_Overlay.SemiAT) {
+        rows.push({
+            key: "SemiAT",
+            label: "Semi AT: ",
+            value: automatisierung !== false ? getText("TimeWatcherBool", "SemiAutoATMenuLang") : getText("TimeWatcherBool2", "SemiAutoATMenuLang"),
+            color: automatisierung !== false ? 0x8FE388 : 0xFF7B7B
+        });
+    }
+
+    if (user_fast_shortcut_settings_Overlay.AutoAT) {
+        rows.push({
+            key: "AutoAT",
+            label: "AutoAT: ",
+            value: MyStart !== false ? getText("TimeWatcherBool", "SemiAutoATMenuLang") : getText("TimeWatcherBool2", "SemiAutoATMenuLang"),
+            color: MyStart !== false ? 0x8FE388 : 0xFF7B7B
+        });
+    }
+
+    if (overlayHasTimeWatcher() && user_fast_shortcut_settings_Overlay.TimeWatcher) {
+        rows.push({
+            key: "TimeWatcher",
+            label: getText("TimeWatcher", "SemiAutoATMenuLang"),
+            value: timeWatcherInterval !== null ? getText("TimeWatcherBool", "SemiAutoATMenuLang") : getText("TimeWatcherBool2", "SemiAutoATMenuLang"),
+            color: timeWatcherInterval !== null ? 0x8FE388 : 0xFF7B7B
+        });
+    }
+	
+	if (user_fast_shortcut_settings_Overlay.OverlayNeustart) {
+        rows.push({
+            key: "OverlayNeustart",
+            label: "Neustart ausstehend: ",
+            value: OverlayNeustart !== false ? getText("TimeWatcherBool", "SemiAutoATMenuLang") : getText("TimeWatcherBool2", "SemiAutoATMenuLang"),
+            color: OverlayNeustart !== false ? 0x8FE388 : 0xFF7B7B
+        });
+    }
+	
+	if (user_fast_shortcut_settings_Overlay.OverlayAutoATNeustart) {
+        rows.push({
+            key: "OverlayAutoATNeustart",
+            label: "AT startet nach Neustart: ",
+            value: OverlayAutoATNeustart !== false ? getText("TimeWatcherBool", "SemiAutoATMenuLang") : getText("TimeWatcherBool2", "SemiAutoATMenuLang"),
+            color: OverlayAutoATNeustart !== false ? 0x8FE388 : 0xFF7B7B
+        });
+    }
+	
+		
+	if (user_fast_shortcut_settings_Overlay.cachedATName) {
+		var atName = GetATName();
+		cachedATName = atName;
+		var atLabel = "Kein AT aktiv";
+		var atIcon = "";
+
+		if (atName != null && atName !== "" && atName !== "Kein AT aktiv") {
+			GetATBuffMenge();
+			var tmp = cachedATNameGetText(atName);
+			atLabel = ((tmp != null && tmp !== "") ? (tmp + " (" +cachedATNameAmount + ")") : atName);
+			atIcon = GetOverlayAssets(atName);
+		}
+
+		rows.push({
+			key: "cachedATName",
+			label: atLabel,
+			labelOnly: true,
+			iconDataUri: atIcon
+		});
+    }
+
+    if (user_fast_shortcut_settings_Overlay.AutoATRundenanzahl) {
+        rows.push({
+            key: "AutoATRundenanzahl",
+            label: cachedAutoATRundenanzahlLabel,
+            labelOnly: true/* ,
+            iconDataUri: GetOverlayAssets("battering_ram_icon.png") */
+       });
+    }
+	
+	if (user_fast_shortcut_settings_Overlay.cachedLagHammer) {
+        rows.push({
+            key: "cachedLagHammer",
+            label: cachedLagHammer,
+            labelOnly: true
+       });
+    }
+
+    return rows;
+}
+
+function GetATName()
+{
+	try{
+		var AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance();
+		var Adventures = AdvManager.getAdventures();
+		var ATName = "";
+		for (var i = 0; i < Adventures.length; i++) {
+				var adv = Adventures[i];
+				if (adv === undefined) continue;
+
+				if (adv.ownerPlayerID === game.player.GetPlayerId()) {
+					var ATName = adv.adventureName;
+					//debug(adv.adventureName);
+					return ATName;
 				}
 			}
-			
-			window.nativeWindow.addEventListener(air.Event.ACTIVATE, onActivate);
-			window.nativeWindow.addEventListener(air.Event.DEACTIVATE, onDeactivate);
+		if (ATName == null || ATName === "") {
+			return ATName = "Kein AT aktiv";
+		}			
+	}catch(e){ATName = "Kein AT aktiv";}
+}
 
-			function onActivate(event) {
-				overlayWindow.visible = true;
-			}
-
-			function onDeactivate(event) {
-				overlayWindow.visible = false;
-			}
-			
-			window.nativeWindow.addEventListener(air.Event.CLOSE, function() {
-				removeOverlay(overlayWindow);
-				try {
-					window.runtime.flash.desktop.NativeApplication.nativeApplication.exit(0);
-				} catch (e) {}
+function GetATBuffMenge()
+{
+		var buffVector = [];
+		try{
+			buffVector = CHAOS_CURRENT_PLAYER().getAvailableBuffs_vector();
+			buffVector.forEach(function(data){
+				if(data.GetResourceName_string() == cachedATName && data.GetBuffDefinition().GetName_string() == "Adventure") {
+					cachedATNameAmount = parseInt(data.GetAmount());
+				}
 			});
+		}
+		catch(e)
+		{
+			cachedATNameAmount = "Sternfehler"
+		}
+}
 
-			var htmlLoader = air.HTMLLoader.createRootWindow(false, initOptions, false);
-			overlayWindow.stage.addChild(htmlLoader);
-
-			htmlLoader.width = overlayWindow.width;
-			htmlLoader.height = overlayWindow.height;
-
-			//htmlLoader.scaleX = 0.5;
-			//htmlLoader.scaleY = 0.5;
-
-			timer = new air.Timer(1000, 0);
-			timer.addEventListener(air.TimerEvent.TIMER, updateOverlayText);
-			timer.start();
-			
-			overlayWindow.visible = true;
-			overlayWindow.activate();
-			try{
-				setTimeout(function() {
-						htmlLoader.stage.frameRate = 120;
-						htmlLoader.stage.quality = "BEST";
-						//window.nativeWindow.stage.getChildAt(0).stage.frameRate = 60;
-						//window.nativeWindow.stage.getChildAt(0).stage.quality = "BEST";
-				}, 10000);
-			}catch(e){}
-		} catch (e) {
+function extractImgSrc(html) {
+    try {
+        var m = String(html || "").match(/src\s*=\s*["']([^"']+)["']/i);
+        return m ? m[1] : "";
+    } catch (e) {
+        debug("extractImgSrc Fehler: " + e);
+        return "";
     }
 }
 
-
-function updateOverlayText(event) {
+function GetOverlayAssets(name) {
     try {
-		elapsedTimeOverlay++;
-		var htmlLoader = overlayWindow.stage.getChildAt(0);
-		var newHtmlContent = '<html><head>' +
-			'<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">' +
-			'<style>' +
-			'body { background: rgba(0, 0, 0, 0.5); color: white; text-align: left; padding: 5px; cursor: move; margin: 0; font-size: 9px; line-height: 1.2; }' +
-			'div { font-size: 10px; margin: 0; padding: 0; line-height: 1.2; }' +
-			'</style>' +
-			'</head><body>' +
-			'<div>' + getText('OverlayTemplates', 'SemiAutoATMenuLang') +
-			'<span style="color:' + (((getRemainingTimeInSecondsVorlagen() < 30 && getRemainingTimeInSecondsVorlagen() !== 0) || OtherUeberwachung) ? 'red' : 'white') + ';">' +
-			getRemainingTimeInSecondsVorlagen() + ' s</span></div>' +
-			'<div>' + getText('OverlayBuildingBuffs', 'SemiAutoATMenuLang') +
-			'<span style="color:' + (((getRemainingTimeInSecondsGebaeudeBuffs() < 30 && getRemainingTimeInSecondsGebaeudeBuffs() !== 0) || OtherUeberwachungBuffs || OtherUeberwachungLoot) ? 'red' : 'white') + ';">' +
-			getRemainingTimeInSecondsGebaeudeBuffs() + ' s</span></div>' +
-			'<div>' + getText('OverlayBuildingProd', 'SemiAutoATMenuLang') +
-			'<span style="color:' + (((getRemainingTimeInSecondsGebaeudeProd() < 30 && getRemainingTimeInSecondsGebaeudeProd() !== 0) || OtherUeberwachungProd) ? 'red' : 'white') + ';">' +
-			getRemainingTimeInSecondsGebaeudeProd() + ' s</span></div>' +
-			'<div>' + getText('OverlayTroopProd', 'SemiAutoATMenuLang') +
-			'<span style="color:' + (((getRemainingTimeInSecondsTruppenProd() < 30 && getRemainingTimeInSecondsTruppenProd() !== 0) || OtherUeberwachungTroop) ? 'red' : 'white') + ';">' +
-			getRemainingTimeInSecondsTruppenProd() + ' s</span></div>';
+        if (name == null || name === "") {
+            return "";
+        }
 
-		if (user_fast_shortcut_settings && user_fast_shortcut_settings.MemUeberwachungNONATTIME) {
-			newHtmlContent += '<div>'+ getText('TimeWatcher', 'SemiAutoATMenuLang') + '<span style="color:' + (timeWatcherInterval !== null ? 'lime' : 'red') + ';">' +
-				(timeWatcherInterval !== null ? getText('TimeWatcherBool', 'SemiAutoATMenuLang') : getText('TimeWatcherBool2', 'SemiAutoATMenuLang')) + '</span></div>';
-		}
-
-		newHtmlContent += '</body></html>';
-
-		htmlLoader.loadString(newHtmlContent);
-	} catch (e) {
-		debug('Fehler im Overlay:' + e);
-	}
+        var src = extractImgSrc(getImageTag(name, "50px"));
+        return src || "";
+    } catch (e) {
+        debug("GetOverlayAssets Fehler: " + e);
+        return "";
+    }
 }
 
-
-function removeOverlay(overlayWindow) {
+function dataUriToByteArray(dataUri) {
     try {
-        if (overlayWindow) {
-            overlayWindow.close();
-            overlayWindow = null;
-            if (timer) {
-                timer.stop();
-                timer = null;
+        var m = String(dataUri || "").match(/^data:image\/[a-zA-Z0-9.+-]+;base64,(.+)$/);
+        if (!m) {
+            debug("dataUriToByteArray: kein gültiger data-uri Treffer");
+            return null;
+        }
+
+        var base64 = m[1];
+        var raw = window.atob(base64);
+        var bytes = new window.runtime.flash.utils.ByteArray();
+
+        for (var i = 0; i < raw.length; i++) {
+            bytes.writeByte(raw.charCodeAt(i) & 0xFF);
+        }
+
+        bytes.position = 0;
+        return bytes;
+    } catch (e) {
+        debug("dataUriToByteArray Fehler: " + e);
+        return null;
+    }
+}
+
+function addOverlayIcon(target, x, y, size, dataUri) {
+    try {
+        if (!dataUri) {
+            debug("addOverlayIcon: dataUri leer");
+            return null;
+        }
+
+        var bytes = dataUriToByteArray(dataUri);
+        if (!bytes) {
+            debug("addOverlayIcon: bytes leer");
+            return null;
+        }
+
+        var loader = new window.runtime.flash.display.Loader();
+
+        loader.contentLoaderInfo.addEventListener(
+            window.runtime.flash.events.Event.INIT,
+            function () {
+                try {
+                    loader.x = x;
+                    loader.y = y;
+                    loader.width = size;
+                    loader.height = size;
+                } catch (ignore) {}
+            }
+        );
+
+        target.addChild(loader);
+        loader.loadBytes(bytes);
+
+        return loader;
+    } catch (e) {
+        debug("addOverlayIcon Fehler: " + e);
+        return null;
+    }
+}
+
+function getOverlayVisibleRowCount() {
+    return getOverlayVisibleRows().length;
+}
+
+function getOverlayMainPanelWidth() {
+    return 250;
+}
+
+function getOverlayMainPanelHeight() {
+    return Math.max(58, 34 + (getOverlayVisibleRowCount() * 26));
+}
+
+function getOverlaySettingsPanelWidth() {
+    return 250;
+}
+
+function getOverlaySettingsPanelHeight() {
+    return 423;
+}
+
+function getOverlayTotalWidth() {
+    if (user_fast_shortcut_settings_Overlay.Overlayminimized) {
+        return 250;
+    }
+    return getOverlayMainPanelWidth() + (overlaySettingsOpen ? (getOverlaySettingsPanelWidth() + 8) : 0);
+}
+
+function getOverlayTotalHeight() {
+    if (user_fast_shortcut_settings_Overlay.Overlayminimized) {
+        return 30;
+    }
+    var h = getOverlayMainPanelHeight();
+    if (overlaySettingsOpen) {
+        h = Math.max(h, getOverlaySettingsPanelHeight());
+    }
+    return h;
+}
+
+/* function createOverlayWindow() {
+    if (!user_fast_shortcut_settings.OverlayMonitoringSetting) {
+        return;
+    }
+
+    try {
+        removeOverlay();
+
+        overlayMinimized = false;
+        overlaySettingsOpen = false;
+
+        overlayWindow = new window.runtime.flash.display.Sprite();
+        overlayWindow.mouseEnabled = false;
+        overlayWindow.mouseChildren = true;
+
+        window.nativeWindow.stage.addChild(overlayWindow);
+
+        overlayStageResizeHandler = onOverlayStageResize;
+        window.nativeWindow.stage.addEventListener(
+            window.runtime.flash.events.Event.RESIZE,
+            overlayStageResizeHandler
+        );
+
+        rebuildOverlay();
+
+        timer = new air.Timer(1000, 0);
+        timer.addEventListener(air.TimerEvent.TIMER, updateOverlayValues);
+        timer.start();
+
+        overlayMarqueeTimer = new air.Timer(40, 0);
+        overlayMarqueeTimer.addEventListener(air.TimerEvent.TIMER, updateOverlayMarquees);
+        overlayMarqueeTimer.start();
+
+        positionOverlay();
+
+    } catch (e) {
+        debug("Fehler createOverlayWindow: " + e);
+    }
+} */
+function createOverlayWindow() {
+    if (!user_fast_shortcut_settings.OverlayMonitoringSetting) {
+        return;
+    }
+
+    try {
+        removeOverlay();
+
+        //user_fast_shortcut_settings_Overlay.Overlayminimized = false;
+        overlaySettingsOpen = false;
+
+        overlayWindow = new window.runtime.flash.display.Sprite();
+        overlayWindow.mouseEnabled = false;
+        overlayWindow.mouseChildren = true;
+
+        window.nativeWindow.stage.addChild(overlayWindow);
+
+        overlayStageResizeHandler = onOverlayStageResize;
+        window.nativeWindow.stage.addEventListener(
+            window.runtime.flash.events.Event.RESIZE,
+            overlayStageResizeHandler
+        );
+
+        rebuildOverlay();
+
+        timer = new air.Timer(1000, 0);
+        timer.addEventListener(air.TimerEvent.TIMER, updateOverlayValues);
+        timer.start();
+
+        positionOverlay();
+    } catch (e) {
+        debug("Fehler createOverlayWindow: " + e);
+    }
+}
+
+function cleanupOverlayMarquees() {
+    overlayMarqueeRows = {};
+}
+
+/* function rebuildOverlay() {
+    try {
+        if (!overlayWindow) {
+            return;
+        }
+
+        cleanupOverlayMarquees();
+
+        while (overlayWindow.numChildren > 0) {
+            overlayWindow.removeChildAt(0);
+        }
+
+        overlayValueFields = {};
+        overlayMainPanel = null;
+        overlaySettingsPanel = null;
+
+        if (overlayMinimized) {
+            drawMinimized();
+        } else {
+            drawExpanded();
+        }
+
+        positionOverlay();
+        updateOverlayValues();
+
+    } catch (e) {
+        debug("Fehler rebuildOverlay: " + e);
+    }
+} */
+
+/* function updateOverlayValues(event) {
+    try {
+        if (!overlayWindow || overlayMinimized) {
+            return;
+        }
+
+        var rows = getOverlayVisibleRows();
+
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+
+            if (row.labelOnly) {
+                if (overlayMarqueeRows[row.key]) {
+                    updateMarqueeText(row.key, row.label);
+                }
+            } else {
+                if (overlayValueFields[row.key]) {
+                    overlayValueFields[row.key].text = String(row.value);
+                    overlayValueFields[row.key].textColor = row.color || 0xFFFFFF;
+                    overlayValueFields[row.key].x = getOverlayMainPanelWidth() - 16 - overlayValueFields[row.key].width;
+                }
             }
         }
     } catch (e) {
+        debug("Fehler updateOverlayValues: " + e);
+    }
+} */
+function rebuildOverlay() {
+    try {
+        if (!overlayWindow) {
+            return;
+        }
+		
+        while (overlayWindow.numChildren > 0) {
+            overlayWindow.removeChildAt(0);
+        }
+
+        overlayValueFields = {};
+        overlayLabelOnlyFields = {};
+        overlayMainPanel = null;
+        overlaySettingsPanel = null;
+
+        if (user_fast_shortcut_settings_Overlay.Overlayminimized) {
+            drawMinimized();
+        } else {
+            drawExpanded();
+        }
+
+        positionOverlay();
+        updateOverlayValues();
+
+    } catch (e) {
+        debug("Fehler rebuildOverlay: " + e);
+    }
+}
+
+function updateOverlayValues(event) {
+    try {
+        if (!overlayWindow || user_fast_shortcut_settings_Overlay.Overlayminimized) {
+            return;
+        }
+
+        var rows = getOverlayVisibleRows();
+
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+
+            if (row.labelOnly) {
+                var ref = overlayLabelOnlyFields[row.key];
+                if (ref) {
+                    var newIcon = row.iconDataUri || "";
+
+                    if ((ref.lastIconDataUri || "") !== newIcon) {
+                        rebuildOverlay();
+                        return;
+                    }
+
+                    if (ref.fitText) {
+                        ref.fitText(row.label);
+                    }
+                }
+            } else {
+                if (overlayValueFields[row.key]) {
+                    overlayValueFields[row.key].text = String(row.value);
+                    overlayValueFields[row.key].textColor = row.color || 0xFFFFFF;
+                    overlayValueFields[row.key].x = getOverlayMainPanelWidth() - 16 - overlayValueFields[row.key].width;
+                }
+            }
+        }
+    } catch (e) {
+        debug("Fehler updateOverlayValues: " + e);
+    }
+}
+
+/* function drawExpanded() {
+    var rows = getOverlayVisibleRows();
+    var panelWidth = getOverlayMainPanelWidth();
+    var panelHeight = getOverlayMainPanelHeight();
+    var settingsWidth = overlaySettingsOpen ? getOverlaySettingsPanelWidth() : 0;
+    var gap = overlaySettingsOpen ? 8 : 0;
+    var mainX = settingsWidth + gap;
+
+    if (overlaySettingsOpen) {
+        drawSettingsPanel(0, 0, settingsWidth, getOverlaySettingsPanelHeight());
+    }
+
+    var mainPanel = createPanel(panelWidth, panelHeight, 0.70);
+    mainPanel.x = mainX;
+    mainPanel.y = 0;
+    overlayWindow.addChild(mainPanel);
+    overlayMainPanel = mainPanel;
+
+    var title = makeText("Overlay", 14, 6, 14, 0xFFFFFF, true);
+    mainPanel.addChild(title);
+
+    var settingsBtn = makeButton("S", panelWidth - 58, 5, 22, 18, 0x6B5D8E, 0x8571B0, function () {
+        overlaySettingsOpen = !overlaySettingsOpen;
+        rebuildOverlay();
+    });
+    mainPanel.addChild(settingsBtn);
+
+    var minBtn = makeButton("_", panelWidth - 32, 5, 22, 18, 0x58708A, 0x6E88A3, function () {
+        overlayMinimized = true;
+        overlaySettingsOpen = false;
+        rebuildOverlay();
+    });
+    mainPanel.addChild(minBtn);
+
+    addDivider(mainPanel, 28, panelWidth);
+
+    for (var i = 0; i < rows.length; i++) {
+        var rowY = 31 + (i * 26);
+
+        if (rows[i].labelOnly) {
+            addMarqueeRow(mainPanel, rowY, rows[i].key, rows[i].label, panelWidth);
+        } else {
+            addRow(mainPanel, rowY, rows[i].key, rows[i].label, rows[i].value, rows[i].color, panelWidth);
+        }
+
+        if (i < rows.length - 1) {
+            addDivider(mainPanel, rowY + 23, panelWidth);
+        }
+    }
+} */
+function drawExpanded() {
+    var rows = getOverlayVisibleRows();
+    var panelWidth = getOverlayMainPanelWidth();
+    var panelHeight = getOverlayMainPanelHeight();
+    var settingsWidth = overlaySettingsOpen ? getOverlaySettingsPanelWidth() : 0;
+    var gap = overlaySettingsOpen ? 8 : 0;
+    var mainX = settingsWidth + gap;
+
+    if (overlaySettingsOpen) {
+        drawSettingsPanel(0, 0, settingsWidth, getOverlaySettingsPanelHeight());
+    }
+
+    var mainPanel = createPanel(panelWidth, panelHeight, 0.70);
+    mainPanel.x = mainX;
+    mainPanel.y = 0;
+    overlayWindow.addChild(mainPanel);
+    overlayMainPanel = mainPanel;
+
+    var title = makeText(VersionUserFast, 14, 6, 14, 0x20B2AA, true);
+    mainPanel.addChild(title);
+
+    var settingsBtn = makeIconButton("⚙", panelWidth - 58, 5, 22, 18, 0x58708A, 0x6E88A3, function () {
+    overlaySettingsOpen = !overlaySettingsOpen;
+    rebuildOverlay();
+	});
+	mainPanel.addChild(settingsBtn);
+
+    var minBtn = makeIconButton("_", panelWidth - 32, 5, 22, 18, 0x58708A, 0x6E88A3, function () {
+        user_fast_shortcut_settings_Overlay.Overlayminimized = true;
+        overlaySettingsOpen = false;
+		Overlaysave();
+        rebuildOverlay();
+    });
+    mainPanel.addChild(minBtn);
+
+    addDivider(mainPanel, 28, panelWidth);
+
+    for (var i = 0; i < rows.length; i++) {
+		var rowY = 31 + (i * 26);
+
+		if (rows[i].labelOnly) {
+			addEllipsisLabelRow(
+				mainPanel,
+				rowY,
+				rows[i].key,
+				rows[i].label,
+				panelWidth,
+				rows[i].iconDataUri
+			);
+		} else {
+			addRow(mainPanel, rowY, rows[i].key, rows[i].label, rows[i].value, rows[i].color, panelWidth);
+		}
+
+		if (i < rows.length - 1) {
+			addDivider(mainPanel, rowY + 23, panelWidth);
+		}
+	}
+}
+
+function drawSettingsPanel(x, y, width, height) {
+    var panel = createPanel(width, height, 0.82);
+    panel.x = x;
+    panel.y = y;
+    overlayWindow.addChild(panel);
+
+    var title = makeText("Einstellungen der Anzeigen", 12, 8, 13, 0xFFFFFF, true);
+    panel.addChild(title);
+
+    addDivider(panel, 28, width);
+
+    var entries = [
+		{ key: "cachedLoadingScreen", label: "Client Start Infos:" },
+		{ key: "cachedMem", label: "Mem Anzeige:" },
+		{ key: "cachedOnline", label: "Server Online Spieler:" },
+        { key: "Templates", label: getText('OverlayTemplates', 'SemiAutoATMenuLang') },
+        { key: "BuildingBuffs", label: getText('OverlayBuildingBuffs', 'SemiAutoATMenuLang') },
+        { key: "BuildingProd", label: getText('OverlayBuildingProd', 'SemiAutoATMenuLang') },
+        { key: "TroopProd", label: getText('OverlayTroopProd', 'SemiAutoATMenuLang') },
+        { key: "ShortcutDirect", label: "Verknüpfung direkt Status:" },
+        { key: "SemiAT", label: "Semi AT Status:" },
+        { key: "AutoAT", label: "AutoAT Status:" },
+        { key: "TimeWatcher", label: getText("TimeWatcher", "SemiAutoATMenuLang") },
+		{ key: "OverlayNeustart", label: "Neustart ausstehend:" },
+		{ key: "OverlayAutoATNeustart", label: "AT startet nach Neustart:" },
+		{ key: "cachedATName", label: "Name vom aktiven AT:" },
+		{ key: "AutoATRundenanzahl", label: "AutoAT Runde & Infos:" },
+		{ key: "cachedLagHammer", label: "AntiLagMethoden Infos:" }
+    ];
+
+    for (var i = 0; i < entries.length; i++) {
+        drawSettingsRow(panel, entries[i], 34 + (i * 24), width);
+    }
+}
+
+function drawSettingsRow(target, entry, y, width) {
+    var label = makeText(entry.label, 12, y + 2, 13, 0xE6EDF5, false);
+    target.addChild(label);
+
+    var isOn = !!user_fast_shortcut_settings_Overlay[entry.key];
+
+    var toggle = makeButton(
+        isOn ? "AN" : "AUS",
+        width - 58,
+        y + 4,
+        42,
+        18,
+        isOn ? 0x4E7A55 : 0x8E5560,
+        isOn ? 0x609A69 : 0xA86672,
+        function () {
+            user_fast_shortcut_settings_Overlay[entry.key] = !user_fast_shortcut_settings_Overlay[entry.key];
+            Overlaysave();
+            rebuildOverlay();
+        }
+    );
+    target.addChild(toggle);
+}
+
+function drawMinimized() {
+    var barWidth = 250;
+    var barHeight = 30;
+
+    var bg = new window.runtime.flash.display.Shape();
+    bg.graphics.lineStyle(1, 0x6C8097, 0.9);
+    bg.graphics.beginFill(0x3A4C61, 0.82);
+    bg.graphics.drawRoundRect(0, 0, barWidth, barHeight, 12, 12);
+    bg.graphics.endFill();
+    overlayWindow.addChild(bg);
+
+    var title = makeText(VersionUserFast, 14, 6, 14, 0x20B2AA, true);
+    overlayWindow.addChild(title);
+
+    var restoreBtn = makeButton("+", barWidth - 32, 5, 22, 18, 0x4E7A55, 0x609A69, function () {
+        user_fast_shortcut_settings_Overlay.Overlayminimized = false;
+		Overlaysave();
+        rebuildOverlay();
+    });
+    overlayWindow.addChild(restoreBtn);
+}
+
+function createPanel(width, height, fillAlpha) {
+    var sp = new window.runtime.flash.display.Sprite();
+    sp.mouseEnabled = false;
+    sp.mouseChildren = true;
+
+    var bg = new window.runtime.flash.display.Shape();
+    bg.graphics.lineStyle(1, 0x6C8097, 0.9);
+    bg.graphics.beginFill(0x3A4C61, fillAlpha);
+    bg.graphics.drawRoundRect(0, 0, width, height, 12, 12);
+    bg.graphics.endFill();
+    sp.addChild(bg);
+
+    return sp;
+}
+
+function addDivider(target, y, width) {
+    var line = new window.runtime.flash.display.Shape();
+    line.graphics.lineStyle(1, 0xE6EDF5, 1);
+    line.graphics.moveTo(12, y);
+    line.graphics.lineTo(width - 12, y);
+    target.addChild(line);
+}
+
+function addRow(target, y, key, label, value, color, width) {
+    var left = makeText(label, 16, y, 15, 0xE6EDF5, false);
+    target.addChild(left);
+
+    if (value !== undefined && value !== null && value !== "") {
+        var right = makeText(value, 0, y, 15, color || 0xFFFFFF, true);
+        right.x = width - 16 - right.width;
+        target.addChild(right);
+        overlayValueFields[key] = right;
+    }
+}
+
+function addEllipsisLabelRow(target, y, key, label, width, iconDataUri) {
+    var row = new window.runtime.flash.display.Sprite();
+    row.x = 0;
+    row.y = y;
+    row.mouseEnabled = false;
+    row.mouseChildren = false;
+
+    var hasIcon = !!iconDataUri;
+    var iconSize = 30;
+    var iconX = 11;
+    var iconY = -3.5;
+
+    var textStartX = hasIcon ? 38 : 16;
+    var clipX = textStartX;
+    var clipY = 0;
+    var clipW = width - textStartX - 16;
+    var clipH = 22;
+
+    if (hasIcon) {
+        addOverlayIcon(row, iconX, iconY, iconSize, iconDataUri);
+    }
+
+    var holder = new window.runtime.flash.display.Sprite();
+    holder.mouseEnabled = false;
+    holder.mouseChildren = false;
+    row.addChild(holder);
+
+    var maskShape = new window.runtime.flash.display.Shape();
+    maskShape.graphics.beginFill(0xFFFFFF, 1);
+    maskShape.graphics.drawRect(clipX, clipY, clipW, clipH);
+    maskShape.graphics.endFill();
+    row.addChild(maskShape);
+
+    holder.mask = maskShape;
+
+    var tf = new window.runtime.flash.text.TextField();
+    var fmt = new window.runtime.flash.text.TextFormat();
+    fmt.font = "_sans";
+    fmt.size = 15;
+    fmt.color = 0xE6EDF5;
+    fmt.bold = false;
+
+    tf.defaultTextFormat = fmt;
+    tf.selectable = false;
+    tf.mouseEnabled = false;
+    tf.multiline = false;
+    tf.wordWrap = false;
+    tf.embedFonts = false;
+    tf.autoSize = window.runtime.flash.text.TextFieldAutoSize.LEFT;
+    tf.x = clipX;
+    tf.y = 1;
+
+    function fitText(txt) {
+        var full = String(txt || "");
+        tf.text = full;
+
+        if (tf.width <= clipW) {
+            return;
+        }
+
+        var base = full;
+        while (base.length > 0) {
+            tf.text = base + "...";
+            if (tf.width <= clipW) {
+                return;
+            }
+            base = base.substr(0, base.length - 1);
+        }
+
+        tf.text = "...";
+    }
+
+    fitText(label);
+
+    holder.addChild(tf);
+    target.addChild(row);
+
+    overlayLabelOnlyFields[key] = {
+        row: row,
+        field: tf,
+        fitText: fitText,
+        lastIconDataUri: iconDataUri || ""
+    };
+}
+
+/* function addEllipsisLabelRow(target, y, key, label, width) {
+    var row = new window.runtime.flash.display.Sprite();
+    row.x = 0;
+    row.y = y;
+    row.mouseEnabled = false;
+    row.mouseChildren = false;
+
+    var clipX = 16;
+    var clipY = 0;
+    var clipW = width - 40;
+    var clipH = 22;
+
+    var holder = new window.runtime.flash.display.Sprite();
+    holder.mouseEnabled = false;
+    holder.mouseChildren = false;
+    row.addChild(holder);
+
+    var maskShape = new window.runtime.flash.display.Shape();
+    maskShape.graphics.beginFill(0xFFFFFF, 1);
+    maskShape.graphics.drawRect(clipX, clipY, clipW, clipH);
+    maskShape.graphics.endFill();
+    row.addChild(maskShape);
+
+    holder.mask = maskShape;
+
+    var tf = new window.runtime.flash.text.TextField();
+    var fmt = new window.runtime.flash.text.TextFormat();
+    fmt.font = "_sans";
+    fmt.size = 15;
+    fmt.color = 0xE6EDF5;
+    fmt.bold = false;
+
+    tf.defaultTextFormat = fmt;
+    tf.selectable = false;
+    tf.mouseEnabled = false;
+    tf.multiline = false;
+    tf.wordWrap = false;
+    tf.embedFonts = false;
+    tf.autoSize = window.runtime.flash.text.TextFieldAutoSize.LEFT;
+    tf.x = clipX;
+    tf.y = 1;
+
+    function fitText(txt) {
+        var full = String(txt || "");
+        tf.text = full;
+
+        if (tf.width <= clipW) {
+            return;
+        }
+
+        var base = full;
+        while (base.length > 0) {
+            tf.text = base + "...";
+            if (tf.width <= clipW) {
+                return;
+            }
+            base = base.substr(0, base.length - 1);
+        }
+
+        tf.text = "...";
+    }
+
+    fitText(label);
+
+    holder.addChild(tf);
+    target.addChild(row);
+
+    overlayLabelOnlyFields[key] = {
+        row: row,
+        field: tf,
+        fitText: fitText
+    };
+} */
+
+function addMarqueeRow(target, y, key, label, width) {
+    var row = new window.runtime.flash.display.Sprite();
+    row.x = 0;
+    row.y = y;
+    row.mouseEnabled = false;
+    row.mouseChildren = false;
+
+    var clipX = 16;
+    var clipY = 0;
+    var clipW = width - 40;
+    var clipH = 22;
+    var gap = 30;
+
+    var holder = new window.runtime.flash.display.Sprite();
+    holder.mouseEnabled = false;
+    holder.mouseChildren = false;
+    row.addChild(holder);
+
+    var maskShape = new window.runtime.flash.display.Shape();
+    maskShape.graphics.beginFill(0xFFFFFF, 1);
+    maskShape.graphics.drawRect(clipX, clipY, clipW, clipH);
+    maskShape.graphics.endFill();
+    row.addChild(maskShape);
+
+    holder.mask = maskShape;
+
+    function makeTickerText(txt) {
+        var tf = new window.runtime.flash.text.TextField();
+        var fmt = new window.runtime.flash.text.TextFormat();
+        fmt.font = "_sans";
+        fmt.size = 15;
+        fmt.color = 0xE6EDF5;
+        fmt.bold = false;
+
+        tf.defaultTextFormat = fmt;
+        tf.selectable = false;
+        tf.mouseEnabled = false;
+        tf.multiline = false;
+        tf.wordWrap = false;
+        tf.embedFonts = false;
+        tf.autoSize = window.runtime.flash.text.TextFieldAutoSize.LEFT;
+        tf.text = String(txt);
+        tf.y = 1;
+
+        return tf;
+    }
+
+    function getRealWidth(tf) {
+        return Math.ceil(tf.textWidth + 6);
+    }
+
+    var tf1 = makeTickerText(label);
+    var tf2 = makeTickerText(label);
+
+    holder.addChild(tf1);
+    holder.addChild(tf2);
+
+    var state = {
+        row: row,
+        holder: holder,
+        text1: tf1,
+        text2: tf2,
+        clipX: clipX,
+        clipW: clipW,
+        gap: gap,
+        speed: 2,
+        text: String(label),
+        waitTicks: 12,
+        w1: 0,
+        w2: 0
+    };
+
+    state.relayout = function(resetWait) {
+        state.w1 = getRealWidth(state.text1);
+        state.w2 = getRealWidth(state.text2);
+
+        if (Math.max(state.w1, state.w2) <= state.clipW) {
+            state.text1.x = state.clipX;
+            state.text2.x = 999999;
+            if (resetWait) {
+                state.waitTicks = 0;
+            }
+            return;
+        }
+
+        state.text1.x = state.clipX;
+        state.text2.x = state.text1.x + state.w1 + state.gap;
+
+        if (resetWait) {
+            state.waitTicks = 12;
+        }
+    };
+
+    state.relayout(true);
+
+    overlayMarqueeRows[key] = state;
+    target.addChild(row);
+}
+
+function updateOverlayMarquees(event) {
+    try {
+        if (!overlayWindow || user_fast_shortcut_settings_Overlay.Overlayminimized) {
+            return;
+        }
+
+        for (var key in overlayMarqueeRows) {
+            if (!overlayMarqueeRows.hasOwnProperty(key)) {
+                continue;
+            }
+
+            var state = overlayMarqueeRows[key];
+            if (!state || !state.row || !state.row.parent) {
+                continue;
+            }
+
+            state.w1 = Math.ceil(state.text1.textWidth + 6);
+            state.w2 = Math.ceil(state.text2.textWidth + 6);
+
+            if (Math.max(state.w1, state.w2) <= state.clipW) {
+                state.text1.x = state.clipX;
+                state.text2.x = 999999;
+                continue;
+            }
+
+            if (state.waitTicks > 0) {
+                state.waitTicks--;
+                continue;
+            }
+
+            state.text1.x -= state.speed;
+            state.text2.x -= state.speed;
+
+            if (state.text1.x + state.w1 < state.clipX) {
+                state.text1.x = state.text2.x + state.w2 + state.gap;
+            }
+
+            if (state.text2.x + state.w2 < state.clipX) {
+                state.text2.x = state.text1.x + state.w1 + state.gap;
+            }
+        }
+    } catch (e) {
+        debug("Fehler updateOverlayMarquees: " + e);
+    }
+}
+
+function updateMarqueeText(key, newLabel) {
+    try {
+        var state = overlayMarqueeRows[key];
+        if (!state) {
+            return;
+        }
+
+        newLabel = String(newLabel);
+
+        if (state.text !== newLabel) {
+            state.text = newLabel;
+            state.text1.text = newLabel;
+            state.text2.text = newLabel;
+            state.relayout(true);
+        }
+    } catch (e) {
+        debug("Fehler updateMarqueeText: " + e);
+    }
+}
+
+function makeText(txt, x, y, size, color, bold) {
+    var tf = new window.runtime.flash.text.TextField();
+    var fmt = new window.runtime.flash.text.TextFormat();
+
+    fmt.font = "_sans";
+    fmt.size = size;
+    fmt.color = color;
+    fmt.bold = !!bold;
+
+    tf.defaultTextFormat = fmt;
+    tf.selectable = false;
+    tf.mouseEnabled = false;
+    tf.multiline = false;
+    tf.wordWrap = false;
+    tf.embedFonts = false;
+    tf.autoSize = window.runtime.flash.text.TextFieldAutoSize.LEFT;
+    tf.text = String(txt);
+    tf.x = x;
+    tf.y = y;
+
+    return tf;
+}
+
+function makeCenteredText(txt, y, size, color, bold, boxWidth) {
+    var tf = makeText(txt, 0, y, size, color, bold);
+    tf.x = Math.round((boxWidth - tf.width) / 2);
+    return tf;
+}
+
+function drawOverlayButtonBg(target, w, h, color) {
+    target.graphics.clear();
+    target.graphics.lineStyle(1, 0x90A4B8, 0.9);
+    target.graphics.beginFill(color, 0.95);
+    target.graphics.drawRoundRect(0.5, 0.5, w - 1, h - 1, 8, 8);
+    target.graphics.endFill();
+}
+
+function makeButton(label, x, y, w, h, bgColor, hoverColor, onClick) {
+    var btn = new window.runtime.flash.display.Sprite();
+    btn.x = x;
+    btn.y = y;
+    btn.buttonMode = true;
+    btn.useHandCursor = true;
+    btn.mouseEnabled = true;
+    btn.mouseChildren = false;
+
+    function draw(color) {
+        drawOverlayButtonBg(btn, w, h, color);
+    }
+
+    draw(bgColor);
+
+    var tf = makeCenteredText(label, Math.round((h - 16) / 2) - 1, 13, 0xFFFFFF, true, w);
+    btn.addChild(tf);
+
+    btn.addEventListener(window.runtime.flash.events.MouseEvent.MOUSE_OVER, function () {
+        draw(hoverColor);
+    });
+    btn.addEventListener(window.runtime.flash.events.MouseEvent.MOUSE_OUT, function () {
+        draw(bgColor);
+    });
+    btn.addEventListener(window.runtime.flash.events.MouseEvent.CLICK, function (e) {
+        try {
+            if (e) e.stopImmediatePropagation();
+        } catch (ignore) {}
+        onClick();
+    });
+
+    return btn;
+}
+
+function makeIconButton(label, x, y, w, h, bgColor, hoverColor, onClick) {
+    var btn = new window.runtime.flash.display.Sprite();
+    btn.x = x;
+    btn.y = y;
+    btn.buttonMode = true;
+    btn.useHandCursor = true;
+    btn.mouseEnabled = true;
+    btn.mouseChildren = false;
+
+    function draw(color) {
+        drawOverlayButtonBg(btn, w, h, color);
+    }
+
+    draw(bgColor);
+
+    var tf = new window.runtime.flash.text.TextField();
+    var fmt = new window.runtime.flash.text.TextFormat();
+
+    fmt.font = "_sans";
+    fmt.size = 12;
+    fmt.color = 0xFFFFFF;
+    fmt.bold = true;
+    fmt.align = window.runtime.flash.text.TextFormatAlign.CENTER;
+
+    tf.defaultTextFormat = fmt;
+    tf.selectable = false;
+    tf.mouseEnabled = false;
+    tf.multiline = false;
+    tf.wordWrap = false;
+    tf.embedFonts = false;
+    tf.width = w;
+    tf.height = h;
+    tf.x = 0;
+    tf.y = -2;
+    tf.text = String(label);
+    tf.setTextFormat(fmt);
+
+    btn.addChild(tf);
+
+    btn.addEventListener(window.runtime.flash.events.MouseEvent.MOUSE_OVER, function () {
+        draw(hoverColor);
+    });
+    btn.addEventListener(window.runtime.flash.events.MouseEvent.MOUSE_OUT, function () {
+        draw(bgColor);
+    });
+    btn.addEventListener(window.runtime.flash.events.MouseEvent.CLICK, function (e) {
+        try {
+            if (e) e.stopImmediatePropagation();
+        } catch (ignore) {}
+        onClick();
+    });
+
+    return btn;
+}
+
+function getTimerColor(seconds, isActive) {
+    if (isActive) return 0xFF2D2D;
+    if (seconds <= 30 && seconds !== 0) return 0xFF7B7B;
+    return 0xFFFFFF;
+}
+
+function getTimerText(seconds) {
+    return Math.max(0, seconds) + " s";
+}
+
+function positionOverlay() {
+    try {
+        if (!overlayWindow || !window.nativeWindow || !window.nativeWindow.stage) {
+            return;
+        }
+
+        var marginRight = 3;
+        var marginBottom = 3;
+
+        overlayWindow.x = window.nativeWindow.stage.stageWidth - getOverlayTotalWidth() - marginRight;
+        overlayWindow.y = window.nativeWindow.stage.stageHeight - getOverlayTotalHeight() - marginBottom;
+    } catch (e) {
+        debug("Fehler positionOverlay: " + e);
+    }
+}
+
+function onOverlayStageResize(event) {
+    positionOverlay();
+}
+
+/* function removeOverlay() {
+    try {
+        if (timer) {
+            try { timer.stop(); } catch (e1) {}
+            try { timer.removeEventListener(air.TimerEvent.TIMER, updateOverlayValues); } catch (e2) {}
+            timer = null;
+        }
+		
+		if (overlayMarqueeTimer) {
+			try { overlayMarqueeTimer.stop(); } catch (e4) {}
+			try { overlayMarqueeTimer.removeEventListener(air.TimerEvent.TIMER, updateOverlayMarquees); } catch (e5) {}
+			overlayMarqueeTimer = null;
+		}
+
+        try {
+            if (overlayStageResizeHandler && window.nativeWindow && window.nativeWindow.stage) {
+                window.nativeWindow.stage.removeEventListener(window.runtime.flash.events.Event.RESIZE, overlayStageResizeHandler);
+            }
+        } catch (e3) {}
+
+        overlayStageResizeHandler = null;
+        overlayValueFields = {};
+
+        cleanupOverlayMarquees();
+
+        overlayMainPanel = null;
+        overlaySettingsPanel = null;
+
+        if (overlayWindow && overlayWindow.parent) {
+            overlayWindow.parent.removeChild(overlayWindow);
+        }
+
+        overlayWindow = null;
+        overlayMinimized = false;
+        overlaySettingsOpen = false;
+    } catch (e) {
+        debug("Fehler removeOverlay: " + e);
+    }
+} */
+function removeOverlay() {
+    try {
+        if (timer) {
+            try { timer.stop(); } catch (e1) {}
+            try { timer.removeEventListener(air.TimerEvent.TIMER, updateOverlayValues); } catch (e2) {}
+            timer = null;
+        }
+
+        try {
+            if (overlayStageResizeHandler && window.nativeWindow && window.nativeWindow.stage) {
+                window.nativeWindow.stage.removeEventListener(window.runtime.flash.events.Event.RESIZE, overlayStageResizeHandler);
+            }
+        } catch (e3) {}
+
+        overlayStageResizeHandler = null;
+        overlayValueFields = {};
+        overlayLabelOnlyFields = {};
+        overlayMainPanel = null;
+        overlaySettingsPanel = null;
+
+        if (overlayWindow && overlayWindow.parent) {
+            overlayWindow.parent.removeChild(overlayWindow);
+        }
+
+        overlayWindow = null;
+        //user_fast_shortcut_settings_Overlay.Overlayminimized = false;
+        overlaySettingsOpen = false;
+    } catch (e) {
+        debug("Fehler removeOverlay: " + e);
     }
 }
 
@@ -24281,9 +26941,13 @@ function getRemainingTimeInSecondsTruppenProd() {
     return Math.max(0, Math.floor(remainingTime / 1000));
 }
 
-
+//setTimeout(createOverlayWindow, 20000);
 createOverlayWindow();
 
+
+function randomDelay(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 /* function MyFunctionsID_GridPosBui()
 {
 	try
@@ -24349,12 +27013,6 @@ Testing(); */
 
 } */
 //addToolsMenuItem("Test", MyFunctionsID_Test);
-
-
-
-
-
-
 
 
 
